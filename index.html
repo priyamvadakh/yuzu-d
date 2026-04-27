@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yuzu</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="screen-login" class="screen active">
+  <div class="auth-shell">
+    <div class="brand-panel">
+      <div class="brand-glow"></div>
+      <div class="brand-orb brand-orb-1"></div>
+      <div class="brand-orb brand-orb-2"></div>
+      <div class="brand-content">
+        <div class="brand-logo-wrap">
+          <img src="logo.png" class="brand-icon" alt="yuzu" />
+        </div>
+        <h1 class="brand-headline"><span class="brand-one">One App.</span><br>Every Conversation.<br>Anywhere your team works.</h1>
+        <div class="brand-features">
+          <div class="feature-pill">💬 DMs &amp; Channels</div>
+          <div class="feature-pill">✅ Tasks</div>
+          <div class="feature-pill">📅 Scheduling</div>
+          <div class="feature-pill">🎙️ Voice Recording</div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-form-panel">
+      <div class="auth-form-inner">
+        <div class="auth-logo-small">
+          <img src="logo.png" alt="yuzu" />
+          <span>yuzu</span>
+        </div>
+        <h2 class="auth-title">Welcome back</h2>
+        <p class="auth-subtitle">Sign in to your workspace</p>
+        <div class="auth-buttons">
+          <button class="auth-social-btn" id="btnUaePass">
+            <img src="https://www.figma.com/api/mcp/asset/0715dbe5-34e5-4d5d-a2e5-985791604b08" alt="UAE PASS" style="width:20px;height:auto" />
+            Sign in with UAE PASS
+          </button>
+          <button class="auth-social-btn" id="btnGoogle">
+            <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+          <button class="auth-social-btn" id="btnMicrosoft">
+            <svg width="18" height="18" viewBox="0 0 18 18"><rect x="0" y="0" width="8.5" height="8.5" fill="#F35325"/><rect x="9.5" y="0" width="8.5" height="8.5" fill="#81BC06"/><rect x="0" y="9.5" width="8.5" height="8.5" fill="#05A6F0"/><rect x="9.5" y="9.5" width="8.5" height="8.5" fill="#FFBA08"/></svg>
+            Continue with Microsoft
+          </button>
+          <div class="auth-divider"><span></span><p>or sign in with email</p><span></span></div>
+          <button class="auth-email-btn" id="btnSignInEmail">Sign In With Email</button>
+        </div>
+        <p class="auth-trouble">Having trouble? <a href="#" class="auth-trouble-link">Try entering a workspace URL</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ EMAIL ══════════ -->
+<div id="screen-email" class="screen">
+  <div class="auth-shell">
+    <div class="brand-panel">
+      <div class="brand-glow"></div>
+      <div class="brand-orb brand-orb-1"></div>
+      <div class="brand-orb brand-orb-2"></div>
+      <div class="brand-content">
+        <div class="brand-logo-wrap"><img src="logo.png" class="brand-icon" alt="yuzu" /></div>
+        <h1 class="brand-headline"><span class="brand-one">One App.</span><br>Every Conversation.<br>Anywhere your team works.</h1>
+      </div>
+    </div>
+    <div class="auth-form-panel">
+      <div class="auth-form-inner">
+        <button class="back-btn" id="emailBack">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 15L7 10L12 5" stroke="#4c1515" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 class="auth-title" style="margin-top:20px">What's your email?</h2>
+        <p class="auth-subtitle">We'll send you a verification code</p>
+        <div class="input-group">
+          <input type="email" id="emailInput" class="auth-input" placeholder="you@example.com" autocomplete="email" />
+          <div class="input-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="2" stroke="#888d96" stroke-width="1.3"/><path d="M1 5.5L9 11L17 5.5" stroke="#888d96" stroke-width="1.3"/></svg>
+          </div>
+        </div>
+        <p class="input-error" id="emailError"></p>
+        <button class="auth-email-btn" id="emailNext">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ OTP ══════════ -->
+<div id="screen-otp" class="screen">
+  <div class="auth-shell">
+    <div class="brand-panel">
+      <div class="brand-glow"></div>
+      <div class="brand-orb brand-orb-1"></div>
+      <div class="brand-orb brand-orb-2"></div>
+      <div class="brand-content">
+        <div class="brand-logo-wrap"><img src="logo.png" class="brand-icon" alt="yuzu" /></div>
+        <h1 class="brand-headline"><span class="brand-one">One App.</span><br>Every Conversation.<br>Anywhere your team works.</h1>
+      </div>
+    </div>
+    <div class="auth-form-panel">
+      <div class="auth-form-inner otp-inner">
+        <button class="back-btn" id="otpBack">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 15L7 10L12 5" stroke="#4c1515" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="otp-logo-center">
+          <img src="logo.png" alt="yuzu" class="otp-logo-img" />
+        </div>
+        <h2 class="auth-title otp-title">Check your email</h2>
+        <p class="auth-subtitle otp-subtitle">We sent a 6-digit code to<br><strong id="otpEmailDisplay" class="otp-email-display"></strong></p>
+        <div class="otp-row">
+          <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+        </div>
+        <p class="input-error" id="otpError"></p>
+        <button class="auth-email-btn otp-verify-btn" id="otpNext">Verify &amp; Sign In</button>
+        <p class="otp-hint-text">Demo code: <strong>123456</strong></p>
+        <button class="resend-btn" id="resendBtn">Didn't receive a code? <span>Resend</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ HOME ══════════ -->
+<div id="screen-home" class="screen">
+  <div class="app">
+
+    <nav class="left-nav">
+      <button class="nav-collapse-btn">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 15L7 10L12 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="workspace-logo"><img src="logo.png" alt="Y" style="width:30px;height:30px;object-fit:contain" /></div>
+      <div class="nav-items-wrapper">
+        <div class="nav-items">
+          <button class="nav-item active" data-tab="home">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3L21 9.5V20C21 20.5523 20.5523 21 20 21H15V15H9V21H4C3.44772 21 3 20.5523 3 20V9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="13" r="1.5" fill="currentColor"/></svg>
+            <span>Home</span>
+          </button>
+          <button class="nav-item" data-tab="dms">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <span>DMs</span>
+          </button>
+          <button class="nav-item" data-tab="tasks">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Tasks</span>
+          </button>
+          <button class="nav-item" data-tab="people">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 20C17 18.3431 14.7614 17 12 17C9.23858 17 7 18.3431 7 20M21 17C21 15.7892 19.7659 14.7699 18 14.3453M3 17C3 15.7892 4.23413 14.7699 6 14.3453M12 14C10.067 14 8.5 12.433 8.5 10.5C8.5 8.567 10.067 7 12 7C13.933 7 15.5 8.567 15.5 10.5C15.5 12.433 13.933 14 12 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span>People</span>
+          </button>
+        </div>
+        <div class="nav-bottom">
+          <div class="nav-action-btn" id="navActionBtn">
+            <img src="https://www.figma.com/api/mcp/asset/1c503302-be88-4882-a713-180471fc7fa3" alt="" style="width:28px;height:28px;object-fit:contain" />
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <section class="middle-panel">
+      <div class="quick-actions-bar">
+        <button class="quick-action"><div class="quick-action-icon" style="background:rgba(246,196,83,0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="#7a5510" stroke-width="1.5" stroke-linejoin="round"/></svg></div><span>New DM</span></button>
+        <button class="quick-action"><div class="quick-action-icon" style="background:rgba(13,143,130,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6H20M4 10H16M4 14H12" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Channel</span></button>
+        <button class="quick-action"><div class="quick-action-icon" style="background:rgba(0,173,94,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="#00ad5e" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg></div><span>Call</span></button>
+        <button class="quick-action" id="scheduleBtn"><div class="quick-action-icon" style="background:rgba(139,92,246,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#7c3aed" stroke-width="1.5"/><path d="M16 2V6M8 2V6M3 10H21" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Schedule</span></button>
+        <button class="quick-action" id="taskBtn"><div class="quick-action-icon" style="background:rgba(246,196,83,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="#7a5510" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Task</span></button>
+      </div>
+
+      <!-- DMs view (shown when DMs nav is active) -->
+      <div class="dm-list-view hidden" id="dmContent">
+        <div class="dm-list-header">
+          <span class="section-title">DIRECT MESSAGES</span>
+          <button class="new-dm-btn">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            New
+          </button>
+        </div>
+        <div class="dm-list" id="dmList">
+          <div class="dm-item selected" data-dm="sarah">
+            <div class="dm-avatar-wrap"><div class="dm-letter-avatar" style="background:#7c3aed">SJ</div><div class="online-dot"></div></div>
+            <div class="dm-body"><div class="dm-row"><span class="dm-name">Sarah Jenkins</span><span class="dm-time">12:01 PM</span></div><span class="dm-preview">Sure! Available at 3pm today?</span></div>
+            <div class="unread-badge">2</div>
+          </div>
+          <div class="dm-item" data-dm="david">
+            <div class="dm-avatar-wrap"><div class="dm-letter-avatar" style="background:#2563eb">DC</div></div>
+            <div class="dm-body"><div class="dm-row"><span class="dm-name">David Chen</span><span class="dm-time">2h ago</span></div><span class="dm-preview">Got it, will review by EOD</span></div>
+          </div>
+          <div class="dm-item" data-dm="alex">
+            <div class="dm-avatar-wrap"><div class="dm-letter-avatar" style="background:#059669">AK</div><div class="online-dot"></div></div>
+            <div class="dm-body"><div class="dm-row"><span class="dm-name">Alex Kim</span><span class="dm-time">Yesterday</span></div><span class="dm-preview">The new brand looks 🔥</span></div>
+          </div>
+          <div class="dm-item" data-dm="jessica">
+            <div class="dm-avatar-wrap"><div class="dm-letter-avatar" style="background:#d97706">JP</div></div>
+            <div class="dm-body"><div class="dm-row"><span class="dm-name">Jessica Park</span><span class="dm-time">Yesterday</span></div><span class="dm-preview">I'll share the campaign slides tomorrow</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tasks full view (shown when Tasks nav is active) -->
+      <div class="tasks-full-view hidden" id="tasksFullView">
+        <div class="tasks-full-header">
+          <span class="section-title">MY TASKS</span>
+          <button class="see-all green">See All ›</button>
+        </div>
+        <div class="tasks-full-list" id="tasksFullList">
+          <div class="task-item"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">Review brand assets from Sarah</span><div class="task-meta"><span class="task-due">⏱ Today</span><span class="task-dot">•</span><span class="task-status in-progress">In Progress</span></div></div></div>
+          <div class="task-item no-border"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">Deploy staging environment</span><div class="task-meta"><span class="task-due">⏱ Today</span><span class="task-dot">•</span><span class="task-status todo">To Do</span></div></div></div>
+        </div>
+      </div>
+
+      <div class="middle-content" id="homeContent">
+        <div class="home-greeting"><h3 id="greetingMsg">Good morning 👋</h3><p id="greetingEmail" class="greeting-email"></p></div>
+
+        <div class="section">
+          <div class="section-header"><span class="section-title">RECENT CONVERSATIONS</span><button class="see-all">See All</button></div>
+          <div class="card">
+            <div class="convo-item">
+              <div class="avatar group-avatar"><img src="https://www.figma.com/api/mcp/asset/5e53263b-55fd-4042-b76d-d635bb125901" alt="" /><div class="avatar-overlay"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 3C7.5 3 6 5 6 7C6 9 7.5 11 10 11C12.5 11 14 9 14 7C14 5 12.5 3 10 3ZM3 17C3 14 6 12 10 12C14 12 17 14 17 17" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></div></div>
+              <div class="convo-body"><div class="convo-row"><span class="convo-name">Product Launch Q3</span><span class="convo-time amber">2m ago</span></div><div class="convo-row"><span class="convo-preview">@Alex the new brand ...</span><div class="convo-badges"><div class="reply-count"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2h8v6H6L4 10V8H2V2Z" stroke="#888d96" stroke-width="1.1" stroke-linejoin="round"/></svg><span>5</span></div><div class="unread-badge">3</div></div></div></div>
+            </div>
+            <div class="convo-item">
+              <div class="avatar"><img src="https://www.figma.com/api/mcp/asset/fdccf986-0465-44bb-b08c-480a8b0916f6" alt="" /><div class="online-dot"></div></div>
+              <div class="convo-body"><div class="convo-row"><span class="convo-name">Sarah Jenkins</span><span class="convo-time amber">15m ago</span></div><div class="convo-row"><span class="convo-preview">📄 Shared a screenshot ...</span><div class="unread-badge">1</div></div></div>
+            </div>
+            <div class="convo-item">
+              <div class="avatar"><img src="https://www.figma.com/api/mcp/asset/6783d096-b889-4541-a798-0401cf613064" alt="" /></div>
+              <div class="convo-body"><div class="convo-row"><span class="convo-name">David Chen</span><span class="convo-time muted">2h ago</span></div><div class="convo-row"><span class="convo-preview muted">📎 Sent the Q3 report document</span></div></div>
+            </div>
+            <div class="convo-item no-border">
+              <div class="avatar group-avatar"><img src="https://www.figma.com/api/mcp/asset/f090055f-ade0-4c1e-b060-908260f8965f" alt="" /><div class="avatar-overlay"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 3C7.5 3 6 5 6 7C6 9 7.5 11 10 11C12.5 11 14 9 14 7C14 5 12.5 3 10 3ZM3 17C3 14 6 12 10 12C14 12 17 14 17 17" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></div></div>
+              <div class="convo-body"><div class="convo-row"><span class="convo-name">Engineering Team</span><span class="convo-time muted">1h ago</span></div><div class="convo-row"><span class="convo-preview muted">✅ Deployment successful ...</span><div class="reply-count"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2h8v6H6L4 10V8H2V2Z" stroke="#888d96" stroke-width="1.1" stroke-linejoin="round"/></svg><span>12</span></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header"><span class="section-title">RECENT CHANNELS</span><button class="see-all">See All</button></div>
+          <div class="card">
+            <div class="channel-item"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6H16M4 10H16M4 14H10" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">product-launch-q3</span><span class="channel-members">12 members</span></div><div class="unread-badge">3</div></div>
+            <div class="channel-item"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6H16M4 10H16M4 14H10" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">engineering-team</span><span class="channel-members">8 members</span></div></div>
+            <div class="channel-item no-border"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 10H15M10 5V15" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">design-system</span><span class="channel-members">5 members</span></div><div class="unread-badge">1</div></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header"><span class="section-title">MY TASKS</span><button class="see-all green">See All ›</button></div>
+          <div class="card" id="myTasksCard">
+            <div class="task-item"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">Review brand assets from Sarah</span><div class="task-meta"><span class="task-due">⏱ Today</span><span class="task-dot">•</span><span class="task-status in-progress">In Progress</span></div></div></div>
+            <div class="task-item no-border"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">Deploy staging environment</span><div class="task-meta"><span class="task-due">⏱ Today</span><span class="task-dot">•</span><span class="task-status todo">To Do</span></div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL -->
+    <main class="right-panel">
+
+      <!-- DM CONVERSATION VIEW -->
+      <div class="dm-convo hidden" id="dmView">
+        <div class="dm-convo-header" id="dmConvoHeader"></div>
+        <div class="dm-messages" id="dmMessages"></div>
+        <div class="dm-composer">
+          <div class="dm-composer-inner">
+            <button class="dm-attach-btn" title="Attach">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3V15M3 9H15" stroke="#888d96" stroke-width="1.4" stroke-linecap="round"/></svg>
+            </button>
+            <input type="text" id="dmInput" class="dm-input" placeholder="Message…" />
+            <button class="dm-send-btn" id="dmSendBtn">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M17 3L3 9.5L8 11M17 3L11 17L8 11M17 3L8 11" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE 1: Idle mic prompt -->
+      <div class="rec-idle" id="recIdle">
+        <div class="mic-rings">
+          <div class="mic-ring mic-ring-1"></div>
+          <div class="mic-ring mic-ring-2"></div>
+          <button class="mic-btn-idle" id="micBtnIdle" title="Start recording">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+              <rect x="16" y="5" width="12" height="20" rx="6" fill="white"/>
+              <path d="M8 21C8 28.18 14.27 34 22 34C29.73 34 36 28.18 36 21" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M22 34V39M17 39H27" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <p class="mic-idle-hint">Tap the mic and say something like<br><strong>"Schedule a call with Sara tomorrow at 3pm"</strong></p>
+      </div>
+
+      <!-- STATE 2: Active recording -->
+      <div class="rec-view hidden" id="recView">
+
+        <p class="rec-view-greeting" id="chatGreeting">Afternoon, friend</p>
+
+        <div class="rec-pill">
+          <div class="rec-pill-dot"></div>
+          <span>Recording · <span id="recPillTimer" class="rec-pill-mono">0:00</span></span>
+        </div>
+
+        <div class="rec-view-wave-row">
+          <div class="rec-view-wave">
+            <span class="rv-bar" style="--rh:10px;--rd:.05s"></span>
+            <span class="rv-bar" style="--rh:22px;--rd:.12s"></span>
+            <span class="rv-bar" style="--rh:36px;--rd:.07s"></span>
+            <span class="rv-bar" style="--rh:28px;--rd:.18s"></span>
+            <span class="rv-bar" style="--rh:44px;--rd:.03s"></span>
+            <span class="rv-bar" style="--rh:18px;--rd:.22s"></span>
+            <span class="rv-bar" style="--rh:38px;--rd:.09s"></span>
+            <span class="rv-bar" style="--rh:14px;--rd:.16s"></span>
+            <span class="rv-bar" style="--rh:42px;--rd:.25s"></span>
+            <span class="rv-bar" style="--rh:26px;--rd:.06s"></span>
+          </div>
+
+          <button class="rec-view-stop-circle" id="recViewStopBtn" title="Stop recording">
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+              <rect x="8" y="8" width="14" height="14" rx="2.5" fill="white"/>
+            </svg>
+          </button>
+
+          <div class="rec-view-wave">
+            <span class="rv-bar" style="--rh:26px;--rd:.14s"></span>
+            <span class="rv-bar" style="--rh:42px;--rd:.21s"></span>
+            <span class="rv-bar" style="--rh:14px;--rd:.08s"></span>
+            <span class="rv-bar" style="--rh:38px;--rd:.27s"></span>
+            <span class="rv-bar" style="--rh:18px;--rd:.04s"></span>
+            <span class="rv-bar" style="--rh:44px;--rd:.19s"></span>
+            <span class="rv-bar" style="--rh:28px;--rd:.11s"></span>
+            <span class="rv-bar" style="--rh:36px;--rd:.24s"></span>
+            <span class="rv-bar" style="--rh:22px;--rd:.02s"></span>
+            <span class="rv-bar" style="--rh:10px;--rd:.17s"></span>
+          </div>
+        </div>
+
+        <p class="rec-view-tip">Speak naturally — I'll extract the details.<br>Say "stop" or tap the button when done.</p>
+
+        <button class="rec-view-btn-stop" id="recViewStopFull">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="2" fill="white"/></svg>
+          Stop Recording
+        </button>
+        <button class="rec-view-btn-restart" id="recViewRestart">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 2.5A7 7 0 1 0 14 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 3V7H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Restart
+        </button>
+
+      </div>
+
+      <!-- STATE 3: Intent picker -->
+      <div class="rec-intent hidden" id="recIntent">
+        <div class="panel-center">
+          <p class="intent-heading">What would you like to create?</p>
+          <div class="intent-mic-row">
+            <button class="mic-btn-small" id="micBtnReRecord" title="Record again">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <rect x="10" y="3" width="8" height="13" rx="4" fill="white"/>
+                <path d="M5 14C5 18.42 9.03 22 14 22C18.97 22 23 18.42 23 14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M14 22V25M11 25H17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="intent-list">
+            <button class="intent-card" data-intent="task">
+              <div class="intent-icon-wrap"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="9" stroke="#6b7280" stroke-width="1.4"/><path d="M7 11L10 14L15 9" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="intent-card-body"><span class="intent-card-name">Create Task</span><span class="intent-card-sub">"Review the new brand assets"</span></div>
+            </button>
+            <button class="intent-card" data-intent="schedule">
+              <div class="intent-icon-wrap"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="18" height="16" rx="2" stroke="#6b7280" stroke-width="1.4"/><path d="M7 2V6M15 2V6M2 9H20" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+              <div class="intent-card-body"><span class="intent-card-name">Schedule Event</span><span class="intent-card-sub">"Meeting tomorrow at 10 AM"</span></div>
+            </button>
+            <button class="intent-card" data-intent="ask">
+              <div class="intent-icon-wrap"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2L12.5 8H19L13.5 12L15.5 18L11 14L6.5 18L8.5 12L3 8H9.5L11 2Z" stroke="#6b7280" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
+              <div class="intent-card-body"><span class="intent-card-name">Ask me Anything</span><span class="intent-card-sub">Ask the knowledge base</span></div>
+            </button>
+            <button class="intent-card" data-intent="message">
+              <div class="intent-icon-wrap"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M20 13C20 13.5304 19.7893 14.0391 19.4142 14.4142C19.0391 14.7893 18.5304 15 18 15H6L2 19V4C2 3.46957 2.21071 2.96086 2.58579 2.58579C2.96086 2.21071 3.46957 2 4 2H18C18.5304 2 19.0391 2.21071 19.4142 2.58579C19.7893 2.96086 20 3.46957 20 4V13Z" stroke="#6b7280" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
+              <div class="intent-card-body"><span class="intent-card-name">Draft Message</span><span class="intent-card-sub">"Send to Sarah Jenkins"</span></div>
+            </button>
+          </div>
+          <button class="intent-confirm-btn" id="intentConfirmBtn" disabled>Confirm</button>
+        </div>
+      </div>
+
+      <!-- STATE 4: AI result (fields populated by JS) -->
+      <div class="rec-result hidden" id="recResult">
+        <div class="panel-center">
+          <div class="result-check-circle">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><path d="M8 18L15 25L28 12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <p class="result-title">Got it! Here's what I found</p>
+          <p class="result-sub">Review the details and confirm</p>
+          <div class="result-fields" id="resultFields"></div>
+          <button class="result-confirm-btn" id="resultConfirmBtn">Confirm</button>
+          <p class="result-footer-row">
+            <button class="try-again-link" id="tryAgainBtn">Try again</button>
+            <span> · Tap any field to edit</span>
+          </p>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+</div>
+
+<script src="renderer.js"></script>
+</body>
+</html>
