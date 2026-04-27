@@ -22,7 +22,7 @@
       <div class="brand-orb brand-orb-2"></div>
       <div class="brand-content">
         <div class="brand-logo-wrap">
-          <img src="logo.png" class="brand-icon" alt="yuzu" />
+          <img src="logo.svg" class="brand-icon" alt="yuzu" />
         </div>
         <h1 class="brand-headline"><span class="brand-one">One App.</span><br>Every Conversation.<br>Anywhere your team works.</h1>
         <div class="brand-features">
@@ -36,7 +36,7 @@
     <div class="auth-form-panel">
       <div class="auth-form-inner">
         <div class="auth-logo-small">
-          <img src="logo.png" alt="yuzu" />
+          <img src="logo.svg" alt="yuzu" />
           <span>yuzu</span>
         </div>
         <h2 class="auth-title">Welcome back</h2>
@@ -71,7 +71,7 @@
       <div class="brand-orb brand-orb-1"></div>
       <div class="brand-orb brand-orb-2"></div>
       <div class="brand-content">
-        <div class="brand-logo-wrap"><img src="logo.png" class="brand-icon" alt="yuzu" /></div>
+        <div class="brand-logo-wrap"><img src="logo.svg" class="brand-icon" alt="yuzu" /></div>
         <h1 class="brand-headline"><span class="brand-one">One App.</span><br>Every Conversation.<br>Anywhere your team works.</h1>
       </div>
     </div>
@@ -103,7 +103,7 @@
       <div class="brand-orb brand-orb-1"></div>
       <div class="brand-orb brand-orb-2"></div>
       <div class="brand-content">
-        <div class="brand-logo-wrap"><img src="logo.png" class="brand-icon" alt="yuzu" /></div>
+        <div class="brand-logo-wrap"><img src="logo.svg" class="brand-icon" alt="yuzu" /></div>
         <h1 class="brand-headline"><span class="brand-one">One App.</span><br>Every Conversation.<br>Anywhere your team works.</h1>
       </div>
     </div>
@@ -113,7 +113,7 @@
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 15L7 10L12 5" stroke="#4c1515" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="otp-logo-center">
-          <img src="logo.png" alt="yuzu" class="otp-logo-img" />
+          <img src="logo.svg" alt="yuzu" class="otp-logo-img" />
         </div>
         <h2 class="auth-title otp-title">Check your email</h2>
         <p class="auth-subtitle otp-subtitle">We sent a 6-digit code to<br><strong id="otpEmailDisplay" class="otp-email-display"></strong></p>
@@ -139,36 +139,82 @@
   <div class="app">
 
     <nav class="left-nav">
-      <button class="nav-collapse-btn">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 15L7 10L12 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div class="workspace-logo"><img src="logo.png" alt="Y" style="width:30px;height:30px;object-fit:contain" /></div>
+      <div class="nav-top-row">
+        <div class="workspace-area">
+          <div class="workspace-logo workspace-avatar">YZ</div>
+          <div class="workspace-label">
+            <span class="workspace-name-text">Yuzu</span>
+            <span class="workspace-plan">Free Plan</span>
+          </div>
+        </div>
+        <button class="nav-collapse-btn" id="navCollapseBtn">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M12 15L7 10L12 5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
       <div class="nav-items-wrapper">
         <div class="nav-items">
           <button class="nav-item active" data-tab="home">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3L21 9.5V20C21 20.5523 20.5523 21 20 21H15V15H9V21H4C3.44772 21 3 20.5523 3 20V9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="13" r="1.5" fill="currentColor"/></svg>
-            <span>Home</span>
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3L21 9.5V20C21 20.5523 20.5523 21 20 21H15V15H9V21H4C3.44772 21 3 20.5523 3 20V9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="13" r="1.5" fill="currentColor"/></svg>
+            <span class="nav-label">Home</span>
           </button>
           <button class="nav-item" data-tab="dms">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-            <span>DMs</span>
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <span class="nav-label">DMs</span>
           </button>
           <button class="nav-item" data-tab="tasks">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Tasks</span>
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="nav-label">Tasks</span>
           </button>
           <button class="nav-item" data-tab="people">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 20C17 18.3431 14.7614 17 12 17C9.23858 17 7 18.3431 7 20M21 17C21 15.7892 19.7659 14.7699 18 14.3453M3 17C3 15.7892 4.23413 14.7699 6 14.3453M12 14C10.067 14 8.5 12.433 8.5 10.5C8.5 8.567 10.067 7 12 7C13.933 7 15.5 8.567 15.5 10.5C15.5 12.433 13.933 14 12 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <span>People</span>
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 20C17 18.3431 14.7614 17 12 17C9.23858 17 7 18.3431 7 20M21 17C21 15.7892 19.7659 14.7699 18 14.3453M3 17C3 15.7892 4.23413 14.7699 6 14.3453M12 14C10.067 14 8.5 12.433 8.5 10.5C8.5 8.567 10.067 7 12 7C13.933 7 15.5 8.567 15.5 10.5C15.5 12.433 13.933 14 12 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="nav-label">People</span>
           </button>
         </div>
         <div class="nav-bottom">
           <div class="nav-action-btn" id="navActionBtn">
             <img src="https://www.figma.com/api/mcp/asset/1c503302-be88-4882-a713-180471fc7fa3" alt="" style="width:28px;height:28px;object-fit:contain" />
           </div>
+          <button class="nav-profile-btn" id="navProfileBtn" title="Profile">
+            <span class="nav-profile-initials" id="navProfileInitials">PM</span>
+            <span class="nav-profile-status-dot" id="navProfileDot"></span>
+            <span class="nav-profile-name" id="navProfileName">Profile</span>
+          </button>
         </div>
       </div>
     </nav>
+
+    <!-- PROFILE POPUP -->
+    <div class="profile-popup hidden" id="profilePopup">
+      <div class="profile-popup-header">
+        <div class="profile-popup-avatar" id="profilePopupAvatar">PM</div>
+        <div class="profile-popup-info">
+          <div class="profile-popup-name" id="profilePopupName">Priyamvada</div>
+          <div class="profile-popup-email" id="profilePopupEmail">priyamvada.s.m@gmail.com</div>
+        </div>
+      </div>
+      <div class="profile-popup-divider"></div>
+      <div class="profile-popup-section-label">Set status</div>
+      <div class="profile-status-list">
+        <button class="profile-status-option active" data-status="active">
+          <span class="pso-dot" style="background:#00ad5e"></span>Active
+        </button>
+        <button class="profile-status-option" data-status="away">
+          <span class="pso-dot" style="background:#f59e0b"></span>Away
+        </button>
+        <button class="profile-status-option" data-status="dnd">
+          <span class="pso-dot" style="background:#ef4444"></span>Do Not Disturb
+        </button>
+        <button class="profile-status-option" data-status="meeting">
+          <span class="pso-dot" style="background:#8b5cf6"></span>In a Meeting
+        </button>
+        <button class="profile-status-option" data-status="offline">
+          <span class="pso-dot" style="background:#9ca3af"></span>Appear Offline
+        </button>
+      </div>
+      <div class="profile-popup-divider"></div>
+      <button class="profile-popup-action">Edit Profile</button>
+      <button class="profile-popup-action danger" id="profileSignOut">Sign Out</button>
+    </div>
 
     <section class="middle-panel">
       <div class="quick-actions-bar">
@@ -227,19 +273,19 @@
         <div class="section">
           <div class="section-header"><span class="section-title">RECENT CONVERSATIONS</span><button class="see-all">See All</button></div>
           <div class="card">
-            <div class="convo-item">
+            <div class="convo-item" data-channel="product-launch-q3">
               <div class="avatar group-avatar"><img src="https://www.figma.com/api/mcp/asset/5e53263b-55fd-4042-b76d-d635bb125901" alt="" /><div class="avatar-overlay"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 3C7.5 3 6 5 6 7C6 9 7.5 11 10 11C12.5 11 14 9 14 7C14 5 12.5 3 10 3ZM3 17C3 14 6 12 10 12C14 12 17 14 17 17" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></div></div>
               <div class="convo-body"><div class="convo-row"><span class="convo-name">Product Launch Q3</span><span class="convo-time amber">2m ago</span></div><div class="convo-row"><span class="convo-preview">@Alex the new brand ...</span><div class="convo-badges"><div class="reply-count"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2h8v6H6L4 10V8H2V2Z" stroke="#888d96" stroke-width="1.1" stroke-linejoin="round"/></svg><span>5</span></div><div class="unread-badge">3</div></div></div></div>
             </div>
-            <div class="convo-item">
+            <div class="convo-item" data-dm="sarah">
               <div class="avatar"><img src="https://www.figma.com/api/mcp/asset/fdccf986-0465-44bb-b08c-480a8b0916f6" alt="" /><div class="online-dot"></div></div>
               <div class="convo-body"><div class="convo-row"><span class="convo-name">Sarah Jenkins</span><span class="convo-time amber">15m ago</span></div><div class="convo-row"><span class="convo-preview">📄 Shared a screenshot ...</span><div class="unread-badge">1</div></div></div>
             </div>
-            <div class="convo-item">
+            <div class="convo-item" data-dm="david">
               <div class="avatar"><img src="https://www.figma.com/api/mcp/asset/6783d096-b889-4541-a798-0401cf613064" alt="" /></div>
               <div class="convo-body"><div class="convo-row"><span class="convo-name">David Chen</span><span class="convo-time muted">2h ago</span></div><div class="convo-row"><span class="convo-preview muted">📎 Sent the Q3 report document</span></div></div>
             </div>
-            <div class="convo-item no-border">
+            <div class="convo-item no-border" data-channel="engineering-team">
               <div class="avatar group-avatar"><img src="https://www.figma.com/api/mcp/asset/f090055f-ade0-4c1e-b060-908260f8965f" alt="" /><div class="avatar-overlay"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 3C7.5 3 6 5 6 7C6 9 7.5 11 10 11C12.5 11 14 9 14 7C14 5 12.5 3 10 3ZM3 17C3 14 6 12 10 12C14 12 17 14 17 17" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></div></div>
               <div class="convo-body"><div class="convo-row"><span class="convo-name">Engineering Team</span><span class="convo-time muted">1h ago</span></div><div class="convo-row"><span class="convo-preview muted">✅ Deployment successful ...</span><div class="reply-count"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2h8v6H6L4 10V8H2V2Z" stroke="#888d96" stroke-width="1.1" stroke-linejoin="round"/></svg><span>12</span></div></div></div>
             </div>
@@ -249,9 +295,9 @@
         <div class="section">
           <div class="section-header"><span class="section-title">RECENT CHANNELS</span><button class="see-all">See All</button></div>
           <div class="card">
-            <div class="channel-item"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6H16M4 10H16M4 14H10" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">product-launch-q3</span><span class="channel-members">12 members</span></div><div class="unread-badge">3</div></div>
-            <div class="channel-item"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6H16M4 10H16M4 14H10" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">engineering-team</span><span class="channel-members">8 members</span></div></div>
-            <div class="channel-item no-border"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 10H15M10 5V15" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">design-system</span><span class="channel-members">5 members</span></div><div class="unread-badge">1</div></div>
+            <div class="channel-item" data-channel="product-launch-q3"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6H16M4 10H16M4 14H10" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">product-launch-q3</span><span class="channel-members">12 members</span></div><div class="unread-badge">3</div></div>
+            <div class="channel-item" data-channel="engineering-team"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6H16M4 10H16M4 14H10" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">engineering-team</span><span class="channel-members">8 members</span></div></div>
+            <div class="channel-item no-border" data-channel="design-system"><div class="channel-icon teal"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 10H15M10 5V15" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="channel-body"><span class="channel-name">design-system</span><span class="channel-members">5 members</span></div><div class="unread-badge">1</div></div>
           </div>
         </div>
 
@@ -278,14 +324,51 @@
         <div class="dm-convo-header" id="dmConvoHeader"></div>
         <div class="dm-messages" id="dmMessages"></div>
         <div class="dm-composer">
-          <div class="dm-composer-inner">
-            <button class="dm-attach-btn" title="Attach">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3V15M3 9H15" stroke="#888d96" stroke-width="1.4" stroke-linecap="round"/></svg>
-            </button>
+          <div class="dm-composer-card">
             <input type="text" id="dmInput" class="dm-input" placeholder="Message…" />
-            <button class="dm-send-btn" id="dmSendBtn">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M17 3L3 9.5L8 11M17 3L11 17L8 11M17 3L8 11" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
+            <div class="dm-composer-actions">
+              <button class="dm-action-btn dm-action-plus" title="Add">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#6b7280" stroke-width="1.4"/><path d="M9 5V13M5 9H13" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+              <button class="dm-action-btn" title="Image">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#9ca3af" stroke-width="1.3"/><circle cx="7" cy="9" r="1.5" fill="#9ca3af"/><path d="M2 14L6.5 10L9.5 13L13 9.5L18 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="dm-action-btn" title="Location">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7.24 2 5 4.24 5 7C5 11.5 10 18 10 18C10 18 15 11.5 15 7C15 4.24 12.76 2 10 2Z" stroke="#9ca3af" stroke-width="1.3"/><circle cx="10" cy="7" r="2" stroke="#9ca3af" stroke-width="1.3"/></svg>
+              </button>
+              <button class="dm-action-btn" title="Sticker">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="4" stroke="#9ca3af" stroke-width="1.3"/><path d="M7 10.5C8 13 12 13 13 10.5M7.5 7.5H7.51M12.5 7.5H12.51" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </button>
+              <button class="dm-action-btn" title="Emoji">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#9ca3af" stroke-width="1.3"/><path d="M7 10.5C8 13 12 13 13 10.5M7.5 7.5H7.51M12.5 7.5H12.51" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </button>
+              <div class="dm-composer-spacer"></div>
+              <button class="dm-send-btn" id="dmSendBtn" title="Send voice">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 9.03 19 14 19" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHANNEL CONVERSATION VIEW -->
+      <div class="dm-convo hidden" id="channelView">
+        <div class="dm-convo-header" id="channelHeader"></div>
+        <div class="dm-messages" id="channelMessages"></div>
+        <div class="dm-composer">
+          <div class="dm-composer-card">
+            <input type="text" id="channelInput" class="dm-input" placeholder="Message…" />
+            <div class="dm-composer-actions">
+              <button class="dm-action-btn dm-action-plus" title="Add">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#6b7280" stroke-width="1.4"/><path d="M9 5V13M5 9H13" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+              <button class="dm-action-btn" title="Image"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#9ca3af" stroke-width="1.3"/><circle cx="7" cy="9" r="1.5" fill="#9ca3af"/><path d="M2 14L6.5 10L9.5 13L13 9.5L18 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button class="dm-action-btn" title="Emoji"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#9ca3af" stroke-width="1.3"/><path d="M7 10.5C8 13 12 13 13 10.5M7.5 7.5H7.51M12.5 7.5H12.51" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+              <div class="dm-composer-spacer"></div>
+              <button class="dm-send-btn" id="channelSendBtn" title="Send">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>

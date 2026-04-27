@@ -99,6 +99,7 @@ function showHome() {
   goTo('screen-home');
   showIdle();
   switchMiddleView('home');
+  updateProfileDisplay();
 }
 
 // ── MIDDLE PANEL NAV ──
@@ -170,6 +171,29 @@ const dmData = {
   }
 };
 
+function makeBubble(msg, dm, showAvatar) {
+  const isMe = msg.from === 'me';
+  const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <span class="dm-tick">✓✓</span>' : ''}</div>`;
+
+  if (isMe) {
+    return `<div class="dm-msg-row me">
+      <div class="dm-msg-col-me">
+        <div class="dm-bubble">${msg.text}</div>
+        ${timeHTML}
+      </div>
+    </div>`;
+  } else {
+    const avatarHTML = showAvatar
+      ? `<div class="dm-msg-avatar" style="background:${dm.color}">${dm.initials}</div>`
+      : `<div class="dm-msg-avatar-spacer"></div>`;
+    const senderHTML = showAvatar ? `<div class="dm-msg-sender">${dm.name}</div>` : '';
+    return `<div class="dm-msg-row them ${showAvatar ? 'group-start' : ''}">
+      ${avatarHTML}
+      <div class="dm-msg-col">${senderHTML}<div class="dm-bubble">${msg.text}</div>${timeHTML}</div>
+    </div>`;
+  }
+}
+
 function loadDmConversation(dmKey) {
   activeDm = dmKey;
   const dm = dmData[dmKey];
@@ -177,51 +201,35 @@ function loadDmConversation(dmKey) {
 
   // Header
   document.getElementById('dmConvoHeader').innerHTML = `
-    <div class="dm-convo-avatar" style="background:${dm.color}">${dm.initials}</div>
+    <div class="dm-convo-avatar" style="background:${dm.color}">${dm.initials}${dm.online ? '<div class="online-dot"></div>' : ''}</div>
     <div class="dm-convo-info">
       <div class="dm-convo-name">${dm.name}</div>
-      <div class="dm-convo-status">
-        <div class="status-dot ${dm.online ? 'online' : ''}"></div>
-        <span>${dm.online ? 'Active now' : 'Offline'}</span>
-      </div>
+      <div class="dm-convo-status ${dm.online ? '' : 'offline'}">${dm.online ? 'Online' : 'Offline'}</div>
     </div>
     <div class="dm-header-actions">
       <button class="dm-header-btn" title="Call">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2.5C2 2.5 3 1 4.5 1C5.5 1 6 1.5 6.5 3C7 4.5 6 5 6 5.5C6 6 7 7.5 8.5 9C10 10.5 11.5 11 12 11C12.5 11 13 10 14.5 10.5C16 11 16.5 11.5 16.5 12.5C16.5 14 15 15 15 15" stroke="#888d96" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg>
       </button>
-      <button class="dm-header-btn" title="Video">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="10" height="8" rx="1.5" stroke="#888d96" stroke-width="1.3"/><path d="M11 7L15 4.5V11.5L11 9" stroke="#888d96" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <button class="dm-header-btn" title="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <button class="dm-header-btn" title="More">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
       </button>
     </div>
   `;
 
-  // Messages — group consecutive same-sender messages
+  // Messages with WhatsApp-style bubbles
   const msgs = document.getElementById('dmMessages');
   msgs.innerHTML = '<div class="dm-date-sep">Today</div>';
-  let i = 0;
-  while (i < dm.messages.length) {
-    const sender = dm.messages[i].from;
-    const group = document.createElement('div');
-    group.className = `dm-msg-group ${sender}`;
-    while (i < dm.messages.length && dm.messages[i].from === sender) {
-      const b = document.createElement('div');
-      b.className = 'dm-bubble';
-      b.textContent = dm.messages[i].text;
-      group.appendChild(b);
-      i++;
-    }
-    const meta = document.createElement('div');
-    meta.className = 'dm-msg-meta';
-    meta.textContent = dm.messages[i - 1].time;
-    group.appendChild(meta);
-    msgs.appendChild(group);
-  }
+  dm.messages.forEach((msg, i) => {
+    const prevMsg = dm.messages[i - 1];
+    const showAvatar = msg.from === 'them' && (!prevMsg || prevMsg.from !== 'them');
+    msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, showAvatar));
+  });
   msgs.scrollTop = msgs.scrollHeight;
 
-  // Update input placeholder
   document.getElementById('dmInput').placeholder = `Message ${dm.name.split(' ')[0]}…`;
-
-  // Highlight selected item in list
   document.querySelectorAll('.dm-item').forEach(el => {
     el.classList.toggle('selected', el.dataset.dm === dmKey);
   });
@@ -230,21 +238,90 @@ function loadDmConversation(dmKey) {
 function sendDmMessage(text) {
   if (!text.trim()) return;
   const dm = dmData[activeDm];
-  dm.messages.push({ from: 'me', text: text.trim(), time: 'Just now' });
-
+  const msg = { from: 'me', text: text.trim(), time: 'Just now' };
+  dm.messages.push(msg);
   const msgs = document.getElementById('dmMessages');
-  const group = document.createElement('div');
-  group.className = 'dm-msg-group me';
-  const b = document.createElement('div');
-  b.className = 'dm-bubble';
-  b.textContent = text.trim();
-  const meta = document.createElement('div');
-  meta.className = 'dm-msg-meta';
-  meta.textContent = 'Just now';
-  group.appendChild(b);
-  group.appendChild(meta);
-  msgs.appendChild(group);
+  msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, false));
   msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── CHANNEL DATA ──
+const channelData = {
+  'product-launch-q3': {
+    name: 'product-launch-q3', displayName: 'Product Launch Q3', members: 12,
+    messages: [
+      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#059669', text: 'Just uploaded the new brand deck to the shared drive 🎉', time: '10:14 AM' },
+      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#7c3aed', text: '@Alex the new brand assets look incredible! The color palette is exactly what we needed', time: '10:22 AM' },
+      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#059669', text: 'Thanks! Took a few iterations to get the amber right 😄', time: '10:23 AM' },
+      { from: 'me',    name: 'Me',            initials: 'ME', color: '#4c1515', text: 'Agreed — really polished. Are we going live with this for Q3?', time: '10:31 AM' },
+      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#7c3aed', text: 'Yes! Launch is set for next Monday. I\'ll share the timeline doc today.', time: '10:35 AM' },
+      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#2563eb', text: 'I\'ll handle the technical rollout. Staging is ready to test 🚀', time: '10:40 AM' },
+    ]
+  },
+  'engineering-team': {
+    name: 'engineering-team', displayName: 'Engineering Team', members: 8,
+    messages: [
+      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#2563eb', text: 'Staging deployment was successful ✅ All smoke tests passing', time: '9:05 AM' },
+      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#059669', text: 'Nice work! I tested the new auth flow — looks solid', time: '9:18 AM' },
+      { from: 'me',    name: 'Me',            initials: 'ME', color: '#4c1515', text: 'Good job everyone. Promoting to prod at 2pm today', time: '9:45 AM' },
+      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#2563eb', text: 'Roger that. I\'ll monitor the logs post-deploy', time: '9:47 AM' },
+    ]
+  },
+  'design-system': {
+    name: 'design-system', displayName: 'Design System', members: 5,
+    messages: [
+      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#7c3aed', text: 'New component library v2 is ready for review 🎨', time: 'Yesterday' },
+      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#059669', text: 'The button variants look great. One question — should the ghost variant have a border?', time: 'Yesterday' },
+      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#7c3aed', text: 'Good catch! Yes, 1px border with opacity 40%. I\'ll update the spec.', time: 'Yesterday' },
+      { from: 'me',    name: 'Me',            initials: 'ME', color: '#4c1515', text: 'Looks great! Approving for implementation 👍', time: 'Yesterday' },
+    ]
+  }
+};
+
+let activeChannel = null;
+
+function loadChannelConversation(channelKey) {
+  activeChannel = channelKey;
+  const ch = channelData[channelKey];
+  if (!ch) return;
+
+  document.getElementById('channelHeader').innerHTML = `
+    <div class="dm-convo-avatar" style="background:#0d8f82; font-size:16px; font-weight:700;">#</div>
+    <div class="dm-convo-info">
+      <div class="dm-convo-name">${ch.displayName}</div>
+      <div class="dm-convo-status" style="color:var(--text-muted)">${ch.members} members</div>
+    </div>
+    <div class="dm-header-actions">
+      <button class="dm-header-btn" title="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <button class="dm-header-btn" title="Members">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 20C17 18.3431 14.7614 17 12 17C9.23858 17 7 18.3431 7 20M21 17C21 15.7892 19.7659 14.7699 18 14.3453M3 17C3 15.7892 4.23413 14.7699 6 14.3453M12 14C10.067 14 8.5 12.433 8.5 10.5C8.5 8.567 10.067 7 12 7C13.933 7 15.5 8.567 15.5 10.5C15.5 12.433 13.933 14 12 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <button class="dm-header-btn" title="More">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
+      </button>
+    </div>
+  `;
+
+  const msgs = document.getElementById('channelMessages');
+  msgs.innerHTML = '<div class="dm-date-sep">Today</div>';
+  ch.messages.forEach((msg, i) => {
+    const prevMsg = ch.messages[i - 1];
+    const showSender = !prevMsg || prevMsg.from !== msg.from;
+    const isMe = msg.from === 'me';
+    const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <span class="dm-tick">✓✓</span>' : ''}</div>`;
+    if (isMe) {
+      msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row me"><div class="dm-msg-col-me"><div class="dm-bubble">${msg.text}</div>${timeHTML}</div></div>`);
+    } else {
+      const avatarHTML = showSender ? `<div class="dm-msg-avatar" style="background:${msg.color}">${msg.initials}</div>` : `<div class="dm-msg-avatar-spacer"></div>`;
+      const senderHTML = showSender ? `<div class="dm-msg-sender">${msg.name}</div>` : '';
+      msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row them ${showSender ? 'group-start' : ''}">${avatarHTML}<div class="dm-msg-col">${senderHTML}<div class="dm-bubble">${msg.text}</div>${timeHTML}</div></div>`);
+    }
+  });
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('channelInput').placeholder = `Message #${ch.name}…`;
+  showPanel('channelView');
 }
 
 // ── TASK DATA ──
@@ -366,7 +443,7 @@ function cycleTaskStatus(t) {
 }
 
 // ── RIGHT PANEL STATES ──
-const allPanels = ['taskDetail','dmView','recIdle','recView','recIntent','recResult'];
+const allPanels = ['taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult'];
 function showPanel(id) {
   allPanels.forEach(p => {
     const el = document.getElementById(p);
@@ -601,6 +678,85 @@ document.getElementById('resultConfirmBtn').addEventListener('click', () => {
 });
 
 document.getElementById('tryAgainBtn').addEventListener('click', () => showIdle());
+
+// ── HOME PAGE CONVO / CHANNEL CLICKS ──
+document.getElementById('homeContent').addEventListener('click', e => {
+  const convo = e.target.closest('.convo-item[data-dm], .convo-item[data-channel]');
+  const ch    = e.target.closest('.channel-item[data-channel]');
+  if (convo) {
+    if (convo.dataset.dm) {
+      activeDm = convo.dataset.dm;
+      navigateTo('dms');
+    } else {
+      loadChannelConversation(convo.dataset.channel);
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    }
+  } else if (ch) {
+    loadChannelConversation(ch.dataset.channel);
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  }
+});
+
+// ── CHANNEL SEND ──
+document.getElementById('channelSendBtn').addEventListener('click', () => {
+  const input = document.getElementById('channelInput');
+  const text = input.value.trim();
+  if (!text || !activeChannel) return;
+  channelData[activeChannel].messages.push({ from: 'me', name: 'Me', initials: 'ME', color: '#4c1515', text, time: 'Just now' });
+  const msgs = document.getElementById('channelMessages');
+  const timeHTML = `<div class="dm-bubble-time">Just now <span class="dm-tick">✓✓</span></div>`;
+  msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row me"><div class="dm-msg-col-me"><div class="dm-bubble">${text}</div>${timeHTML}</div></div>`);
+  msgs.scrollTop = msgs.scrollHeight;
+  input.value = '';
+});
+document.getElementById('channelInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('channelSendBtn').click();
+});
+
+// ── PROFILE POPUP ──
+let currentStatus = 'active';
+const statusDotColors = { active: '#00ad5e', away: '#f59e0b', dnd: '#ef4444', meeting: '#8b5cf6', offline: '#9ca3af' };
+
+function updateProfileDisplay() {
+  const name = userEmail ? userEmail.split('@')[0] : 'User';
+  const initials = name.slice(0,2).toUpperCase();
+  document.getElementById('navProfileInitials').textContent = initials;
+  document.getElementById('profilePopupInitials') && (document.getElementById('profilePopupInitials').textContent = initials);
+  document.getElementById('profilePopupAvatar').textContent = initials;
+  document.getElementById('profilePopupName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+  document.getElementById('profilePopupEmail').textContent = userEmail || '';
+  const dot = document.getElementById('navProfileDot');
+  dot.style.background = statusDotColors[currentStatus];
+  dot.className = 'nav-profile-status-dot' + (currentStatus !== 'active' ? ' ' + currentStatus : '');
+}
+
+document.getElementById('navProfileBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  updateProfileDisplay();
+  document.getElementById('profilePopup').classList.toggle('hidden');
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#profilePopup') && !e.target.closest('#navProfileBtn')) {
+    document.getElementById('profilePopup').classList.add('hidden');
+  }
+});
+
+document.querySelectorAll('.profile-status-option').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.profile-status-option').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentStatus = btn.dataset.status;
+    const dot = document.getElementById('navProfileDot');
+    dot.style.background = statusDotColors[currentStatus];
+    dot.className = 'nav-profile-status-dot' + (currentStatus !== 'active' ? ' ' + currentStatus : '');
+  });
+});
+
+document.getElementById('profileSignOut').addEventListener('click', () => {
+  document.getElementById('profilePopup').classList.add('hidden');
+  goTo('screen-login');
+});
 
 // ── TASK LIST CLICKS ──
 document.getElementById('tasksFullList').addEventListener('click', e => {
