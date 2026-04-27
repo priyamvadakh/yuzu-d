@@ -111,10 +111,12 @@ function switchMiddleView(tab) {
   else if (tab === 'dms') { document.getElementById('dmContent').classList.remove('hidden'); }
   else document.getElementById('homeContent').classList.remove('hidden');
 
-  // Right panel: DMs → show conversation; others → show idle recording UI
+  // Right panel
   if (tab === 'dms') {
     showPanel('dmView');
     loadDmConversation(activeDm);
+  } else if (tab === 'tasks') {
+    loadTaskDetail(activeTaskId);
   } else {
     showIdle();
   }
@@ -245,8 +247,126 @@ function sendDmMessage(text) {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
+// ── TASK DATA ──
+const taskData = [
+  {
+    id: 'task1',
+    title: 'Review brand assets from Sarah',
+    due: 'Today', status: 'In Progress', priority: 'High',
+    assignee: { initials: 'ME', color: '#7c3aed', name: 'Me' },
+    description: 'Go through the new brand assets Sarah shared and leave detailed feedback on typography, color palette, and logo usage.',
+    subtasks: [
+      { done: false, text: 'Open Figma file' },
+      { done: false, text: 'Leave comments on color palette' },
+      { done: true,  text: 'Share with the team' },
+    ],
+    activity: [
+      { initials: 'SJ', color: '#7c3aed', name: 'Sarah Jenkins', text: 'Sent the assets over 👍', time: '11:33 AM' },
+      { initials: 'ME', color: '#4c1515', name: 'You', text: 'Added this task and assigned to self', time: '11:45 AM' },
+    ]
+  },
+  {
+    id: 'task2',
+    title: 'Deploy staging environment',
+    due: 'Today', status: 'To Do', priority: 'Medium',
+    assignee: { initials: 'ME', color: '#4c1515', name: 'Me' },
+    description: 'Set up and deploy the updated staging environment with the latest build. Notify the team once it\'s live.',
+    subtasks: [
+      { done: false, text: 'Run build script' },
+      { done: false, text: 'Smoke test all routes' },
+      { done: false, text: 'Notify team in #engineering-team' },
+    ],
+    activity: [
+      { initials: 'DC', color: '#2563eb', name: 'David Chen', text: 'Added a note: use the new CI pipeline config', time: '1h ago' },
+    ]
+  }
+];
+
+let activeTaskId = 'task1';
+
+function statusClass(s) {
+  return 'status-' + s.toLowerCase().replace(/\s+/g, '-');
+}
+
+function loadTaskDetail(taskId) {
+  activeTaskId = taskId;
+  const t = taskData.find(x => x.id === taskId);
+  if (!t) return;
+
+  // Highlight selected task in list
+  document.querySelectorAll('.task-item[data-task-id]').forEach(el => {
+    el.classList.toggle('task-selected', el.dataset.taskId === taskId);
+  });
+
+  // Title
+  document.getElementById('taskDetailTitle').textContent = t.title;
+
+  // Chips
+  document.getElementById('taskDetailChips').innerHTML = `
+    <button class="td-chip ${statusClass(t.status)}" id="tdStatusChip">${t.status}</button>
+    <button class="td-chip priority-${t.priority.toLowerCase()}">${t.priority} Priority</button>
+    <span class="td-chip due-chip">⏱ ${t.due}</span>
+  `;
+  document.getElementById('tdStatusChip').addEventListener('click', () => cycleTaskStatus(t));
+
+  // Assignee
+  document.getElementById('taskDetailAssignee').innerHTML = `
+    <div class="td-assignee-avatar" style="background:${t.assignee.color}">${t.assignee.initials}</div>
+    <span>${t.assignee.name}</span>
+  `;
+
+  // Description
+  const descEl = document.getElementById('taskDetailDesc');
+  descEl.textContent = t.description;
+
+  // Subtasks
+  const stEl = document.getElementById('taskSubtasks');
+  stEl.innerHTML = t.subtasks.map((s, i) => `
+    <div class="subtask-item ${s.done ? 'done' : ''}" data-subtask="${i}">
+      <div class="subtask-check"></div>
+      <span class="subtask-text">${s.text}</span>
+    </div>
+  `).join('');
+  stEl.querySelectorAll('.subtask-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const i = parseInt(el.dataset.subtask);
+      t.subtasks[i].done = !t.subtasks[i].done;
+      el.classList.toggle('done', t.subtasks[i].done);
+    });
+  });
+
+  // Activity
+  document.getElementById('taskActivity').innerHTML = t.activity.map(a => `
+    <div class="activity-item">
+      <div class="activity-avatar" style="background:${a.color}">${a.initials}</div>
+      <div class="activity-bubble">
+        <span class="activity-name">${a.name}</span><span class="activity-time">${a.time}</span>
+        <div class="activity-text">${a.text}</div>
+      </div>
+    </div>
+  `).join('');
+
+  showPanel('taskDetail');
+}
+
+function cycleTaskStatus(t) {
+  const cycle = ['To Do', 'In Progress', 'Done'];
+  t.status = cycle[(cycle.indexOf(t.status) + 1) % cycle.length];
+  const chip = document.getElementById('tdStatusChip');
+  if (chip) {
+    chip.textContent = t.status;
+    chip.className = `td-chip ${statusClass(t.status)}`;
+    chip.addEventListener('click', () => cycleTaskStatus(t));
+  }
+  // Sync task list items
+  document.querySelectorAll(`.task-item[data-task-id="${t.id}"] .task-status`).forEach(el => {
+    el.textContent = t.status;
+    el.className = 'task-status ' + t.status.toLowerCase().replace(/\s+/g, '-');
+  });
+}
+
 // ── RIGHT PANEL STATES ──
-const allPanels = ['dmView','recIdle','recView','recIntent','recResult'];
+const allPanels = ['taskDetail','dmView','recIdle','recView','recIntent','recResult'];
 function showPanel(id) {
   allPanels.forEach(p => {
     const el = document.getElementById(p);
@@ -482,6 +602,12 @@ document.getElementById('resultConfirmBtn').addEventListener('click', () => {
 
 document.getElementById('tryAgainBtn').addEventListener('click', () => showIdle());
 
+// ── TASK LIST CLICKS ──
+document.getElementById('tasksFullList').addEventListener('click', e => {
+  const item = e.target.closest('.task-item[data-task-id]');
+  if (item) loadTaskDetail(item.dataset.taskId);
+});
+
 // ── DM LIST CLICKS ──
 document.getElementById('dmList').addEventListener('click', e => {
   const item = e.target.closest('.dm-item');
@@ -548,9 +674,9 @@ function createAndShowSchedule(title, date, time, duration, withName) {
 }
 
 // ── TASK CREATION ──
-function taskItemHTML(title, dueDate, status) {
+function taskItemHTML(title, dueDate, status, taskId) {
   const statusCls = status.toLowerCase().replace(/\s+/g, '-');
-  return `<div class="task-item task-new no-border">
+  return `<div class="task-item task-new no-border" data-task-id="${taskId}">
     <div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div>
     <div class="task-body">
       <span class="task-name">${title}</span>
@@ -560,7 +686,16 @@ function taskItemHTML(title, dueDate, status) {
 }
 
 function createAndShowTask(title, dueDate, status) {
-  const html = taskItemHTML(title, dueDate, status);
+  const newId = 'task' + (taskData.length + 1);
+  taskData.push({
+    id: newId, title, due: dueDate, status, priority: 'Medium',
+    assignee: { initials: 'ME', color: '#4c1515', name: 'Me' },
+    description: '',
+    subtasks: [],
+    activity: [{ initials: 'ME', color: '#4c1515', name: 'You', text: 'Created this task via voice', time: 'Just now' }]
+  });
+  activeTaskId = newId;
+  const html = taskItemHTML(title, dueDate, status, newId);
 
   // Add to home MY TASKS card
   const myTasksCard = document.getElementById('myTasksCard');
@@ -583,9 +718,6 @@ function createAndShowTask(title, dueDate, status) {
   const tasksBtn = document.querySelector('.nav-item[data-tab="tasks"]');
   if (tasksBtn) tasksBtn.classList.add('active');
   switchMiddleView('tasks');
-
-  // Return right panel to idle
-  showIdle();
 
   // Remove highlight class after animation completes
   setTimeout(() => {
