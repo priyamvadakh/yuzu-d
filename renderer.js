@@ -450,18 +450,30 @@ function navigateTo(tab) {
 
 document.getElementById('resultConfirmBtn').addEventListener('click', () => {
   const intent = document.getElementById('resultConfirmBtn').dataset.intent;
+  const editables = document.querySelectorAll('#resultFields .rf-editable');
+
   if (intent === 'task') {
-    const editables = document.querySelectorAll('#resultFields .rf-editable');
     const title   = editables[0] ? editables[0].textContent.trim() : 'New Task';
     const dueDate = editables[1] ? editables[1].textContent.trim() : 'Today';
     const status  = editables[2] ? editables[2].textContent.trim() : 'To Do';
     createAndShowTask(title, dueDate, status);
+
   } else if (intent === 'message') {
-    navigateTo('dms');
-    showIdle();
+    // Get recipient and message preview from result fields
+    const recipientEl = document.querySelector('#resultFields .rf-avatar');
+    const recipientName = recipientEl ? recipientEl.nextElementSibling.textContent.trim() : 'Sarah Jenkins';
+    const preview = editables[1] ? editables[1].textContent.trim() : '';
+    createAndShowDraft(recipientName, preview);
+
   } else if (intent === 'schedule') {
-    navigateTo('home');
-    showIdle();
+    const title    = editables[0] ? editables[0].textContent.trim() : 'Meeting';
+    const date     = editables[1] ? editables[1].textContent.trim() : 'Tomorrow';
+    const time     = editables[2] ? editables[2].textContent.trim() : '3:00 PM';
+    const duration = editables[3] ? editables[3].textContent.trim() : '30 minutes';
+    const withEl   = document.querySelector('#resultFields .rf-avatar');
+    const withName = withEl ? withEl.nextElementSibling.textContent.trim() : '';
+    createAndShowSchedule(title, date, time, duration, withName);
+
   } else {
     navigateTo('home');
     showIdle();
@@ -488,6 +500,52 @@ document.getElementById('dmInput').addEventListener('keydown', e => {
     e.target.value = '';
   }
 });
+
+// ── DRAFT MESSAGE → DMs ──
+function createAndShowDraft(recipientName, messageText) {
+  // Find matching DM key by first name
+  const firstName = recipientName.split(' ')[0].toLowerCase();
+  const dmKey = Object.keys(dmData).find(k => dmData[k].name.toLowerCase().startsWith(firstName)) || 'sarah';
+
+  // Push the drafted message into the conversation
+  if (messageText) {
+    dmData[dmKey].messages.push({ from: 'me', text: messageText, time: 'Just now' });
+  }
+
+  // Navigate to DMs and open that conversation
+  activeDm = dmKey;
+  navigateTo('dms');
+}
+
+// ── SCHEDULE EVENT → Home Upcoming ──
+function createAndShowSchedule(title, date, time, duration, withName) {
+  const section = document.getElementById('upcomingSection');
+  const list    = document.getElementById('upcomingList');
+
+  const item = document.createElement('div');
+  item.className = 'upcoming-item event-new';
+  item.innerHTML = `
+    <div class="upcoming-icon">📅</div>
+    <div class="upcoming-body">
+      <span class="upcoming-name">${title}</span>
+      <span class="upcoming-meta">${date} · ${time}${duration ? ' · ' + duration : ''}${withName ? ' · with ' + withName : ''}</span>
+    </div>
+    <span class="upcoming-badge">Scheduled</span>
+  `;
+
+  // Remove no-border from last existing item
+  const last = list.querySelector('.upcoming-item:last-child');
+  if (last) last.classList.remove('no-border');
+  list.appendChild(item);
+  section.classList.remove('hidden');
+
+  navigateTo('home');
+  showIdle();
+
+  // Scroll to upcoming section
+  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  setTimeout(() => item.classList.remove('event-new'), 2200);
+}
 
 // ── TASK CREATION ──
 function taskItemHTML(title, dueDate, status) {

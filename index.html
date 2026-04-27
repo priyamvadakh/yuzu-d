@@ -6,6 +6,12 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+<div class="app-window">
+<div class="window-titlebar">
+  <div class="wc-dot" style="background:#ff5f57"></div>
+  <div class="wc-dot" style="background:#ffbd2e"></div>
+  <div class="wc-dot" style="background:#28c840"></div>
+</div>
 
 <!-- ══════════ LOGIN ══════════ -->
 <div id="screen-login" class="screen active">
@@ -249,6 +255,11 @@
           </div>
         </div>
 
+        <div class="section hidden" id="upcomingSection">
+          <div class="section-header"><span class="section-title">UPCOMING</span></div>
+          <div class="card" id="upcomingList"></div>
+        </div>
+
         <div class="section">
           <div class="section-header"><span class="section-title">MY TASKS</span><button class="see-all green">See All ›</button></div>
           <div class="card" id="myTasksCard">
@@ -410,5 +421,6 @@
 </div>
 
 <script src="renderer.js"></script>
+</div><!-- /.app-window -->
 </body>
 </html>

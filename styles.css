@@ -150,6 +150,17 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; heig
 .task-status.in-progress { background: #eff6ff; color: var(--text-primary); }
 .task-status.todo { background: var(--border); color: #5a5f68; }
 
+/* ── UPCOMING EVENTS ── */
+.upcoming-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: .625px solid var(--border); cursor: pointer; transition: background .12s; }
+.upcoming-item:last-child { border-bottom: none; }
+.upcoming-item:hover { background: #fafafa; }
+.upcoming-item.event-new { animation: tasknew 1.8s ease forwards; }
+.upcoming-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(139,92,246,.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+.upcoming-body { flex: 1; min-width: 0; }
+.upcoming-name { font-size: 13px; font-weight: 600; color: var(--text-primary); display: block; }
+.upcoming-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.upcoming-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; background: rgba(139,92,246,.1); color: #7c3aed; flex-shrink: 0; }
+
 /* ── DM LIST (middle panel) ── */
 .dm-list-view { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 .dm-list-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; flex-shrink: 0; }
