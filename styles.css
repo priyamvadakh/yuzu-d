@@ -743,7 +743,6 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .people-hover-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; opacity: 0; pointer-events: none; transition: opacity .15s; flex-shrink: 0; }
 .people-item:hover .people-hover-actions { opacity: 1; pointer-events: auto; }
 .pha-btn { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border); background: #fff; cursor: pointer; transition: background .12s, border-color .12s; flex-shrink: 0; }
-.pha-btn span { display: none; }
 .pha-msg { color: var(--maroon); }
 .pha-msg:hover { background: #fff7db; border-color: var(--amber); }
 .pha-call { color: #059669; }

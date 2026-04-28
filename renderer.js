@@ -445,13 +445,11 @@ function personRow(p) {
       <div class="people-role">${p.role}</div>
     </div>
     <div class="people-hover-actions">
-      <button class="pha-btn pha-msg" title="Message" data-action="msg">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M14 9C14 9.35 13.86 9.69 13.61 9.94C13.36 10.19 13.02 10.33 12.67 10.33H4.67L2 13V3.67C2 3.32 2.14 2.98 2.39 2.73C2.64 2.48 2.98 2.33 3.33 2.33H12.67C13.02 2.33 13.36 2.48 13.61 2.73C13.86 2.98 14 3.32 14 3.67V9Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-        Message
+      <button class="pha-btn pha-msg" title="Message">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 9C14 9.35 13.86 9.69 13.61 9.94C13.36 10.19 13.02 10.33 12.67 10.33H4.67L2 13V3.67C2 3.32 2.14 2.98 2.39 2.73C2.64 2.48 2.98 2.33 3.33 2.33H12.67C13.02 2.33 13.36 2.48 13.61 2.73C13.86 2.98 14 3.32 14 3.67V9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
       </button>
-      <button class="pha-btn pha-call" title="Call" data-action="call">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg>
-        Call
+      <button class="pha-btn pha-call" title="Call">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14.6 11.28v2a1.33 1.33 0 01-1.45 1.33 13.19 13.19 0 01-5.75-2.05 13 13 0 01-4-4 13.19 13.19 0 01-2.05-5.78A1.33 1.33 0 012.68 1.33H4.68a1.33 1.33 0 011.33 1.15c.085.64.24 1.27.467 1.87a1.33 1.33 0 01-.3 1.4L5.24 6.61a10.67 10.67 0 004 4l.86-.86a1.33 1.33 0 011.4-.3c.6.228 1.23.382 1.87.467a1.33 1.33 0 011.15 1.36z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
       </button>
     </div>
   </div>`;

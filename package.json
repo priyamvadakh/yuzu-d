@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "electron": "^41.3.0"
+    "electron": "^41.3.0",
+    "puppeteer-core": "^24.42.0"
   }
 }
