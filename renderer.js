@@ -1,3 +1,33 @@
+// ── ONBOARDING ──
+const obSlides = [
+  { step: '01 / 04', title: 'Welcome to Yuzu', desc: 'One app for every conversation — DMs, channels, tasks, and scheduling all in one place.' },
+  { step: '02 / 04', title: 'Stay Connected', desc: 'Real-time direct messages and team channels keep your whole team in sync, wherever they are.' },
+  { step: '03 / 04', title: 'Get Things Done', desc: 'Create tasks, schedule meetings, and track progress without ever leaving the conversation.' },
+  { step: '04 / 04', title: 'Just Say It', desc: 'Tap the mic and Yuzu intelligently schedules your calls, sends messages, or creates tasks.' },
+];
+let obCurrent = 0;
+
+function obGoTo(idx) {
+  document.querySelectorAll('.ob-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+  document.querySelectorAll('.ob-slide-left').forEach((el, i) => el.classList.toggle('active', i === idx));
+  const textArea = document.getElementById('obText');
+  textArea.classList.add('fading');
+  setTimeout(() => {
+    document.getElementById('obStep').textContent = obSlides[idx].step;
+    document.getElementById('obTitle').textContent = obSlides[idx].title;
+    document.getElementById('obDesc').textContent = obSlides[idx].desc;
+    document.getElementById('obNextBtn').textContent = idx === obSlides.length - 1 ? 'Get Started →' : 'Next';
+    textArea.classList.remove('fading');
+  }, 180);
+  obCurrent = idx;
+}
+
+document.getElementById('obNextBtn').addEventListener('click', () => {
+  if (obCurrent < obSlides.length - 1) obGoTo(obCurrent + 1);
+  else goTo('screen-login');
+});
+document.getElementById('obSkipBtn').addEventListener('click', () => goTo('screen-login'));
+
 // ── Screen navigation ──
 let userEmail = '';
 function goTo(id) {
@@ -100,6 +130,7 @@ function showHome() {
   showIdle();
   switchMiddleView('home');
   updateProfileDisplay();
+  document.getElementById('navActionBtn').classList.add('inactive');
 }
 
 // ── MIDDLE PANEL NAV ──
@@ -131,8 +162,13 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    document.getElementById('navActionBtn').classList.toggle('inactive', btn.dataset.tab === 'home');
     switchMiddleView(btn.dataset.tab);
   });
+});
+
+document.getElementById('navActionBtn').addEventListener('click', () => {
+  navigateTo('home');
 });
 
 // ── DM CONVERSATIONS DATA ──
@@ -146,7 +182,8 @@ const dmData = {
       { from: 'them', text: 'Let me know what you think of the new color palette', time: '11:33 AM' },
       { from: 'me',   text: 'Just saw them — looks great! The typography is clean 🔥', time: '11:45 AM' },
       { from: 'me',   text: 'Can we discuss the amber accent? Think we can go a bit darker', time: '11:46 AM' },
-      { from: 'them', text: 'Totally agree. Sure! Available at 3pm today?', time: '12:01 PM' },
+      { from: 'them', type: 'voice', dur: '0:18', bars: [3,5,8,6,9,7,4,8,6,10,7,5,9,6,4,7,5,8,6,3], translation: "Totally agree on the amber. I can darken it a shade or two. Are you free for a quick call at 3pm today to go over the final palette together?", time: '12:01 PM' },
+      { from: 'me',   text: '3pm works perfectly! See you then 👍', time: '12:03 PM' },
     ]
   },
   david: {
@@ -154,7 +191,8 @@ const dmData = {
     messages: [
       { from: 'them', text: 'Sent the Q3 report document over 📎', time: '2h ago' },
       { from: 'me',   text: 'Got it, will review by EOD', time: '2h ago' },
-      { from: 'them', text: 'No rush — let me know if you need any context', time: '2h ago' },
+      { from: 'them', type: 'voice', dur: '0:24', bars: [5,9,6,10,4,8,7,5,9,6,8,10,5,7,4,9,6,8,5,7], translation: "Hey, no rush on the report. I just wanted to flag that slide 14 has some placeholder numbers — make sure to replace those before you share it with the team. Let me know if you have questions.", time: '1h ago' },
+      { from: 'me',   text: 'Thanks for the heads-up, will fix slide 14 🙏', time: '1h ago' },
     ]
   },
   alex: {
@@ -163,7 +201,7 @@ const dmData = {
       { from: 'them', text: 'The new brand looks 🔥', time: 'Yesterday' },
       { from: 'me',   text: 'Thanks! Still a work in progress', time: 'Yesterday' },
       { from: 'them', text: 'What stack are you using for the desktop app?', time: 'Yesterday' },
-      { from: 'me',   text: 'Electron + vanilla JS — keeping it simple', time: 'Yesterday' },
+      { from: 'me',   type: 'voice', dur: '0:11', bars: [4,7,5,9,6,8,5,7,4,6,8,5,7,4,9,6,5,8,4,6], translation: "Electron with vanilla JS, no frameworks. Just keeping it lean and fast.", time: 'Yesterday' },
     ]
   },
   jessica: {
@@ -175,9 +213,51 @@ const dmData = {
   }
 };
 
+let _vnId = 0;
+function makeVoiceBubble(msg, isMe) {
+  const id = 'vn' + (_vnId++);
+  const bars = (msg.bars || [4,7,5,9,6,8,5,7,4,6,8,5,7,4,9]).map(h =>
+    `<div class="dmvn-bar" style="height:${h * 2.4}px"></div>`
+  ).join('');
+  const tickHTML = isMe ? ' <span class="dm-tick">✓✓</span>' : '';
+  return `<div class="dm-voice-bubble ${isMe ? 'me' : 'them'}" id="${id}">
+    <div class="dmvn-player">
+      <button class="dmvn-play" aria-label="Play">
+        <svg width="11" height="13" viewBox="0 0 11 13" fill="none"><path d="M1 1.5L10 6.5L1 11.5V1.5Z" fill="currentColor"/></svg>
+      </button>
+      <div class="dmvn-wave">${bars}</div>
+      <span class="dmvn-dur">${msg.dur || '0:10'}</span>
+    </div>
+    <div class="dmvn-footer">
+      <span class="dmvn-time">${msg.time}${tickHTML}</span>
+      <button class="dmvn-translate-btn" data-trans="${encodeURIComponent(msg.translation || '')}">✦ Translate</button>
+    </div>
+    <div class="dmvn-translation hidden">
+      <div class="dmvn-trans-label">✦ AI Translation</div>
+      <div class="dmvn-trans-text"></div>
+    </div>
+  </div>`;
+}
+
 function makeBubble(msg, dm, showAvatar) {
   const isMe = msg.from === 'me';
   const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <span class="dm-tick">✓✓</span>' : ''}</div>`;
+
+  if (msg.type === 'voice') {
+    const voiceHTML = makeVoiceBubble(msg, isMe);
+    if (isMe) {
+      return `<div class="dm-msg-row me"><div class="dm-msg-col-me">${voiceHTML}</div></div>`;
+    } else {
+      const avatarHTML = showAvatar
+        ? `<div class="dm-msg-avatar" style="background:${dm.color}">${dm.initials}</div>`
+        : `<div class="dm-msg-avatar-spacer"></div>`;
+      const senderHTML = showAvatar ? `<div class="dm-msg-sender">${dm.name}</div>` : '';
+      return `<div class="dm-msg-row them ${showAvatar ? 'group-start' : ''}">
+        ${avatarHTML}
+        <div class="dm-msg-col">${senderHTML}${voiceHTML}</div>
+      </div>`;
+    }
+  }
 
   if (isMe) {
     return `<div class="dm-msg-row me">
@@ -598,6 +678,13 @@ document.getElementById('micBtnIdle').addEventListener('click', () => {
   startRecording();
 });
 
+document.querySelectorAll('.ai-sugg-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    showRecordingView();
+    startRecording();
+  });
+});
+
 // ── RECORDING ──
 let mediaStream = null, mediaRecorder = null, audioContext = null;
 let analyser = null, animFrameId = null, recordedChunks = [];
@@ -765,6 +852,7 @@ function navigateTo(tab) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const btn = document.querySelector(`.nav-item[data-tab="${tab}"]`);
   if (btn) btn.classList.add('active');
+  document.getElementById('navActionBtn').classList.toggle('inactive', tab === 'home');
   switchMiddleView(tab);
 }
 
@@ -896,6 +984,66 @@ document.getElementById('profileSignOut').addEventListener('click', () => {
   goTo('screen-login');
 });
 
+// ── EDIT PROFILE ──
+let epAvatarColor = '#4c1515';
+let profileDisplayName = '';
+let profileRole = '';
+
+function openEditProfile() {
+  document.getElementById('profilePopup').classList.add('hidden');
+  const name = userEmail ? userEmail.split('@')[0] : 'User';
+  profileDisplayName = profileDisplayName || (name.charAt(0).toUpperCase() + name.slice(1));
+  document.getElementById('epNameInput').value = profileDisplayName;
+  document.getElementById('epRoleInput').value = profileRole;
+  document.getElementById('epEmailInput').value = userEmail || '';
+  document.getElementById('epAvatarPreview').textContent = profileDisplayName.slice(0,2).toUpperCase();
+  document.getElementById('epAvatarPreview').style.background = epAvatarColor;
+  document.getElementById('editProfileModal').classList.remove('hidden');
+}
+
+document.getElementById('editProfileBtn').addEventListener('click', openEditProfile);
+
+document.getElementById('editProfileClose').addEventListener('click', () => {
+  document.getElementById('editProfileModal').classList.add('hidden');
+});
+document.getElementById('epCancelBtn').addEventListener('click', () => {
+  document.getElementById('editProfileModal').classList.add('hidden');
+});
+
+document.getElementById('epNameInput').addEventListener('input', e => {
+  const val = e.target.value.trim();
+  document.getElementById('epAvatarPreview').textContent = val.slice(0,2).toUpperCase() || 'YZ';
+});
+
+document.querySelectorAll('.ep-swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.ep-swatch').forEach(s => s.classList.remove('active'));
+    sw.classList.add('active');
+    epAvatarColor = sw.dataset.color;
+    document.getElementById('epAvatarPreview').style.background = epAvatarColor;
+  });
+});
+
+document.getElementById('epSaveBtn').addEventListener('click', () => {
+  const name = document.getElementById('epNameInput').value.trim() || profileDisplayName;
+  profileDisplayName = name;
+  profileRole = document.getElementById('epRoleInput').value.trim();
+  const initials = name.slice(0,2).toUpperCase();
+  document.getElementById('navProfileInitials').textContent = initials;
+  document.getElementById('navProfileName').textContent = name;
+  document.getElementById('navProfileAvatar') && (document.getElementById('navProfileAvatar').style.background = epAvatarColor);
+  document.getElementById('profilePopupAvatar').textContent = initials;
+  document.getElementById('profilePopupAvatar').style.background = epAvatarColor;
+  document.getElementById('profilePopupName').textContent = name;
+  document.getElementById('editProfileModal').classList.add('hidden');
+});
+
+document.getElementById('editProfileModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('editProfileModal')) {
+    document.getElementById('editProfileModal').classList.add('hidden');
+  }
+});
+
 // ── TASK LIST CLICKS ──
 document.getElementById('tasksFullList').addEventListener('click', e => {
   const item = e.target.closest('.task-item[data-task-id]');
@@ -936,6 +1084,23 @@ document.getElementById('channelPlusBtn').addEventListener('click', e => toggleA
 document.addEventListener('click', () =>
   document.querySelectorAll('.composer-attach-popup').forEach(p => p.classList.add('hidden'))
 );
+
+// ── VOICE NOTE TRANSLATE ──
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.dmvn-translate-btn');
+  if (!btn) return;
+  const bubble = btn.closest('.dm-voice-bubble');
+  const transDiv = bubble.querySelector('.dmvn-translation');
+  if (!transDiv.classList.contains('hidden')) {
+    transDiv.classList.add('hidden');
+    btn.textContent = '✦ Translate';
+    return;
+  }
+  const text = decodeURIComponent(btn.dataset.trans || '');
+  bubble.querySelector('.dmvn-trans-text').textContent = text ? `"${text}"` : '"Voice note transcription not available."';
+  transDiv.classList.remove('hidden');
+  btn.textContent = '✦ Hide';
+});
 
 // ── DM COMPOSER ──
 document.getElementById('dmSendBtn').addEventListener('click', () => {

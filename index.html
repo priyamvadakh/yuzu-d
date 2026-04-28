@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yuzu</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -13,8 +14,244 @@
   <div class="wc-dot" style="background:#28c840"></div>
 </div>
 
+<!-- ══════════ ONBOARDING ══════════ -->
+<div id="screen-onboarding" class="screen active">
+  <div class="auth-shell">
+    <div class="ob-left brand-panel">
+      <!-- dot grid texture -->
+      <svg class="ob-grid" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="dotgrid" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="rgba(246,196,83,0.12)"/></pattern></defs><rect width="100%" height="100%" fill="url(#dotgrid)"/></svg>
+
+      <!-- SLIDE 1: Connect with your team -->
+      <div class="ob-slide-left active" id="obSlideLeft0">
+        <div class="ob-collage-wrap">
+          <!-- Row 1 -->
+          <div class="obw-row">
+            <div class="obc-card obc-card-md" style="transform:rotate(-9deg)">
+              <div class="obc-inner obc-photo-inner">
+                <img class="obc-photo" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Alex K." />
+                <span class="obc-nm-bar">Alex K.</span>
+              </div>
+            </div>
+            <div class="obc-card obc-card-lg" style="transform:rotate(-2deg)">
+              <div class="obc-inner obc-photo-inner">
+                <img class="obc-photo" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Sarah J." />
+                <span class="obc-nm-bar">Sarah J.</span>
+              </div>
+            </div>
+            <div class="obc-card obc-card-md" style="transform:rotate(8deg)">
+              <div class="obc-inner obc-photo-inner">
+                <img class="obc-photo" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Maya T." />
+                <span class="obc-nm-bar">Maya T.</span>
+              </div>
+            </div>
+          </div>
+          <!-- Row 2 -->
+          <div class="obw-row obw-row2">
+            <div class="obc-card obc-card-md" style="transform:rotate(6deg)">
+              <div class="obc-inner obc-photo-inner">
+                <img class="obc-photo" src="https://randomuser.me/api/portraits/men/51.jpg" alt="David C." />
+                <span class="obc-nm-bar">David C.</span>
+              </div>
+            </div>
+            <div class="obc-card obc-card-sm" style="transform:rotate(-7deg)">
+              <div class="obc-inner obc-photo-inner">
+                <img class="obc-photo" src="https://randomuser.me/api/portraits/men/76.jpg" alt="Ravi K." />
+                <span class="obc-nm-bar">Ravi K.</span>
+              </div>
+            </div>
+            <div class="obc-card obc-card-sm" style="transform:rotate(5deg)">
+              <div class="obc-inner obc-photo-inner">
+                <img class="obc-photo" src="noor.png" alt="Noor A." />
+                <span class="obc-nm-bar">Noor A.</span>
+              </div>
+            </div>
+          </div>
+          <!-- Sparkles -->
+          <svg class="obw-sparkle" style="top:-8px;right:20px" width="22" height="22" viewBox="0 0 24 24"><path d="M12 2L13.2 8.4L20 9L13.2 9.6L12 16L10.8 9.6L4 9L10.8 8.4Z" fill="rgba(246,196,83,0.8)"/></svg>
+          <svg class="obw-sparkle" style="bottom:48px;left:10px" width="16" height="16" viewBox="0 0 24 24"><path d="M12 2L13.2 8.4L20 9L13.2 9.6L12 16L10.8 9.6L4 9L10.8 8.4Z" fill="rgba(246,196,83,0.55)"/></svg>
+          <!-- Connect banner -->
+          <div class="obc-connect">
+            <span class="obc-connect-sub">Connect with</span>
+            <strong class="obc-connect-main">your team</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: Chat mockup -->
+      <div class="ob-slide-left" id="obSlideLeft1">
+        <div class="ob-chat-mockup">
+          <div class="obcm-header">
+            <div class="obcm-avatar" style="background:linear-gradient(145deg,#7c3aed,#4c1d95)">SJ</div>
+            <div class="obcm-hinfo">
+              <div class="obcm-name">Sarah Jenkins</div>
+              <div class="obcm-status">● Online</div>
+            </div>
+            <div class="obcm-icons">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="rgba(246,196,83,0.7)" stroke-width="2"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="rgba(246,196,83,0.7)" stroke-width="2"/><path d="M8 21H16M12 17V21" stroke="rgba(246,196,83,0.7)" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+          <div class="obcm-messages">
+            <div class="obcm-msg obcm-in">
+              <div class="obcm-bubble">Hey! Did you review the design? 🎨</div>
+              <div class="obcm-time">2:14 PM</div>
+            </div>
+            <div class="obcm-msg obcm-out">
+              <div class="obcm-bubble">Just finished — looks amazing! ✨</div>
+              <div class="obcm-time">2:15 PM</div>
+            </div>
+            <!-- Voice note with translation -->
+            <div class="obcm-msg obcm-in">
+              <div class="obcm-vn">
+                <div class="obcm-vn-player">
+                  <div class="obcm-vn-play">
+                    <svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M1 1L8 5.5L1 10V1Z" fill="rgba(255,255,255,0.9)"/></svg>
+                  </div>
+                  <div class="obcm-vn-bars">
+                    <div class="obcm-vn-bar" style="height:8px"></div>
+                    <div class="obcm-vn-bar" style="height:14px"></div>
+                    <div class="obcm-vn-bar" style="height:10px"></div>
+                    <div class="obcm-vn-bar" style="height:18px"></div>
+                    <div class="obcm-vn-bar" style="height:12px"></div>
+                    <div class="obcm-vn-bar active" style="height:22px"></div>
+                    <div class="obcm-vn-bar active" style="height:16px"></div>
+                    <div class="obcm-vn-bar active" style="height:20px"></div>
+                    <div class="obcm-vn-bar active" style="height:14px"></div>
+                    <div class="obcm-vn-bar" style="height:10px"></div>
+                    <div class="obcm-vn-bar" style="height:7px"></div>
+                    <div class="obcm-vn-bar" style="height:13px"></div>
+                  </div>
+                  <span class="obcm-vn-dur">0:18</span>
+                </div>
+                <!-- Translation highlight -->
+                <div class="obcm-vn-trans">
+                  <div class="obcm-vn-trans-label">
+                    <svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#f6c453"/></svg>
+                    AI Translation
+                  </div>
+                  <div class="obcm-vn-trans-text">"Let's hop on a quick call — I want to walk you through the new color palette before we finalise it 🎨"</div>
+                </div>
+              </div>
+              <div class="obcm-time">2:16 PM</div>
+            </div>
+            <div class="obcm-msg obcm-out">
+              <div class="obcm-bubble">Sure! 3pm works for me 👍</div>
+              <div class="obcm-time">2:17 PM</div>
+            </div>
+          </div>
+          <div class="obcm-composer">
+            <span class="obcm-placeholder">Message Sarah…</span>
+            <div class="obcm-mic">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" stroke="rgba(246,196,83,0.9)" stroke-width="2"/><path d="M5 10C5 14.42 8.686 18 12 18C15.314 18 19 14.42 19 10" stroke="rgba(246,196,83,0.9)" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="ob-float-badge">💬 12 channels active</div>
+      </div>
+
+      <!-- SLIDE 3: Task board -->
+      <div class="ob-slide-left" id="obSlideLeft2">
+        <div class="ob-task-board">
+          <div class="obtb-header">
+            <span class="obtb-title">🗂 Sprint · Week 17</span>
+            <span class="obtb-pill">6 tasks</span>
+          </div>
+          <div class="obtb-progress-wrap">
+            <div class="obtb-progress-label"><span>Progress</span><span>60%</span></div>
+            <div class="obtb-progress-bar"><div class="obtb-progress-fill"></div></div>
+          </div>
+          <div class="obtb-task obtb-done">
+            <div class="obtb-check">✓</div>
+            <span>Design review complete</span>
+            <div class="obtb-av-sm" style="background:linear-gradient(145deg,#7c3aed,#4c1d95)">SJ</div>
+          </div>
+          <div class="obtb-task obtb-done">
+            <div class="obtb-check">✓</div>
+            <span>API integration</span>
+            <div class="obtb-av-sm" style="background:linear-gradient(145deg,#2563eb,#1e3a8a)">DC</div>
+          </div>
+          <div class="obtb-task">
+            <div class="obtb-circle"></div>
+            <span>Write unit tests</span>
+            <div class="obtb-av-sm" style="background:linear-gradient(145deg,#059669,#065f46)">AK</div>
+          </div>
+          <div class="obtb-task">
+            <div class="obtb-circle"></div>
+            <span>QA walkthrough</span>
+            <div class="obtb-av-sm" style="background:linear-gradient(145deg,#db2777,#9d174d)">MT</div>
+          </div>
+          <div class="obtb-footer">
+            <div class="obtb-avatars">
+              <div class="obtb-av" style="background:linear-gradient(145deg,#7c3aed,#4c1d95)">SJ</div>
+              <div class="obtb-av" style="background:linear-gradient(145deg,#2563eb,#1e3a8a)">DC</div>
+              <div class="obtb-av" style="background:linear-gradient(145deg,#059669,#065f46)">AK</div>
+              <span class="obtb-more">+3</span>
+            </div>
+            <span class="obtb-due">Due Friday</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: Mic with vibes -->
+      <div class="ob-slide-left" id="obSlideLeft3">
+        <div class="ob-mic-scene">
+          <div class="ob-mic-rings">
+            <div class="ob-mic-ring r1"></div>
+            <div class="ob-mic-ring r2"></div>
+            <div class="ob-mic-ring r3"></div>
+            <div class="ob-mic-ring r4"></div>
+            <div class="ob-mic-ring r5"></div>
+            <div class="ob-mic-btn">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="#fff"/><path d="M5 10C5 14.42 8.686 18 12 18C15.314 18 19 14.42 19 10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="22" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><line x1="8" y1="22" x2="16" y2="22" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+          <div class="ob-eq">
+            <div class="ob-eq-bar b1"></div>
+            <div class="ob-eq-bar b2"></div>
+            <div class="ob-eq-bar b3"></div>
+            <div class="ob-eq-bar b4"></div>
+            <div class="ob-eq-bar b5"></div>
+            <div class="ob-eq-bar b6"></div>
+            <div class="ob-eq-bar b7"></div>
+          </div>
+          <div class="ob-mic-label">Listening…</div>
+          <div class="ob-mic-chips">
+            <div class="ob-mic-chip">📅 Schedule meeting</div>
+            <div class="ob-mic-chip">💬 Send message</div>
+            <div class="ob-mic-chip">✅ Create task</div>
+            <div class="ob-mic-chip">🔍 Find answers</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="ob-right">
+      <button class="ob-skip-btn" id="obSkipBtn">Skip</button>
+      <div class="ob-right-inner">
+        <div class="auth-logo-small">
+          <img src="logo.svg" alt="yuzu" /><span>yuzu</span>
+        </div>
+        <div class="ob-text" id="obText">
+          <div class="ob-step-pill" id="obStep">01 / 04</div>
+          <h2 class="ob-title" id="obTitle">Welcome to Yuzu</h2>
+          <p class="ob-desc" id="obDesc">One app for every conversation — DMs, channels, tasks, and scheduling all in one place.</p>
+        </div>
+        <div class="ob-footer">
+          <div class="ob-dots" id="obDots">
+            <span class="ob-dot active"></span>
+            <span class="ob-dot"></span>
+            <span class="ob-dot"></span>
+            <span class="ob-dot"></span>
+          </div>
+          <button class="ob-next-btn" id="obNextBtn">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════ LOGIN ══════════ -->
-<div id="screen-login" class="screen active">
+<div id="screen-login" class="screen">
   <div class="auth-shell">
     <div class="brand-panel">
       <div class="brand-glow"></div>
@@ -171,11 +408,11 @@
           </button>
         </div>
         <div class="nav-bottom">
-          <div class="nav-action-btn" id="navActionBtn">
-            <img src="https://www.figma.com/api/mcp/asset/1c503302-be88-4882-a713-180471fc7fa3" alt="" style="width:28px;height:28px;object-fit:contain" />
-          </div>
+          <button class="nav-action-btn inactive" id="navActionBtn" title="Go to recording">
+            <img src="logo.svg" alt="Yuzu" style="width:26px;height:26px;object-fit:contain" />
+          </button>
           <button class="nav-profile-btn" id="navProfileBtn" title="Profile">
-            <div class="nav-profile-avatar">
+            <div class="nav-profile-avatar" id="navProfileAvatar">
               <span class="nav-profile-initials" id="navProfileInitials">PM</span>
             </div>
             <span class="nav-profile-name" id="navProfileName">Profile</span>
@@ -280,8 +517,52 @@
         </button>
       </div>
       <div class="profile-popup-divider"></div>
-      <button class="profile-popup-action">Edit Profile</button>
+      <button class="profile-popup-action" id="editProfileBtn">Edit Profile</button>
       <button class="profile-popup-action danger" id="profileSignOut">Sign Out</button>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div class="ep-modal-overlay hidden" id="editProfileModal">
+      <div class="ep-modal">
+        <div class="ep-modal-header">
+          <span class="ep-modal-title">Edit Profile</span>
+          <button class="ep-modal-close" id="editProfileClose">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="ep-avatar-row">
+          <div class="ep-avatar-preview" id="epAvatarPreview">PM</div>
+          <div class="ep-avatar-colors">
+            <span class="ep-color-label">Avatar color</span>
+            <div class="ep-color-swatches">
+              <button class="ep-swatch active" data-color="#4c1515" style="background:#4c1515"></button>
+              <button class="ep-swatch" data-color="#7c3aed" style="background:#7c3aed"></button>
+              <button class="ep-swatch" data-color="#059669" style="background:#059669"></button>
+              <button class="ep-swatch" data-color="#0d8f82" style="background:#0d8f82"></button>
+              <button class="ep-swatch" data-color="#d97706" style="background:#d97706"></button>
+              <button class="ep-swatch" data-color="#dc2626" style="background:#dc2626"></button>
+            </div>
+          </div>
+        </div>
+        <div class="ep-fields">
+          <div class="ep-field-group">
+            <label class="ep-label">Display name</label>
+            <input class="ep-input" id="epNameInput" type="text" placeholder="Your name" />
+          </div>
+          <div class="ep-field-group">
+            <label class="ep-label">Job title</label>
+            <input class="ep-input" id="epRoleInput" type="text" placeholder="e.g. Product Designer" />
+          </div>
+          <div class="ep-field-group">
+            <label class="ep-label">Email</label>
+            <input class="ep-input ep-input-readonly" id="epEmailInput" type="email" readonly />
+          </div>
+        </div>
+        <div class="ep-modal-footer">
+          <button class="ep-cancel-btn" id="epCancelBtn">Cancel</button>
+          <button class="ep-save-btn" id="epSaveBtn">Save Changes</button>
+        </div>
+      </div>
     </div>
 
     <section class="middle-panel">
@@ -546,18 +827,64 @@
           <h2 id="greetingMsg">Good afternoon 👋</h2>
           <p id="greetingEmail" class="greeting-email"></p>
         </div>
-        <div class="mic-rings">
-          <div class="mic-ring mic-ring-1"></div>
-          <div class="mic-ring mic-ring-2"></div>
-          <button class="mic-btn-idle" id="micBtnIdle" title="Start recording">
-            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-              <rect x="16" y="5" width="12" height="20" rx="6" fill="white"/>
-              <path d="M8 21C8 28.18 14.27 34 22 34C29.73 34 36 28.18 36 21" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M22 34V39M17 39H27" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-          </button>
+        <div class="ai-mic-block">
+          <div class="ai-powered-badge">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1L7.2 4.8H11L7.9 7.1L9.1 11L6 8.7L2.9 11L4.1 7.1L1 4.8H4.8L6 1Z" fill="#f6c453"/></svg>
+            Yuzu AI
+          </div>
+          <div class="mic-rings">
+            <div class="mic-ring mic-ring-1"></div>
+            <div class="mic-ring mic-ring-2"></div>
+            <button class="mic-btn-idle" id="micBtnIdle" title="Start recording">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                <rect x="16" y="5" width="12" height="20" rx="6" fill="white"/>
+                <path d="M8 21C8 28.18 14.27 34 22 34C29.73 34 36 28.18 36 21" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M22 34V39M17 39H27" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <p class="mic-idle-hint">Tap the mic and say something like<br><strong>"Schedule a call with Sara tomorrow at 3pm"</strong></p>
         </div>
-        <p class="mic-idle-hint">Tap the mic and say something like<br><strong>"Schedule a call with Sara tomorrow at 3pm"</strong></p>
+        <div class="ai-sugg-chips">
+          <p class="ai-sugg-label">Try saying…</p>
+          <div class="ai-sugg-row">
+            <button class="ai-sugg-chip" data-prompt="Schedule a call with Sarah tomorrow at 3pm">
+              <span class="ai-sugg-icon">📅</span>Schedule a call with Sarah
+            </button>
+            <button class="ai-sugg-chip" data-prompt="Message Alex about the design review">
+              <span class="ai-sugg-icon">💬</span>Message Alex about design
+            </button>
+            <button class="ai-sugg-chip" data-prompt="Create a task to review brand assets by Friday">
+              <span class="ai-sugg-icon">✅</span>Create a task for brand review
+            </button>
+          </div>
+        </div>
+        <div class="ai-feature-cards">
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon" style="background:rgba(246,196,83,0.12)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" stroke="#7a5510" stroke-width="1.5"/><path d="M5 10C5 14.42 8.686 18 12 18C15.314 18 19 14.42 19 10" stroke="#7a5510" stroke-width="1.5" stroke-linecap="round"/><path d="M12 18V21M9 21H15" stroke="#7a5510" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <span class="ai-feat-label">Voice to Message</span>
+          </div>
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon" style="background:rgba(139,92,246,0.1)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#7c3aed" stroke-width="1.5"/><path d="M16 2V6M8 2V6M3 10H21" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <span class="ai-feat-label">Smart Schedule</span>
+          </div>
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon" style="background:rgba(0,173,94,0.1)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12Z" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="ai-feat-label">Task Creator</span>
+          </div>
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon" style="background:rgba(13,143,130,0.1)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="#0d8f82" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="ai-feat-label">AI Knowledge</span>
+          </div>
+        </div>
       </div>
 
       <!-- STATE 2: Active recording -->
