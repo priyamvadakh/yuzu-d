@@ -175,13 +175,81 @@
             <img src="https://www.figma.com/api/mcp/asset/1c503302-be88-4882-a713-180471fc7fa3" alt="" style="width:28px;height:28px;object-fit:contain" />
           </div>
           <button class="nav-profile-btn" id="navProfileBtn" title="Profile">
-            <span class="nav-profile-initials" id="navProfileInitials">PM</span>
-            <span class="nav-profile-status-dot" id="navProfileDot"></span>
+            <div class="nav-profile-avatar">
+              <span class="nav-profile-initials" id="navProfileInitials">PM</span>
+            </div>
             <span class="nav-profile-name" id="navProfileName">Profile</span>
+            <span class="nav-profile-status-dot" id="navProfileDot"></span>
           </button>
         </div>
       </div>
     </nav>
+
+    <!-- EMOJI PICKER -->
+    <div class="emoji-picker hidden" id="emojiPicker">
+      <div class="ep-tabs">
+        <button class="ep-tab active" data-cat="smileys">😊</button>
+        <button class="ep-tab" data-cat="gestures">👋</button>
+        <button class="ep-tab" data-cat="hearts">❤️</button>
+        <button class="ep-tab" data-cat="nature">🌿</button>
+        <button class="ep-tab" data-cat="food">🍕</button>
+        <button class="ep-tab" data-cat="objects">🎉</button>
+      </div>
+      <div class="ep-grid" id="epGrid"></div>
+    </div>
+
+    <!-- CALL WIDGET -->
+    <div class="call-widget hidden" id="callWidget">
+      <div class="cw-top">
+        <div class="cw-top-left">
+          <span class="cw-amber-dot"></span>
+          <span class="cw-call-label">Call</span>
+          <span class="cw-timer" id="cwTimer">0:00</span>
+        </div>
+        <div class="cw-top-right">
+          <svg width="18" height="13" viewBox="0 0 22 16" fill="none"><rect x="0" y="10" width="4" height="6" rx="1" fill="rgba(255,255,255,.5)"/><rect x="6" y="7" width="4" height="9" rx="1" fill="rgba(255,255,255,.6)"/><rect x="12" y="4" width="4" height="12" rx="1" fill="rgba(255,255,255,.75)"/><rect x="18" y="0" width="4" height="16" rx="1" fill="white"/></svg>
+          <button class="cw-icon-sm" title="Add caller">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M13 10C13 11.66 11.66 13 10 13C8.34 13 7 11.66 7 10C7 8.34 8.34 7 10 7C11.66 7 13 8.34 13 10Z" stroke="rgba(255,255,255,.7)" stroke-width="1.3"/><path d="M3 17C3 14.24 6.13 12 10 12" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linecap="round"/><path d="M16 13V17M14 15H18" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="cw-participants">
+        <div class="cw-p-row">
+          <div class="cw-p-av" id="cwPersonAv">SJ</div>
+          <div class="cw-p-body">
+            <span class="cw-p-name" id="cwPersonName">Sarah Jenkins</span>
+            <span class="cw-p-status" id="cwPersonStatus">Calling…</span>
+          </div>
+        </div>
+        <div class="cw-p-row">
+          <div class="cw-p-av cw-you-av" id="cwYouAv">PM</div>
+          <div class="cw-p-body">
+            <span class="cw-p-name" id="cwYouName">You</span>
+            <span class="cw-you-badge">You</span>
+          </div>
+        </div>
+      </div>
+      <div class="cw-controls">
+        <button class="cw-btn cw-btn-green cw-muted" id="cwMuteBtn" title="Mute">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 10C5 14.42 8.686 18 12 18C15.314 18 19 14.42 19 10" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M12 18V21M9 21H15" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="cw-btn" title="Record">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="rgba(255,255,255,.8)"/><circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/></svg>
+        </button>
+        <button class="cw-btn" title="Keypad">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="1.5" fill="white"/><circle cx="12" cy="6" r="1.5" fill="white"/><circle cx="18" cy="6" r="1.5" fill="white"/><circle cx="6" cy="12" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="18" cy="12" r="1.5" fill="white"/><circle cx="6" cy="18" r="1.5" fill="white"/><circle cx="12" cy="18" r="1.5" fill="white"/><circle cx="18" cy="18" r="1.5" fill="white"/></svg>
+        </button>
+        <button class="cw-btn" title="Hold">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="white"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="white"/></svg>
+        </button>
+        <button class="cw-btn" title="More">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="19" cy="12" r="1.5" fill="white"/></svg>
+        </button>
+        <button class="cw-btn cw-btn-red" id="cwEndBtn" title="End call">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="rotate(135 12 12)"/></svg>
+        </button>
+      </div>
+    </div>
 
     <!-- PROFILE POPUP -->
     <div class="profile-popup hidden" id="profilePopup">
@@ -255,6 +323,22 @@
         </div>
       </div>
 
+      <!-- People view (shown when People nav is active) -->
+      <div class="people-view hidden" id="peopleContent">
+        <div class="people-header">
+          <span class="section-title">PEOPLE</span>
+          <div class="people-search-wrap">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M11 11L14 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <input type="text" id="peopleSearch" class="people-search-input" placeholder="Search people…" />
+          </div>
+          <button class="people-speak-btn" id="peopleSpeakBtn">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><rect x="7" y="1" width="6" height="10" rx="3" stroke="currentColor" stroke-width="1.4"/><path d="M3 10C3 13.87 6.13 17 10 17C13.87 17 17 13.87 17 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M10 17V19M8 19H12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <span>Speak to message, schedule or more…</span>
+          </button>
+        </div>
+        <div class="people-list" id="peopleList"></div>
+      </div>
+
       <!-- Tasks full view (shown when Tasks nav is active) -->
       <div class="tasks-full-view hidden" id="tasksFullView">
         <div class="tasks-full-header">
@@ -268,7 +352,6 @@
       </div>
 
       <div class="middle-content" id="homeContent">
-        <div class="home-greeting"><h3 id="greetingMsg">Good morning 👋</h3><p id="greetingEmail" class="greeting-email"></p></div>
 
         <div class="section">
           <div class="section-header"><span class="section-title">RECENT CONVERSATIONS</span><button class="see-all">See All</button></div>
@@ -319,32 +402,39 @@
     <!-- RIGHT PANEL -->
     <main class="right-panel">
 
+      <!-- HOME GREETING VIEW -->
+      <div class="home-view hidden" id="homeView">
+        <div class="home-view-greeting">
+          <h2 id="greetingMsg">Good afternoon 👋</h2>
+          <p id="greetingEmail" class="greeting-email"></p>
+        </div>
+      </div>
+
       <!-- DM CONVERSATION VIEW -->
       <div class="dm-convo hidden" id="dmView">
         <div class="dm-convo-header" id="dmConvoHeader"></div>
         <div class="dm-messages" id="dmMessages"></div>
         <div class="dm-composer">
+          <div class="composer-attach-popup hidden" id="dmAttachPopup">
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#4c1515" stroke-width="1.4"/><circle cx="10" cy="10" r="3" stroke="#4c1515" stroke-width="1.4"/><circle cx="14.5" cy="5.5" r="1" fill="#4c1515"/></svg></div><span>Camera</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 2C7.24 2 5 4.24 5 7C5 11.5 10 18 10 18C10 18 15 11.5 15 7C15 4.24 12.76 2 10 2Z" stroke="#4c1515" stroke-width="1.4"/><circle cx="10" cy="7" r="2" stroke="#4c1515" stroke-width="1.4"/></svg></div><span>Location</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M12 2H5C4.45 2 4 2.45 4 3V17C4 17.55 4.45 18 5 18H15C15.55 18 16 17.55 16 17V6L12 2Z" stroke="#4c1515" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 2V6H16" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round"/><path d="M8 10H12M8 13H12" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round"/></svg></div><span>Files</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="#4c1515" stroke-width="1.4"/><circle cx="7" cy="8" r="1.5" fill="#4c1515"/><path d="M2 14L6 10L9 13L13 9L18 14" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Photos</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#4c1515" stroke-width="1.4"/><path d="M6.5 10L9 12.5L13.5 8" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Tasks</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M17 12C17 12.44 16.82 12.87 16.5 13.19C16.18 13.51 15.75 13.69 15.31 13.69H5.69L2 17V4.31C2 3.87 2.18 3.44 2.5 3.12C2.82 2.8 3.25 2.62 3.69 2.62H15.31C15.75 2.62 16.18 2.8 16.5 3.12C16.82 3.44 17 3.87 17 4.31V12Z" stroke="#4c1515" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 7H14M6 10H11" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round"/></svg></div><span>Canned response</span></button>
+          </div>
           <div class="dm-composer-card">
             <input type="text" id="dmInput" class="dm-input" placeholder="Message…" />
             <div class="dm-composer-actions">
-              <button class="dm-action-btn dm-action-plus" title="Add">
+              <button class="dm-action-btn dm-action-plus" id="dmPlusBtn" title="Attach">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#6b7280" stroke-width="1.4"/><path d="M9 5V13M5 9H13" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round"/></svg>
               </button>
-              <button class="dm-action-btn" title="Image">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#9ca3af" stroke-width="1.3"/><circle cx="7" cy="9" r="1.5" fill="#9ca3af"/><path d="M2 14L6.5 10L9.5 13L13 9.5L18 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <button class="dm-action-btn" title="Location">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7.24 2 5 4.24 5 7C5 11.5 10 18 10 18C10 18 15 11.5 15 7C15 4.24 12.76 2 10 2Z" stroke="#9ca3af" stroke-width="1.3"/><circle cx="10" cy="7" r="2" stroke="#9ca3af" stroke-width="1.3"/></svg>
-              </button>
-              <button class="dm-action-btn" title="Sticker">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="4" stroke="#9ca3af" stroke-width="1.3"/><path d="M7 10.5C8 13 12 13 13 10.5M7.5 7.5H7.51M12.5 7.5H12.51" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
-              </button>
-              <button class="dm-action-btn" title="Emoji">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#9ca3af" stroke-width="1.3"/><path d="M7 10.5C8 13 12 13 13 10.5M7.5 7.5H7.51M12.5 7.5H12.51" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <button class="dm-action-btn" id="dmEmojiBtn" title="Emoji">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9ca3af" stroke-width="1.4"/><path d="M8.5 14C8.5 14 9.5 16 12 16C14.5 16 15.5 14 15.5 14" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="#9ca3af"/><circle cx="15" cy="10" r="1" fill="#9ca3af"/></svg>
               </button>
               <div class="dm-composer-spacer"></div>
-              <button class="dm-send-btn" id="dmSendBtn" title="Send voice">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 9.03 19 14 19" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+              <button class="dm-send-btn" id="dmSendBtn" title="Send">
+                <svg class="icon-mic" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               </button>
             </div>
           </div>
@@ -356,19 +446,73 @@
         <div class="dm-convo-header" id="channelHeader"></div>
         <div class="dm-messages" id="channelMessages"></div>
         <div class="dm-composer">
+          <div class="composer-attach-popup hidden" id="channelAttachPopup">
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#4c1515" stroke-width="1.4"/><circle cx="10" cy="10" r="3" stroke="#4c1515" stroke-width="1.4"/><circle cx="14.5" cy="5.5" r="1" fill="#4c1515"/></svg></div><span>Camera</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 2C7.24 2 5 4.24 5 7C5 11.5 10 18 10 18C10 18 15 11.5 15 7C15 4.24 12.76 2 10 2Z" stroke="#4c1515" stroke-width="1.4"/><circle cx="10" cy="7" r="2" stroke="#4c1515" stroke-width="1.4"/></svg></div><span>Location</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M12 2H5C4.45 2 4 2.45 4 3V17C4 17.55 4.45 18 5 18H15C15.55 18 16 17.55 16 17V6L12 2Z" stroke="#4c1515" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 2V6H16" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round"/><path d="M8 10H12M8 13H12" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round"/></svg></div><span>Files</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="#4c1515" stroke-width="1.4"/><circle cx="7" cy="8" r="1.5" fill="#4c1515"/><path d="M2 14L6 10L9 13L13 9L18 14" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Photos</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#4c1515" stroke-width="1.4"/><path d="M6.5 10L9 12.5L13.5 8" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Tasks</span></button>
+            <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M17 12C17 12.44 16.82 12.87 16.5 13.19C16.18 13.51 15.75 13.69 15.31 13.69H5.69L2 17V4.31C2 3.87 2.18 3.44 2.5 3.12C2.82 2.8 3.25 2.62 3.69 2.62H15.31C15.75 2.62 16.18 2.8 16.5 3.12C16.82 3.44 17 3.87 17 4.31V12Z" stroke="#4c1515" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 7H14M6 10H11" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round"/></svg></div><span>Canned response</span></button>
+          </div>
           <div class="dm-composer-card">
             <input type="text" id="channelInput" class="dm-input" placeholder="Message…" />
             <div class="dm-composer-actions">
-              <button class="dm-action-btn dm-action-plus" title="Add">
+              <button class="dm-action-btn dm-action-plus" id="channelPlusBtn" title="Attach">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#6b7280" stroke-width="1.4"/><path d="M9 5V13M5 9H13" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round"/></svg>
               </button>
-              <button class="dm-action-btn" title="Image"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#9ca3af" stroke-width="1.3"/><circle cx="7" cy="9" r="1.5" fill="#9ca3af"/><path d="M2 14L6.5 10L9.5 13L13 9.5L18 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-              <button class="dm-action-btn" title="Emoji"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#9ca3af" stroke-width="1.3"/><path d="M7 10.5C8 13 12 13 13 10.5M7.5 7.5H7.51M12.5 7.5H12.51" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+              <button class="dm-action-btn" id="channelEmojiBtn" title="Emoji">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9ca3af" stroke-width="1.4"/><path d="M8.5 14C8.5 14 9.5 16 12 16C14.5 16 15.5 14 15.5 14" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="#9ca3af"/><circle cx="15" cy="10" r="1" fill="#9ca3af"/></svg>
+              </button>
               <div class="dm-composer-spacer"></div>
               <button class="dm-send-btn" id="channelSendBtn" title="Send">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                <svg class="icon-mic" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCHEDULE DETAIL VIEW -->
+      <div class="schedule-detail hidden" id="scheduleDetail">
+        <div class="schedule-detail-header">
+          <div class="schedule-detail-icon">📅</div>
+          <div class="schedule-detail-title-wrap">
+            <div class="schedule-detail-title" id="scheduleDetailTitle">Meeting</div>
+            <span class="td-chip status-in-progress" id="scheduleDetailBadge">Scheduled</span>
+          </div>
+        </div>
+        <div class="schedule-detail-body">
+          <div class="task-detail-section">
+            <span class="task-detail-label">Date & Time</span>
+            <div class="schedule-meta-row" id="scheduleDetailDateTime">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="#6b7280" stroke-width="1.2"/><path d="M5 1V4M11 1V4M1 7H15" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <span id="scheduleDetailDateText">—</span>
+            </div>
+          </div>
+          <div class="task-detail-section">
+            <span class="task-detail-label">Duration</span>
+            <div class="schedule-meta-row">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#6b7280" stroke-width="1.2"/><path d="M8 4V8.5L11 10.5" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <span id="scheduleDetailDuration">30 minutes</span>
+            </div>
+          </div>
+          <div class="task-detail-section">
+            <span class="task-detail-label">Attendees</span>
+            <div class="schedule-attendees" id="scheduleAttendees"></div>
+          </div>
+          <div class="task-detail-section">
+            <span class="task-detail-label">Meeting Link</span>
+            <div class="schedule-meta-row">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M6 8.5C6 8.5 6.5 9.5 8 9.5C9.5 9.5 10 8.5 10 8.5M2 8.5C2 10.16 3.34 11.5 5 11.5H11C12.66 11.5 14 10.16 14 8.5C14 6.84 12.66 5.5 11 5.5H10M2 8.5C2 6.84 3.34 5.5 5 5.5H6" stroke="#7c3aed" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <span class="schedule-link">yuzu.meet/q3-sync</span>
+            </div>
+          </div>
+          <div class="schedule-detail-actions">
+            <button class="schedule-join-btn">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M2 6C2 5.44772 2.44772 5 3 5H13C13.5523 5 14 5.44772 14 6V14C14 14.5523 13.5523 15 13 15H3C2.44772 15 2 14.5523 2 14V6Z" stroke="white" stroke-width="1.4"/><path d="M14 8L18 6V14L14 12" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Join Meeting
+            </button>
+            <button class="schedule-edit-btn">Edit</button>
           </div>
         </div>
       </div>
@@ -497,7 +641,7 @@
             </button>
             <button class="intent-card" data-intent="schedule">
               <div class="intent-icon-wrap"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="18" height="16" rx="2" stroke="#6b7280" stroke-width="1.4"/><path d="M7 2V6M15 2V6M2 9H20" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round"/></svg></div>
-              <div class="intent-card-body"><span class="intent-card-name">Schedule Event</span><span class="intent-card-sub">"Meeting tomorrow at 10 AM"</span></div>
+              <div class="intent-card-body"><span class="intent-card-name">Schedule Call</span><span class="intent-card-sub">"Call with Sara tomorrow at 3pm"</span></div>
             </button>
             <button class="intent-card" data-intent="ask">
               <div class="intent-icon-wrap"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2L12.5 8H19L13.5 12L15.5 18L11 14L6.5 18L8.5 12L3 8H9.5L11 2Z" stroke="#6b7280" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
@@ -526,6 +670,63 @@
             <button class="try-again-link" id="tryAgainBtn">Try again</button>
             <span> · Tap any field to edit</span>
           </p>
+        </div>
+      </div>
+
+      <!-- CONTACT DETAIL VIEW -->
+      <div class="contact-detail hidden" id="contactView">
+        <div class="contact-hero-section">
+          <div class="contact-avatar-xl" id="contactAvatarXl">SJ</div>
+          <div class="contact-hero-name" id="contactHeroName">Sarah Jenkins</div>
+          <div class="contact-hero-role" id="contactHeroRole">Head of Design</div>
+          <div class="contact-hero-status">
+            <span class="contact-status-dot" id="contactStatusDot"></span>
+            <span id="contactStatusText">Online now</span>
+          </div>
+          <div class="contact-action-row">
+            <button class="ca-btn ca-btn-primary" id="caMessageBtn">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M18 12.31C18 12.75 17.82 13.18 17.5 13.5C17.18 13.82 16.75 14 16.31 14H5.69L2 17.38V3.69C2 3.25 2.18 2.82 2.5 2.5C2.82 2.18 3.25 2 3.69 2H16.31C16.75 2 17.18 2.18 17.5 2.5C17.82 2.82 18 3.25 18 3.69V12.31Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              Message
+            </button>
+            <button class="ca-btn" id="caCallBtn">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M18.31 14.19L15.69 11.56C15.38 11.25 14.88 11.25 14.56 11.56L13 13.13C12.47 12.84 11.38 12.19 10.31 11.13C9.25 10.06 8.6 8.97 8.31 8.44L9.88 6.88C10.19 6.56 10.19 6.06 9.88 5.75L7.25 3.13C6.94 2.81 6.44 2.81 6.13 3.13L4.56 4.69C4.19 5.06 3.97 5.56 4 6.06C4.06 7.56 4.75 11 8.19 14.44C11.63 17.88 15.06 18.5 16.56 18.56C16.59 18.56 16.63 18.56 16.69 18.56C17.13 18.56 17.56 18.38 17.88 18.06L19.44 16.5C19.56 16.19 19.56 15.5 18.31 14.19Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              Call
+            </button>
+            <button class="ca-btn" id="caScheduleBtn">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 1V5M14 1V5M2 8H18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Schedule
+            </button>
+          </div>
+        </div>
+        <div class="contact-info-body">
+          <div class="contact-info-section">
+            <div class="contact-section-label">CONTACT INFO</div>
+            <div class="contact-info-item" id="contactEmailRow"></div>
+            <div class="contact-info-item" id="contactDeptRow"></div>
+          </div>
+          <div class="contact-msgs-section" id="contactMsgsSection">
+            <div class="contact-section-label">RECENT MESSAGES</div>
+            <div class="contact-msgs-list" id="contactMsgsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KNOWLEDGE BASE VIEW -->
+      <div class="kb-view hidden" id="kbView">
+        <div class="kb-header">
+          <div class="kb-header-icon">🧠</div>
+          <div class="kb-header-info">
+            <div class="kb-header-title">Knowledge Base</div>
+            <div class="kb-header-sub">AI-powered answers from your workspace</div>
+          </div>
+        </div>
+        <div class="kb-query-card">
+          <div class="kb-query-label">YOUR QUERY</div>
+          <div class="kb-query-text" id="kbQueryText">Summarize last week's discussions</div>
+        </div>
+        <div class="kb-results-list" id="kbResults"></div>
+        <div class="kb-footer">
+          <button class="kb-new-btn" id="kbNewBtn">Ask something else</button>
         </div>
       </div>
 

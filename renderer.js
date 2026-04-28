@@ -104,13 +104,14 @@ function showHome() {
 
 // ── MIDDLE PANEL NAV ──
 function switchMiddleView(tab) {
-  ['homeContent','tasksFullView','dmContent'].forEach(id => {
+  ['homeContent','tasksFullView','dmContent','peopleContent'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
   });
-  if (tab === 'tasks') document.getElementById('tasksFullView').classList.remove('hidden');
-  else if (tab === 'dms') { document.getElementById('dmContent').classList.remove('hidden'); }
-  else document.getElementById('homeContent').classList.remove('hidden');
+  if (tab === 'tasks')       document.getElementById('tasksFullView').classList.remove('hidden');
+  else if (tab === 'dms')    document.getElementById('dmContent').classList.remove('hidden');
+  else if (tab === 'people') document.getElementById('peopleContent').classList.remove('hidden');
+  else                       document.getElementById('homeContent').classList.remove('hidden');
 
   // Right panel
   if (tab === 'dms') {
@@ -118,8 +119,11 @@ function switchMiddleView(tab) {
     loadDmConversation(activeDm);
   } else if (tab === 'tasks') {
     loadTaskDetail(activeTaskId);
-  } else {
+  } else if (tab === 'people') {
+    renderPeopleList();
     showIdle();
+  } else {
+    showPanel('homeView');
   }
 }
 
@@ -244,6 +248,125 @@ function sendDmMessage(text) {
   msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, false));
   msgs.scrollTop = msgs.scrollHeight;
 }
+
+// ── PEOPLE DATA ──
+const peopleData = [
+  { key: 'sarah',   name: 'Sarah Jenkins', role: 'Head of Design',    initials: 'SJ', color: '#7c3aed', online: true,  email: 'sarah.j@yuzu.team',   dept: 'Design' },
+  { key: 'alex',    name: 'Alex Kim',       role: 'Senior Designer',   initials: 'AK', color: '#059669', online: true,  email: 'alex.k@yuzu.team',    dept: 'Design' },
+  { key: 'david',   name: 'David Chen',     role: 'Lead Engineer',     initials: 'DC', color: '#2563eb', online: false, email: 'david.c@yuzu.team',   dept: 'Engineering' },
+  { key: 'jessica', name: 'Jessica Park',   role: 'Marketing Manager', initials: 'JP', color: '#d97706', online: false, email: 'jessica.p@yuzu.team', dept: 'Marketing' },
+  { key: 'marcus',  name: 'Marcus Lee',     role: 'Product Manager',   initials: 'ML', color: '#0891b2', online: true,  email: 'marcus.l@yuzu.team',  dept: 'Product' },
+  { key: 'priya',   name: 'Priya Nair',     role: 'UX Researcher',     initials: 'PN', color: '#be185d', online: true,  email: 'priya.n@yuzu.team',   dept: 'Design' },
+  { key: 'tom',     name: 'Tom Eriksson',   role: 'Backend Engineer',  initials: 'TE', color: '#64748b', online: false, email: 'tom.e@yuzu.team',     dept: 'Engineering' },
+];
+
+function renderPeopleList(filter) {
+  const list = document.getElementById('peopleList');
+  if (!list) return;
+  const q = (filter || '').toLowerCase();
+  const items = q ? peopleData.filter(p => p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q)) : peopleData;
+
+  const online  = items.filter(p => p.online);
+  const offline = items.filter(p => !p.online);
+
+  list.innerHTML = '';
+  if (online.length) {
+    list.insertAdjacentHTML('beforeend', '<div class="people-group-label">Active Now</div>');
+    online.forEach(p => list.insertAdjacentHTML('beforeend', personRow(p)));
+  }
+  if (offline.length) {
+    list.insertAdjacentHTML('beforeend', '<div class="people-group-label">Offline</div>');
+    offline.forEach(p => list.insertAdjacentHTML('beforeend', personRow(p)));
+  }
+
+  list.querySelectorAll('.people-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.people-dm-btn')) return;
+      showContactDetail(el.dataset.personKey);
+    });
+    el.querySelector('.people-dm-btn')?.addEventListener('click', () => {
+      const key = el.dataset.personKey;
+      if (dmData[key]) { activeDm = key; navigateTo('dms'); }
+    });
+  });
+}
+
+function showContactDetail(personKey) {
+  const p = peopleData.find(x => x.key === personKey);
+  if (!p) return;
+
+  document.querySelectorAll('.people-item').forEach(el =>
+    el.classList.toggle('people-item-selected', el.dataset.personKey === personKey)
+  );
+
+  const avatarEl = document.getElementById('contactAvatarXl');
+  avatarEl.textContent = p.initials;
+  avatarEl.style.background = p.color;
+  document.getElementById('contactHeroName').textContent = p.name;
+  document.getElementById('contactHeroRole').textContent = p.role;
+  document.getElementById('contactStatusDot').style.background = p.online ? '#00ad5e' : '#9ca3af';
+  document.getElementById('contactStatusText').textContent = p.online ? 'Online now' : 'Offline';
+
+  document.getElementById('contactEmailRow').innerHTML = `
+    <div class="ci-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="#6b7280" stroke-width="1.2"/><path d="M1 5L8 9L15 5" stroke="#6b7280" stroke-width="1.2"/></svg></div>
+    <span class="ci-value">${p.email}</span>
+  `;
+  document.getElementById('contactDeptRow').innerHTML = `
+    <div class="ci-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="14" height="10" rx="1.5" stroke="#6b7280" stroke-width="1.2"/><path d="M5 5V4C5 2.9 5.9 2 7 2H9C10.1 2 11 2.9 11 4V5" stroke="#6b7280" stroke-width="1.2"/></svg></div>
+    <span class="ci-value">${p.role} · ${p.dept}</span>
+  `;
+
+  const dm = dmData[personKey];
+  const msgsSection = document.getElementById('contactMsgsSection');
+  const msgsList = document.getElementById('contactMsgsList');
+  if (dm && dm.messages.length) {
+    msgsSection.classList.remove('hidden');
+    msgsList.innerHTML = dm.messages.slice(-3).map(m => `
+      <div class="cm-item ${m.from === 'me' ? 'cm-me' : 'cm-them'}">
+        <div class="cm-bubble">${m.text}</div>
+        <div class="cm-time">${m.time}</div>
+      </div>
+    `).join('');
+  } else {
+    msgsSection.classList.add('hidden');
+  }
+
+  document.getElementById('caMessageBtn').onclick = () => {
+    if (dmData[personKey]) { activeDm = personKey; navigateTo('dms'); }
+  };
+  document.getElementById('caCallBtn').onclick = () => startCall(personKey);
+  document.getElementById('caScheduleBtn').onclick = () => {
+    showRecordingView(); startRecording();
+  };
+
+  showPanel('contactView');
+}
+
+function personRow(p) {
+  const dotClass = p.online ? 'online-dot' : '';
+  return `<div class="people-item" data-person-key="${p.key}">
+    <div class="people-avatar" style="background:${p.color}">
+      ${p.initials}
+      ${p.online ? '<div class="online-dot" style="position:absolute;bottom:0;right:0;width:10px;height:10px;border:2px solid #fff;border-radius:50%;background:var(--online)"></div>' : ''}
+    </div>
+    <div class="people-info">
+      <div class="people-name">${p.name}</div>
+      <div class="people-role">${p.role}</div>
+    </div>
+    <button class="people-dm-btn" title="Send DM">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14 9C14 9.35 13.86 9.69 13.61 9.94C13.36 10.19 13.02 10.33 12.67 10.33H4.67L2 13V3.67C2 3.32 2.14 2.98 2.39 2.73C2.64 2.48 2.98 2.33 3.33 2.33H12.67C13.02 2.33 13.36 2.48 13.61 2.73C13.86 2.98 14 3.32 14 3.67V9Z" stroke="#6b7280" stroke-width="1.2" stroke-linejoin="round"/></svg>
+    </button>
+  </div>`;
+}
+
+// People search
+document.getElementById('peopleSearch')?.addEventListener('input', e => renderPeopleList(e.target.value));
+
+// People speak button → start recording flow
+document.getElementById('peopleSpeakBtn')?.addEventListener('click', () => {
+  showRecordingView();
+  startRecording();
+});
 
 // ── CHANNEL DATA ──
 const channelData = {
@@ -443,7 +566,7 @@ function cycleTaskStatus(t) {
 }
 
 // ── RIGHT PANEL STATES ──
-const allPanels = ['taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult'];
+const allPanels = ['homeView','scheduleDetail','taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult','kbView','contactView'];
 function showPanel(id) {
   allPanels.forEach(p => {
     const el = document.getElementById(p);
@@ -602,7 +725,7 @@ const resultData = {
     ].join('')
   },
   schedule: {
-    confirmText: 'Confirm & Schedule',
+    confirmText: 'Confirm & Schedule Call',
     fields: () => [
       field('ACTION', 'Schedule Call', AI, false),
       field('TITLE', 'Design Sync — Sara & Priya', AI, true),
@@ -671,6 +794,9 @@ document.getElementById('resultConfirmBtn').addEventListener('click', () => {
     const withName = withEl ? withEl.nextElementSibling.textContent.trim() : '';
     createAndShowSchedule(title, date, time, duration, withName);
 
+  } else if (intent === 'ask') {
+    const query = editables[0] ? editables[0].textContent.trim() : 'Summarize last week\'s discussions';
+    showKbView(query);
   } else {
     navigateTo('home');
     showIdle();
@@ -708,6 +834,7 @@ document.getElementById('channelSendBtn').addEventListener('click', () => {
   msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row me"><div class="dm-msg-col-me"><div class="dm-bubble">${text}</div>${timeHTML}</div></div>`);
   msgs.scrollTop = msgs.scrollHeight;
   input.value = '';
+  syncSendBtn(input, document.getElementById('channelSendBtn'));
 });
 document.getElementById('channelInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('channelSendBtn').click();
@@ -717,11 +844,22 @@ document.getElementById('channelInput').addEventListener('keydown', e => {
 let currentStatus = 'active';
 const statusDotColors = { active: '#00ad5e', away: '#f59e0b', dnd: '#ef4444', meeting: '#8b5cf6', offline: '#9ca3af' };
 
+// ── NAV EXPAND / COLLAPSE ──
+let navExpanded = false;
+document.getElementById('navCollapseBtn').addEventListener('click', () => {
+  navExpanded = !navExpanded;
+  const nav = document.querySelector('.left-nav');
+  nav.classList.toggle('expanded', navExpanded);
+  // shift profile popup when nav expands
+  const popup = document.getElementById('profilePopup');
+  popup.style.left = navExpanded ? '218px' : '80px';
+});
+
 function updateProfileDisplay() {
   const name = userEmail ? userEmail.split('@')[0] : 'User';
   const initials = name.slice(0,2).toUpperCase();
   document.getElementById('navProfileInitials').textContent = initials;
-  document.getElementById('profilePopupInitials') && (document.getElementById('profilePopupInitials').textContent = initials);
+  document.getElementById('navProfileName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
   document.getElementById('profilePopupAvatar').textContent = initials;
   document.getElementById('profilePopupName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
   document.getElementById('profilePopupEmail').textContent = userEmail || '';
@@ -770,16 +908,48 @@ document.getElementById('dmList').addEventListener('click', e => {
   if (item) loadDmConversation(item.dataset.dm);
 });
 
+// ── MIC ↔ SEND TOGGLE ──
+const MIC_SVG  = `<svg class="icon-mic" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`;
+const SEND_SVG = `<svg class="icon-send" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" fill="white"/></svg>`;
+
+function syncSendBtn(inputEl, btnEl) {
+  btnEl.innerHTML = inputEl.value.trim() ? SEND_SVG : MIC_SVG;
+}
+
+document.getElementById('dmInput').addEventListener('input', e =>
+  syncSendBtn(e.target, document.getElementById('dmSendBtn'))
+);
+document.getElementById('channelInput').addEventListener('input', e =>
+  syncSendBtn(e.target, document.getElementById('channelSendBtn'))
+);
+
+// ── ATTACH POPUP ──
+function toggleAttachPopup(popupId, e) {
+  e.stopPropagation();
+  const popup = document.getElementById(popupId);
+  const wasHidden = popup.classList.contains('hidden');
+  document.querySelectorAll('.composer-attach-popup').forEach(p => p.classList.add('hidden'));
+  if (wasHidden) popup.classList.remove('hidden');
+}
+document.getElementById('dmPlusBtn').addEventListener('click', e => toggleAttachPopup('dmAttachPopup', e));
+document.getElementById('channelPlusBtn').addEventListener('click', e => toggleAttachPopup('channelAttachPopup', e));
+document.addEventListener('click', () =>
+  document.querySelectorAll('.composer-attach-popup').forEach(p => p.classList.add('hidden'))
+);
+
 // ── DM COMPOSER ──
 document.getElementById('dmSendBtn').addEventListener('click', () => {
   const input = document.getElementById('dmInput');
+  if (!input.value.trim()) return;
   sendDmMessage(input.value);
   input.value = '';
+  syncSendBtn(input, document.getElementById('dmSendBtn'));
 });
 document.getElementById('dmInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     sendDmMessage(e.target.value);
     e.target.value = '';
+    syncSendBtn(e.target, document.getElementById('dmSendBtn'));
   }
 });
 
@@ -804,8 +974,12 @@ function createAndShowSchedule(title, date, time, duration, withName) {
   const section = document.getElementById('upcomingSection');
   const list    = document.getElementById('upcomingList');
 
+  const scheduleObj = { title, date, time, duration: duration || '30 minutes', withName };
+
   const item = document.createElement('div');
   item.className = 'upcoming-item event-new';
+  item.style.cursor = 'pointer';
+  item.dataset.scheduleTitle = title;
   item.innerHTML = `
     <div class="upcoming-icon">📅</div>
     <div class="upcoming-body">
@@ -814,8 +988,8 @@ function createAndShowSchedule(title, date, time, duration, withName) {
     </div>
     <span class="upcoming-badge">Scheduled</span>
   `;
+  item.addEventListener('click', () => showScheduleDetail(scheduleObj));
 
-  // Remove no-border from last existing item
   const last = list.querySelector('.upcoming-item:last-child');
   if (last) last.classList.remove('no-border');
   list.appendChild(item);
@@ -823,10 +997,29 @@ function createAndShowSchedule(title, date, time, duration, withName) {
 
   navigateTo('home');
   showIdle();
-
-  // Scroll to upcoming section
   setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
   setTimeout(() => item.classList.remove('event-new'), 2200);
+}
+
+function showScheduleDetail(s) {
+  document.getElementById('scheduleDetailTitle').textContent = s.title;
+  document.getElementById('scheduleDetailDateText').textContent = `${s.date} at ${s.time}`;
+  document.getElementById('scheduleDetailDuration').textContent = s.duration || '30 minutes';
+
+  // Attendees: me + withName person if specified
+  const attendees = document.getElementById('scheduleAttendees');
+  const withPerson = s.withName ? peopleData.find(p => p.name.toLowerCase().includes(s.withName.toLowerCase().split(' ')[0])) : null;
+  attendees.innerHTML = `
+    <div class="schedule-attendee">
+      <div class="schedule-attendee-avatar" style="background:var(--maroon)">ME</div>
+      <span class="schedule-attendee-name">You <span class="schedule-attendee-you">(organiser)</span></span>
+    </div>
+    ${withPerson ? `<div class="schedule-attendee">
+      <div class="schedule-attendee-avatar" style="background:${withPerson.color}">${withPerson.initials}</div>
+      <span class="schedule-attendee-name">${withPerson.name}</span>
+    </div>` : ''}
+  `;
+  showPanel('scheduleDetail');
 }
 
 // ── TASK CREATION ──
@@ -840,6 +1033,179 @@ function taskItemHTML(title, dueDate, status, taskId) {
     </div>
   </div>`;
 }
+
+// ── KNOWLEDGE BASE VIEW ──
+const kbArticles = [
+  { icon: '📋', title: 'Q3 Brand Launch Discussion', channel: '#product-launch-q3', snippet: 'Alex shared the new brand deck. Sarah confirmed the amber color palette and launch date is set for next Monday.', relevance: 98 },
+  { icon: '🚀', title: 'Staging Deployment Update',  channel: '#engineering-team',   snippet: 'David confirmed staging is ready with all smoke tests passing. Production deployment was scheduled for 2pm.', relevance: 91 },
+  { icon: '🎨', title: 'Design System v2 Review',    channel: '#design-system',       snippet: 'Sarah published component library v2. Ghost button border spec was clarified (1px, 40% opacity). Approved for implementation.', relevance: 84 },
+];
+
+function showKbView(query) {
+  document.getElementById('kbQueryText').textContent = query || 'Summarize last week\'s discussions';
+  const list = document.getElementById('kbResults');
+  list.innerHTML = kbArticles.map(a => `
+    <div class="kb-result-card">
+      <div class="kb-result-top">
+        <span class="kb-result-icon">${a.icon}</span>
+        <div class="kb-result-meta">
+          <div class="kb-result-title">${a.title}</div>
+          <div class="kb-result-channel">${a.channel}</div>
+        </div>
+        <div class="kb-relevance-badge">${a.relevance}%</div>
+      </div>
+      <div class="kb-result-snippet">${a.snippet}</div>
+    </div>
+  `).join('');
+  showPanel('kbView');
+}
+
+document.getElementById('kbNewBtn').addEventListener('click', () => showIdle());
+
+// ── EMOJI PICKER ──
+const emojiSets = {
+  smileys:  ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','😉','😍','🥰','😘','😗','😋','😛','😜','🤪','😝','🤑','🤗','🤭','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤧','🥵','🥶','😷'],
+  gestures: ['👋','🤚','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','☝️','👇','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏'],
+  hearts:   ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','♥️','❤️‍🔥','❤️‍🩹','💌','💋'],
+  nature:   ['🌸','🌺','🌻','🌹','🌷','🌿','🍀','🌱','🌲','🌳','🌴','🌵','🌾','🍃','🍂','🍁','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸'],
+  food:     ['🍕','🍔','🌮','🌯','🥗','🍜','🍣','🍱','🍩','🍪','🎂','🍰','🧁','🍫','🍬','🍭','🍦','🍧','🍨','🥤','☕','🍵','🧃','🍷','🍸','🍹','🍺','🥂','🧊','🫖'],
+  objects:  ['🎉','🎊','🎈','🎁','🎀','🎗️','🏆','🥇','⭐','🌟','✨','💫','🔥','💥','❄️','🌈','⚡','🎵','🎶','🎸','🎹','🎤','📱','💻','📷','🔔','💡','🔑','💎','🚀'],
+};
+
+let activeEmojiTarget = null;
+
+function renderEmojiCat(cat) {
+  const grid = document.getElementById('epGrid');
+  grid.innerHTML = emojiSets[cat].map(e =>
+    `<button class="ep-emoji" data-emoji="${e}">${e}</button>`
+  ).join('');
+  grid.querySelectorAll('.ep-emoji').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (activeEmojiTarget) {
+        const pos = activeEmojiTarget.selectionStart;
+        const val = activeEmojiTarget.value;
+        activeEmojiTarget.value = val.slice(0, pos) + btn.dataset.emoji + val.slice(pos);
+        activeEmojiTarget.selectionStart = activeEmojiTarget.selectionEnd = pos + btn.dataset.emoji.length;
+        activeEmojiTarget.focus();
+        syncSendBtn(activeEmojiTarget, document.getElementById(
+          activeEmojiTarget.id === 'dmInput' ? 'dmSendBtn' : 'channelSendBtn'
+        ));
+      }
+      document.getElementById('emojiPicker').classList.add('hidden');
+    });
+  });
+}
+
+document.querySelectorAll('.ep-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ep-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderEmojiCat(tab.dataset.cat);
+  });
+});
+
+function toggleEmojiPicker(inputEl, btnEl, e) {
+  e.stopPropagation();
+  const picker = document.getElementById('emojiPicker');
+  const wasHidden = picker.classList.contains('hidden');
+  document.querySelectorAll('.composer-attach-popup').forEach(p => p.classList.add('hidden'));
+  if (wasHidden) {
+    activeEmojiTarget = inputEl;
+    const rect = btnEl.getBoundingClientRect();
+    const appRect = document.querySelector('.app-window').getBoundingClientRect();
+    picker.style.bottom = (appRect.bottom - rect.top + 8) + 'px';
+    picker.style.left = Math.max(8, rect.left - appRect.left - 140) + 'px';
+    picker.classList.remove('hidden');
+    renderEmojiCat('smileys');
+  } else {
+    picker.classList.add('hidden');
+    activeEmojiTarget = null;
+  }
+}
+
+document.getElementById('dmEmojiBtn').addEventListener('click', e =>
+  toggleEmojiPicker(document.getElementById('dmInput'), document.getElementById('dmEmojiBtn'), e)
+);
+document.getElementById('channelEmojiBtn').addEventListener('click', e =>
+  toggleEmojiPicker(document.getElementById('channelInput'), document.getElementById('channelEmojiBtn'), e)
+);
+document.addEventListener('click', e => {
+  if (!e.target.closest('#emojiPicker') && !e.target.closest('#dmEmojiBtn') && !e.target.closest('#channelEmojiBtn')) {
+    document.getElementById('emojiPicker').classList.add('hidden');
+    activeEmojiTarget = null;
+  }
+});
+
+// ── CALL WIDGET ──
+let callTimerInterval = null;
+let callSeconds = 0;
+let callMuted = false;
+
+function startCall(personKey) {
+  const p = peopleData.find(x => x.key === personKey);
+  const name = p ? p.name : (dmData[personKey] ? dmData[personKey].name : personKey);
+  const initials = p ? p.initials : (dmData[personKey] ? dmData[personKey].initials : '??');
+  const color = p ? p.color : (dmData[personKey] ? dmData[personKey].color : '#7c3aed');
+
+  // Populate widget
+  const avEl = document.getElementById('cwPersonAv');
+  avEl.textContent = initials;
+  avEl.style.background = color;
+  document.getElementById('cwPersonName').textContent = name;
+  document.getElementById('cwPersonStatus').textContent = 'Calling…';
+  document.getElementById('cwPersonStatus').style.color = 'rgba(255,255,255,.5)';
+
+  // Set "You" info from logged-in user
+  const myName = userEmail ? userEmail.split('@')[0] : 'You';
+  const myInitials = myName.slice(0,2).toUpperCase();
+  document.getElementById('cwYouAv').textContent = myInitials;
+  document.getElementById('cwYouName').textContent = myName.charAt(0).toUpperCase() + myName.slice(1);
+
+  document.getElementById('cwTimer').textContent = '0:00';
+  callSeconds = 0;
+  callMuted = false;
+  document.getElementById('cwMuteBtn').classList.add('cw-muted');
+
+  // Show widget
+  document.getElementById('callWidget').classList.remove('hidden');
+
+  // Simulate answer after 2.5s
+  clearInterval(callTimerInterval);
+  setTimeout(() => {
+    const statusEl = document.getElementById('cwPersonStatus');
+    if (statusEl) { statusEl.textContent = 'Connected'; statusEl.style.color = '#4ade80'; }
+    callTimerInterval = setInterval(() => {
+      callSeconds++;
+      const m = Math.floor(callSeconds / 60);
+      const s = String(callSeconds % 60).padStart(2, '0');
+      const el = document.getElementById('cwTimer');
+      if (el) el.textContent = `${m}:${s}`;
+    }, 1000);
+  }, 2500);
+}
+
+function endCall() {
+  clearInterval(callTimerInterval);
+  document.getElementById('callWidget').classList.add('hidden');
+}
+
+document.getElementById('cwEndBtn').addEventListener('click', endCall);
+
+document.getElementById('cwMuteBtn').addEventListener('click', () => {
+  callMuted = !callMuted;
+  document.getElementById('cwMuteBtn').classList.toggle('cw-muted', !callMuted);
+  document.getElementById('cwMuteBtn').classList.toggle('cw-btn-muted-off', callMuted);
+});
+
+// Call from DM header (event delegation)
+document.getElementById('dmView').addEventListener('click', e => {
+  if (e.target.closest('.dm-header-btn[title="Call"]')) startCall(activeDm);
+});
+
+// Call from channel header
+document.getElementById('channelView').addEventListener('click', e => {
+  if (e.target.closest('.dm-header-btn[title="Call"]')) startCall(activeChannel || 'sarah');
+});
 
 function createAndShowTask(title, dueDate, status) {
   const newId = 'task' + (taskData.length + 1);
