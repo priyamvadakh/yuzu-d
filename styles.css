@@ -81,6 +81,9 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .resend-btn span { color: var(--text-amber); font-weight: 600; }
 .resend-btn:hover span { text-decoration: underline; }
 
+/* ── MOBILE SPLASH + LANDING (hidden on desktop) ── */
+#screen-splash, #screen-landing { display: none; }
+
 /* ── ONBOARDING ── */
 .ob-left { width: 46%; min-width: 300px; flex-shrink: 0; position: relative; overflow: hidden; }
 .ob-grid { position: absolute; inset: 0; pointer-events: none; }
@@ -234,6 +237,73 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .ep-cancel-btn:hover { background: #f4f4f5; }
 .ep-save-btn { flex: 2; height: 44px; border: none; border-radius: 32px; background: linear-gradient(135deg,var(--maroon-light),var(--maroon-dark)); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
 .ep-save-btn:hover { opacity: .88; }
+
+/* ── CREATE CHANNEL / NEW DM MODALS ── */
+.cc-modal { max-width: 420px; padding: 0; }
+.cc-modal .ep-modal-header { padding: 24px 24px 0; }
+.cc-modal .cc-body { padding: 20px 24px; }
+.cc-body { display: flex; flex-direction: column; gap: 20px; }
+.cc-type-row { display: flex; gap: 10px; }
+.cc-type-btn { flex: 1; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1.5px solid #e4e4e7; border-radius: 14px; background: #fff; cursor: pointer; transition: border-color .15s, background .15s; text-align: left; }
+.cc-type-btn.active { border-color: var(--amber); background: rgba(246,196,83,0.08); }
+.cc-type-btn svg { flex-shrink: 0; color: #6b7280; }
+.cc-type-btn.active svg { color: var(--maroon); }
+.cc-type-text { display: flex; flex-direction: column; gap: 1px; }
+.cc-type-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.cc-type-desc { font-size: 11px; color: var(--text-muted); }
+.cc-field-group { display: flex; flex-direction: column; gap: 6px; }
+.cc-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.cc-optional { font-weight: 400; color: var(--text-muted); }
+.cc-input-wrap { display: flex; align-items: center; gap: 8px; height: 48px; background: #f5f5f7; border-radius: 14px; padding: 0 14px; }
+.cc-hash { font-size: 18px; font-weight: 600; color: #9ca3af; flex-shrink: 0; }
+.cc-input { flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: var(--text-primary); }
+.cc-input::placeholder { color: #b0b0b8; }
+.cc-textarea { width: 100%; height: 90px; background: #f5f5f7; border: none; border-radius: 14px; padding: 12px 14px; font-size: 14px; color: var(--text-primary); outline: none; resize: none; font-family: inherit; }
+.cc-textarea::placeholder { color: #b0b0b8; }
+.cc-modal-footer { border-top: 1px solid #f0ece8; padding: 16px 24px; }
+.cc-create-btn { width: 100%; height: 50px; background: #e5e5ea; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; color: #6b7280; cursor: pointer; transition: background .15s, color .15s; }
+.cc-create-btn.ready { background: linear-gradient(135deg,var(--maroon-light),var(--maroon-dark)); color: #fff; }
+/* New DM people list */
+.ndm-people-list { display: flex; flex-direction: column; gap: 2px; margin-top: -6px; }
+.ndm-person { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-radius: 10px; cursor: pointer; transition: background .12s; }
+.ndm-person:hover { background: #f5f5f7; }
+.ndm-person span { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+
+/* ── CALL PEOPLE PICKER extras ── */
+.ndm-person-info { display: flex; flex-direction: column; flex: 1; gap: 1px; }
+.ndm-person-info span { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.ndm-person-info small { font-size: 12px; color: var(--text-muted); }
+.cp-call-now { width: 36px; height: 36px; border-radius: 50%; background: #22c55e; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: background .15s; }
+.cp-call-now:hover { background: #16a34a; }
+
+/* ── FULL-SCREEN CALL UI ── */
+.call-screen { position: absolute; inset: 0; z-index: 900; background: #0d0d0d; display: flex; flex-direction: column; align-items: center; padding: 0 24px 36px; overflow: hidden; }
+.call-screen.hidden { display: none; }
+.cs-top { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 18px 0 0; }
+.cs-minimize { background: none; border: none; cursor: pointer; padding: 4px; }
+.cs-signal { display: flex; align-items: center; gap: 5px; }
+.cs-hd { font-size: 13px; font-weight: 700; color: #22c55e; letter-spacing: .5px; }
+.cs-caller { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 28px; }
+.cs-avatar { width: 110px; height: 110px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 700; color: #fff; background: #333; overflow: hidden; border: 3px solid rgba(255,255,255,0.12); }
+.cs-name { font-size: 26px; font-weight: 800; color: #fff; margin-top: 10px; }
+.cs-role { font-size: 14px; color: rgba(255,255,255,0.5); }
+.cs-timer { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 2px; font-variant-numeric: tabular-nums; margin-top: 4px; }
+.cs-crm-pill { display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.18); border-radius: 32px; padding: 9px 18px; margin-top: 24px; }
+.cs-crm-internal { font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 500; }
+.cs-crm-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.25); }
+.cs-crm-link { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #22c55e; font-weight: 600; cursor: pointer; }
+.cs-controls { width: 100%; display: flex; flex-direction: column; gap: 28px; margin-top: 36px; }
+.cs-ctrl-row { display: flex; justify-content: space-around; }
+.cs-btn { display: flex; flex-direction: column; align-items: center; gap: 10px; background: none; border: none; cursor: pointer; }
+.cs-btn span { font-size: 13px; color: rgba(255,255,255,0.75); }
+.cs-btn-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; transition: background .15s; }
+.cs-btn:hover .cs-btn-icon { background: rgba(255,255,255,0.18); }
+.cs-btn-icon-white { background: #fff !important; }
+.cs-summary-btn { display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 32px; padding: 12px 28px; background: none; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: auto; transition: background .15s; }
+.cs-summary-btn:hover { background: rgba(255,255,255,0.06); }
+.cs-hangup-wrap { margin-top: 24px; }
+.cs-hangup { width: 70px; height: 70px; border-radius: 50%; background: #ef4444; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; }
+.cs-hangup:hover { background: #dc2626; }
 
 /* ── HOME APP ── */
 .app { display: flex; height: 100%; overflow: hidden; position: relative; }
@@ -897,10 +967,24 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
   #screen-otp .auth-form-panel { width: 100%; background: linear-gradient(180deg,#2a0a0a 0%,#4c1515 100%); }
   #screen-login .auth-form-inner,
   #screen-email .auth-form-inner,
-  #screen-otp .auth-form-inner { max-width: 100%; padding: 52px 28px 40px; }
+  #screen-otp .auth-form-inner { max-width: 100%; padding: 52px 28px 40px; align-items: center; text-align: center; }
+  #screen-login .auth-form-inner .auth-buttons,
+  #screen-email .auth-form-inner .auth-buttons,
+  #screen-otp .auth-form-inner .auth-buttons,
+  #screen-login .auth-form-inner .input-group,
+  #screen-email .auth-form-inner .input-group,
+  #screen-otp .auth-form-inner .input-group,
+  #screen-login .auth-form-inner .auth-divider,
+  #screen-email .auth-form-inner .auth-divider { align-self: stretch; text-align: left; }
+  #screen-login .auth-logo-small,
+  #screen-email .auth-logo-small,
+  #screen-otp .auth-logo-small { justify-content: center; margin-bottom: 32px; }
+  #screen-login .auth-logo-small img,
+  #screen-email .auth-logo-small img,
+  #screen-otp .auth-logo-small img { width: 60px; height: 60px; }
   #screen-login .auth-logo-small span,
   #screen-email .auth-logo-small span,
-  #screen-otp .auth-logo-small span { color: #fff; }
+  #screen-otp .auth-logo-small span { color: #fff; font-size: 36px; }
   #screen-login .auth-title,
   #screen-email .auth-title,
   #screen-otp .auth-title { color: #fff; }
@@ -923,6 +1007,15 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
   #screen-otp .back-btn svg path { stroke: rgba(255,255,255,0.8); }
   #screen-otp .otp-label,
   #screen-otp .otp-email-hint { color: rgba(255,255,255,0.6); }
+
+  /* ── Full-screen call overlay ── */
+  .call-screen { position: fixed; }
+
+  /* ── Modals as bottom sheets on mobile ── */
+  .ep-modal-overlay { align-items: flex-end; position: fixed; }
+  .ep-modal { width: 100%; border-radius: 24px 24px 0 0; max-height: 90vh; overflow-y: auto; }
+  .cc-modal { max-width: 100%; }
+  .cc-modal-footer { position: sticky; bottom: 0; background: #fff; }
 
   /* ── Main app layout ── */
   .app { display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
@@ -998,4 +1091,60 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
   .left-nav.expanded .nav-action-btn { width: 36px !important; height: 36px !important; border-radius: 50% !important; }
   .left-nav.expanded .nav-profile-btn { width: 36px !important; height: 36px !important; border-radius: 50% !important; }
   .left-nav.expanded ~ .profile-popup { left: unset !important; right: 8px; }
+
+  /* ── Mobile splash + landing screens ── */
+  #screen-splash, #screen-landing { display: block; }
+  #screen-onboarding { display: none; }
+
+  /* Splash */
+  .mob-splash-bg {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at center, #FFA925 0%, #FF9410 100%);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 0 36px; position: relative; overflow: hidden;
+  }
+  .mob-splash-wordmark {
+    font-size: 96px; font-weight: 800; color: #fff;
+    line-height: 0.95; letter-spacing: -4px;
+    font-family: -apple-system, 'Inter', sans-serif;
+  }
+  .mob-splash-icon {
+    position: absolute; bottom: 52px; right: 36px;
+    width: 68px; height: 68px; object-fit: contain;
+    filter: brightness(0) invert(1) opacity(0.9);
+  }
+
+  /* Landing */
+  .mob-landing-bg {
+    width: 100%; height: 100%;
+    background: linear-gradient(160deg, #0d9488 0%, #0f766e 55%, #134e4a 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: space-between;
+    padding: 100px 24px 52px;
+  }
+  .mob-landing-logo {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+  .mob-landing-logo img { width: 80px; height: 80px; object-fit: contain; filter: brightness(0) invert(1); }
+  .mob-landing-logo span { font-size: 38px; font-weight: 800; color: #fff; letter-spacing: -2px; }
+  .mob-landing-tagline { text-align: center; display: flex; flex-direction: column; gap: 10px; }
+  .mob-landing-one { font-size: 34px; font-weight: 800; color: #4c1515; line-height: 1.1; }
+  .mob-landing-sub { font-size: 18px; font-weight: 600; color: #fef3c7; line-height: 1.5; }
+  .mob-landing-btns { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .mob-landing-create {
+    width: 100%; height: 52px; border-radius: 32px;
+    background: #4c1515; border: none; color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: opacity .15s;
+  }
+  .mob-landing-create:hover { opacity: .88; }
+  .mob-landing-row { display: flex; gap: 8px; }
+  .mob-landing-secondary {
+    flex: 1; height: 50px; border-radius: 32px;
+    background: #fff; border: 1px solid #e4e4e7;
+    color: #27272a; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .15s;
+  }
+  .mob-landing-secondary:hover { background: #f4f4f5; }
 }

@@ -14,6 +14,35 @@
   <div class="wc-dot" style="background:#28c840"></div>
 </div>
 
+<!-- ══════════ MOBILE SPLASH ══════════ -->
+<div id="screen-splash" class="screen">
+  <div class="mob-splash-bg">
+    <div class="mob-splash-wordmark">yu<br>zu.</div>
+    <img src="logo.svg" class="mob-splash-icon" alt="yuzu" />
+  </div>
+</div>
+
+<!-- ══════════ MOBILE LANDING ══════════ -->
+<div id="screen-landing" class="screen">
+  <div class="mob-landing-bg">
+    <div class="mob-landing-logo">
+      <img src="logo.svg" alt="yuzu" />
+      <span>yuzu</span>
+    </div>
+    <div class="mob-landing-tagline">
+      <p class="mob-landing-one">One App.</p>
+      <p class="mob-landing-sub">Every conversation.<br>Anywhere your team works</p>
+    </div>
+    <div class="mob-landing-btns">
+      <button class="mob-landing-create" id="landingCreateBtn">Create account</button>
+      <div class="mob-landing-row">
+        <button class="mob-landing-secondary" id="landingSignInBtn">Sign in</button>
+        <button class="mob-landing-secondary" id="landingJoinBtn">Join a team</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════ ONBOARDING ══════════ -->
 <div id="screen-onboarding" class="screen active">
   <div class="auth-shell">
@@ -565,11 +594,204 @@
       </div>
     </div>
 
+    <!-- CREATE CHANNEL MODAL -->
+    <div class="ep-modal-overlay hidden" id="createChannelModal">
+      <div class="ep-modal cc-modal">
+        <div class="ep-modal-header">
+          <span class="ep-modal-title">Create Channel</span>
+          <button class="ep-modal-close" id="createChannelClose">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="ep-modal-body cc-body">
+          <div class="cc-type-row">
+            <button class="cc-type-btn active" id="ccPublicBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="12" rx="4" ry="9" stroke="currentColor" stroke-width="1.5"/><path d="M3 12H21" stroke="currentColor" stroke-width="1.5"/></svg>
+              <div class="cc-type-text"><span class="cc-type-name">Public</span><span class="cc-type-desc">Anyone can join</span></div>
+            </button>
+            <button class="cc-type-btn" id="ccPrivateBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <div class="cc-type-text"><span class="cc-type-name">Private</span><span class="cc-type-desc">Invite only</span></div>
+            </button>
+          </div>
+          <div class="cc-field-group">
+            <label class="cc-label">Channel Name</label>
+            <div class="cc-input-wrap">
+              <span class="cc-hash">#</span>
+              <input type="text" class="cc-input" id="ccNameInput" placeholder="e.g. design-team" />
+            </div>
+          </div>
+          <div class="cc-field-group">
+            <label class="cc-label">Description <span class="cc-optional">(optional)</span></label>
+            <textarea class="cc-textarea" id="ccDescInput" placeholder="What's this channel about?"></textarea>
+          </div>
+        </div>
+        <div class="cc-modal-footer">
+          <button class="cc-create-btn" id="ccCreateBtn">Create Channel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW DM MODAL -->
+    <div class="ep-modal-overlay hidden" id="newDmModal">
+      <div class="ep-modal cc-modal">
+        <div class="ep-modal-header">
+          <span class="ep-modal-title">New Direct Message</span>
+          <button class="ep-modal-close" id="newDmClose">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="ep-modal-body cc-body">
+          <div class="cc-field-group">
+            <label class="cc-label">To</label>
+            <div class="cc-input-wrap">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><circle cx="7" cy="7" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M11 11L14 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <input type="text" class="cc-input" id="newDmInput" placeholder="Search by name…" />
+            </div>
+          </div>
+          <div class="ndm-people-list" id="ndmPeopleList">
+            <div class="ndm-person" data-dm="sarah"><div class="dm-letter-avatar" style="background:#7c3aed;width:32px;height:32px;font-size:12px">SJ</div><span>Sarah Jenkins</span></div>
+            <div class="ndm-person" data-dm="david"><div class="dm-letter-avatar" style="background:#2563eb;width:32px;height:32px;font-size:12px">DC</div><span>David Chen</span></div>
+            <div class="ndm-person" data-dm="alex"><div class="dm-letter-avatar" style="background:#059669;width:32px;height:32px;font-size:12px">AK</div><span>Alex Kim</span></div>
+            <div class="ndm-person" data-dm="jessica"><div class="dm-letter-avatar" style="background:#d97706;width:32px;height:32px;font-size:12px">JP</div><span>Jessica Park</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALL PEOPLE PICKER (mobile bottom sheet) -->
+    <div class="ep-modal-overlay hidden" id="callPeopleModal">
+      <div class="ep-modal cc-modal">
+        <div class="ep-modal-header">
+          <span class="ep-modal-title">Start a Call</span>
+          <button class="ep-modal-close" id="callPeopleClose">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="ep-modal-body cc-body">
+          <div class="cc-field-group">
+            <div class="cc-input-wrap">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><circle cx="7" cy="7" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M11 11L14 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <input type="text" class="cc-input" id="callPeopleSearch" placeholder="Search…" />
+            </div>
+          </div>
+          <div class="ndm-people-list">
+            <div class="ndm-person call-person" data-call="sarah" data-name="Sarah Jenkins" data-role="Mobile Dev" data-color="#7c3aed" data-initials="SJ">
+              <div class="dm-letter-avatar" style="background:#7c3aed;width:36px;height:36px;font-size:13px">SJ</div>
+              <div class="ndm-person-info"><span>Sarah Jenkins</span><small>Mobile Dev</small></div>
+              <button class="cp-call-now">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
+              </button>
+            </div>
+            <div class="ndm-person call-person" data-call="david" data-name="David Chen" data-role="Engineering" data-color="#2563eb" data-initials="DC">
+              <div class="dm-letter-avatar" style="background:#2563eb;width:36px;height:36px;font-size:13px">DC</div>
+              <div class="ndm-person-info"><span>David Chen</span><small>Engineering</small></div>
+              <button class="cp-call-now">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
+              </button>
+            </div>
+            <div class="ndm-person call-person" data-call="alex" data-name="Alex Kim" data-role="Design" data-color="#059669" data-initials="AK">
+              <div class="dm-letter-avatar" style="background:#059669;width:36px;height:36px;font-size:13px">AK</div>
+              <div class="ndm-person-info"><span>Alex Kim</span><small>Design</small></div>
+              <button class="cp-call-now">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
+              </button>
+            </div>
+            <div class="ndm-person call-person" data-call="jessica" data-name="Jessica Park" data-role="Marketing" data-color="#d97706" data-initials="JP">
+              <div class="dm-letter-avatar" style="background:#d97706;width:36px;height:36px;font-size:13px">JP</div>
+              <div class="ndm-person-info"><span>Jessica Park</span><small>Marketing</small></div>
+              <button class="cp-call-now">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL-SCREEN CALL SCREEN -->
+    <div class="call-screen hidden" id="callScreen">
+      <div class="cs-top">
+        <button class="cs-minimize" id="csMinimize">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 9L12 15L18 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="cs-signal">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><rect x="0" y="9" width="3" height="5" rx="1" fill="white"/><rect x="5" y="6" width="3" height="8" rx="1" fill="white"/><rect x="10" y="3" width="3" height="11" rx="1" fill="white"/><rect x="15" y="0" width="3" height="14" rx="1" fill="white"/></svg>
+          <span class="cs-hd">HD</span>
+        </div>
+      </div>
+      <div class="cs-caller">
+        <div class="cs-avatar" id="csAvatar"></div>
+        <div class="cs-name" id="csName">Sarah Jenkins</div>
+        <div class="cs-role" id="csRole">Mobile Dev</div>
+        <div class="cs-timer" id="csTimer">00:00</div>
+      </div>
+      <div class="cs-crm-pill">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="white" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="white" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="white" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="white" stroke-width="1.5"/></svg>
+        <span class="cs-crm-internal">Internal</span>
+        <div class="cs-crm-divider"></div>
+        <span class="cs-crm-link">View in CRM
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4V10" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="cs-controls">
+        <div class="cs-ctrl-row">
+          <button class="cs-btn" id="csMuteBtn">
+            <div class="cs-btn-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" stroke="white" stroke-width="1.8"/><path d="M5 11C5 15.42 8.58 19 12 19C15.42 19 19 15.42 19 11" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span>Mute</span>
+          </button>
+          <button class="cs-btn cs-btn-active" id="csSpeakerBtn">
+            <div class="cs-btn-icon cs-btn-icon-white">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span>Speaker</span>
+          </button>
+          <button class="cs-btn" id="csHoldBtn">
+            <div class="cs-btn-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="6" y="4" width="4" height="16" rx="2" fill="white"/><rect x="14" y="4" width="4" height="16" rx="2" fill="white"/></svg>
+            </div>
+            <span>Hold</span>
+          </button>
+        </div>
+        <div class="cs-ctrl-row">
+          <button class="cs-btn">
+            <div class="cs-btn-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="white" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="white" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="white" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="white" stroke-width="1.8"/></svg>
+            </div>
+            <span>Keypad</span>
+          </button>
+          <button class="cs-btn">
+            <div class="cs-btn-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="white" stroke-width="1.8"/><path d="M4 20C4 17 7.58 14 12 14" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M17 17L19 19L23 15" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span>Add Caller</span>
+          </button>
+          <button class="cs-btn">
+            <div class="cs-btn-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="19" cy="12" r="1.5" fill="white"/></svg>
+            </div>
+            <span>More</span>
+          </button>
+        </div>
+      </div>
+      <button class="cs-summary-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 8.5L20 7L15.5 12L20 17L13.5 15.5L12 22L10.5 15.5L4 17L8.5 12L4 7L10.5 8.5Z" stroke="#22c55e" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        View Call Summary
+      </button>
+      <div class="cs-hangup-wrap">
+        <button class="cs-hangup" id="csHangup">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0122 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 7.91" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
     <section class="middle-panel">
       <div class="quick-actions-bar">
-        <button class="quick-action"><div class="quick-action-icon" style="background:rgba(246,196,83,0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="#7a5510" stroke-width="1.5" stroke-linejoin="round"/></svg></div><span>New DM</span></button>
-        <button class="quick-action"><div class="quick-action-icon" style="background:rgba(13,143,130,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6H20M4 10H16M4 14H12" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Channel</span></button>
-        <button class="quick-action"><div class="quick-action-icon" style="background:rgba(0,173,94,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="#00ad5e" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg></div><span>Call</span></button>
+        <button class="quick-action" id="quickNewDmBtn"><div class="quick-action-icon" style="background:rgba(246,196,83,0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="#7a5510" stroke-width="1.5" stroke-linejoin="round"/></svg></div><span>New DM</span></button>
+        <button class="quick-action" id="quickChannelBtn"><div class="quick-action-icon" style="background:rgba(13,143,130,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6H20M4 10H16M4 14H12" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Channel</span></button>
+        <button class="quick-action" id="quickCallBtn"><div class="quick-action-icon" style="background:rgba(0,173,94,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="#00ad5e" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg></div><span>Call</span></button>
         <button class="quick-action" id="scheduleBtn"><div class="quick-action-icon" style="background:rgba(139,92,246,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#7c3aed" stroke-width="1.5"/><path d="M16 2V6M8 2V6M3 10H21" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Schedule</span></button>
         <button class="quick-action" id="taskBtn"><div class="quick-action-icon" style="background:rgba(246,196,83,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="#7a5510" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Task</span></button>
       </div>

@@ -36,6 +36,18 @@ function goTo(id) {
   document.getElementById(id).classList.add('active');
 }
 
+// ── MOBILE SPLASH → LANDING flow ──
+if (window.innerWidth <= 768) {
+  // Start on splash instead of onboarding
+  document.getElementById('screen-onboarding').classList.remove('active');
+  document.getElementById('screen-splash').classList.add('active');
+  // Auto-advance to landing after 2s
+  setTimeout(() => goTo('screen-landing'), 2000);
+}
+document.getElementById('landingCreateBtn').addEventListener('click', () => goTo('screen-login'));
+document.getElementById('landingSignInBtn').addEventListener('click', () => goTo('screen-login'));
+document.getElementById('landingJoinBtn').addEventListener('click', () => goTo('screen-login'));
+
 // ── LOGIN ──
 document.getElementById('btnSignInEmail').addEventListener('click', () => goTo('screen-email'));
 ['btnGoogle','btnMicrosoft','btnUaePass'].forEach(id => {
@@ -1449,4 +1461,157 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
     if (isMobile()) mobCloseDetail();
   }, true);
+});
+
+// ── QUICK ACTION BUTTONS ──
+function openModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+// Channel button → Create Channel modal
+document.getElementById('quickChannelBtn').addEventListener('click', () => openModal('createChannelModal'));
+document.getElementById('createChannelClose').addEventListener('click', () => closeModal('createChannelModal'));
+document.getElementById('createChannelModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal('createChannelModal');
+});
+
+// Public / Private toggle
+const ccPublicBtn = document.getElementById('ccPublicBtn');
+const ccPrivateBtn = document.getElementById('ccPrivateBtn');
+ccPublicBtn.addEventListener('click', () => { ccPublicBtn.classList.add('active'); ccPrivateBtn.classList.remove('active'); });
+ccPrivateBtn.addEventListener('click', () => { ccPrivateBtn.classList.add('active'); ccPublicBtn.classList.remove('active'); });
+
+// Activate Create Channel button when name is typed
+const ccNameInput = document.getElementById('ccNameInput');
+const ccCreateBtn = document.getElementById('ccCreateBtn');
+ccNameInput.addEventListener('input', () => {
+  ccCreateBtn.classList.toggle('ready', ccNameInput.value.trim().length > 0);
+});
+ccCreateBtn.addEventListener('click', () => {
+  const name = ccNameInput.value.trim().replace(/\s+/g, '-').toLowerCase();
+  if (!name) return;
+  closeModal('createChannelModal');
+  ccNameInput.value = '';
+  document.getElementById('ccDescInput').value = '';
+  ccCreateBtn.classList.remove('ready');
+  // Load the new channel in the right panel
+  if (!channelData[name]) {
+    channelData[name] = { name, displayName: name, members: 1, messages: [] };
+  }
+  loadChannelConversation(name);
+  if (isMobile()) mobOpenDetail();
+});
+
+// New DM button
+document.getElementById('quickNewDmBtn').addEventListener('click', () => {
+  openModal('newDmModal');
+  document.getElementById('newDmInput').focus();
+});
+document.getElementById('newDmClose').addEventListener('click', () => closeModal('newDmModal'));
+document.getElementById('newDmModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal('newDmModal');
+});
+
+// Filter people list on search
+document.getElementById('newDmInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.ndm-person').forEach(p => {
+    p.style.display = p.querySelector('span').textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+// Click person → open DM
+document.querySelectorAll('.ndm-person').forEach(p => {
+  p.addEventListener('click', () => {
+    const dmKey = p.dataset.dm;
+    closeModal('newDmModal');
+    switchMiddleView('dms');
+    loadDmConversation(dmKey);
+    if (isMobile()) mobOpenDetail();
+  });
+});
+
+// ── CALL SCREEN ──
+let callTimerInterval = null;
+
+function startCallWith(name, role, color, initials) {
+  // populate
+  const av = document.getElementById('csAvatar');
+  av.textContent = initials;
+  av.style.background = color;
+  document.getElementById('csName').textContent = name;
+  document.getElementById('csRole').textContent = role;
+  // reset timer
+  clearInterval(callTimerInterval);
+  let secs = 0;
+  document.getElementById('csTimer').textContent = '00:00';
+  callTimerInterval = setInterval(() => {
+    secs++;
+    const m = String(Math.floor(secs / 60)).padStart(2, '0');
+    const s = String(secs % 60).padStart(2, '0');
+    document.getElementById('csTimer').textContent = `${m}:${s}`;
+  }, 1000);
+  document.getElementById('callScreen').classList.remove('hidden');
+}
+
+function endCall() {
+  clearInterval(callTimerInterval);
+  document.getElementById('callScreen').classList.add('hidden');
+}
+
+document.getElementById('csHangup').addEventListener('click', endCall);
+document.getElementById('csMinimize').addEventListener('click', endCall);
+
+// Mute / Speaker / Hold toggles
+['csMuteBtn','csHoldBtn'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function() {
+    this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-white');
+    this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-active');
+  });
+});
+
+// Call people picker
+document.getElementById('callPeopleClose').addEventListener('click', () => closeModal('callPeopleModal'));
+document.getElementById('callPeopleModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal('callPeopleModal');
+});
+document.getElementById('callPeopleSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.call-person').forEach(p => {
+    p.style.display = p.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+document.querySelectorAll('.call-person').forEach(p => {
+  p.addEventListener('click', () => {
+    closeModal('callPeopleModal');
+    startCallWith(p.dataset.name, p.dataset.role, p.dataset.color, p.dataset.initials);
+  });
+});
+
+// Call button → people picker on mobile, People tab on desktop
+document.getElementById('quickCallBtn').addEventListener('click', () => {
+  if (isMobile()) {
+    openModal('callPeopleModal');
+  } else {
+    switchMiddleView('people');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-tab="people"]')?.classList.add('active');
+  }
+});
+
+// Schedule button
+document.getElementById('scheduleBtn').addEventListener('click', () => {
+  switchMiddleView('home');
+  showPanel('scheduleDetail');
+  if (isMobile()) mobOpenDetail();
+});
+
+// Task button
+document.getElementById('taskBtn').addEventListener('click', () => {
+  switchMiddleView('tasks');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-tab="tasks"]')?.classList.add('active');
 });
