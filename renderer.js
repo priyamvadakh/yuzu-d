@@ -123,7 +123,7 @@ function switchMiddleView(tab) {
     renderPeopleList();
     showIdle();
   } else {
-    showPanel('homeView');
+    showIdle();
   }
 }
 
@@ -566,7 +566,7 @@ function cycleTaskStatus(t) {
 }
 
 // ── RIGHT PANEL STATES ──
-const allPanels = ['homeView','scheduleDetail','taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult','kbView','contactView'];
+const allPanels = ['scheduleDetail','taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult','kbView','contactView'];
 function showPanel(id) {
   allPanels.forEach(p => {
     const el = document.getElementById(p);

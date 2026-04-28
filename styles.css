@@ -181,7 +181,6 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .middle-content::-webkit-scrollbar { width: 4px; }
 .middle-content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 .greeting-email { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-.home-view { flex: 1; display: flex; align-items: center; justify-content: center; }
 .home-view-greeting { text-align: center; }
 .home-view-greeting h2 { font-size: 28px; font-weight: 700; color: var(--maroon); }
 .home-view-greeting .greeting-email { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
