@@ -822,3 +822,140 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 /* Send button icon swap */
 .dm-send-btn .icon-send { display: block; }
 .dm-send-btn .icon-mic  { display: block; }
+
+/* ══════════════════════════════════════════
+   MOBILE RESPONSIVE  (≤ 768px)
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Reset desktop shell ── */
+  body { padding: 0; background: #fff; align-items: stretch; }
+  .app-window { width: 100%; height: 100dvh; border-radius: 0; border: none; box-shadow: none; display: flex; flex-direction: column; }
+  .window-titlebar { display: none; }
+
+  /* ── Onboarding screens ── */
+  .auth-shell { flex-direction: column; }
+  .ob-left { width: 100%; min-width: unset; height: 230px; flex-shrink: 0; }
+  .ob-right { flex: 1; }
+  .ob-right-inner { max-width: 100%; padding: 0 28px; }
+  .ob-title { font-size: 22px; }
+  .ob-next-btn { height: 46px; font-size: 14px; }
+  .ob-collage-wrap { transform: scale(0.72); transform-origin: center center; }
+  .ob-chat-mockup { transform: scale(0.75); transform-origin: top center; }
+  .ob-task-board { transform: scale(0.75); transform-origin: top center; }
+  .ob-mic-scene { transform: scale(0.68); transform-origin: top center; }
+
+  /* ── Auth screens (login / email / OTP) — hide brand panel, full-width form ── */
+  #screen-login .brand-panel,
+  #screen-email .brand-panel,
+  #screen-otp .brand-panel { display: none; }
+  #screen-login .auth-form-panel,
+  #screen-email .auth-form-panel,
+  #screen-otp .auth-form-panel { width: 100%; background: linear-gradient(180deg,#2a0a0a 0%,#4c1515 100%); }
+  #screen-login .auth-form-inner,
+  #screen-email .auth-form-inner,
+  #screen-otp .auth-form-inner { max-width: 100%; padding: 52px 28px 40px; }
+  #screen-login .auth-logo-small span,
+  #screen-email .auth-logo-small span,
+  #screen-otp .auth-logo-small span { color: #fff; }
+  #screen-login .auth-title,
+  #screen-email .auth-title,
+  #screen-otp .auth-title { color: #fff; }
+  #screen-login .auth-subtitle,
+  #screen-email .auth-subtitle,
+  #screen-otp .auth-subtitle { color: rgba(255,255,255,0.6); }
+  #screen-login .auth-social-btn,
+  #screen-email .auth-social-btn { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); color: #fff; }
+  #screen-login .auth-social-btn:hover,
+  #screen-email .auth-social-btn:hover { background: rgba(255,255,255,0.16); }
+  #screen-login .auth-divider p { color: rgba(255,255,255,0.4); }
+  #screen-login .auth-divider span { background: rgba(255,255,255,0.15); }
+  #screen-login .auth-trouble,
+  #screen-email .auth-trouble { color: rgba(255,255,255,0.45); }
+  #screen-login .auth-trouble-link { color: rgba(246,196,83,0.9); }
+  #screen-email .auth-input,
+  #screen-otp .otp-input { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; }
+  #screen-email .auth-input::placeholder { color: rgba(255,255,255,0.35); }
+  #screen-email .back-btn svg path,
+  #screen-otp .back-btn svg path { stroke: rgba(255,255,255,0.8); }
+  #screen-otp .otp-label,
+  #screen-otp .otp-email-hint { color: rgba(255,255,255,0.6); }
+
+  /* ── Main app layout ── */
+  .app { display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
+
+  /* ── Left nav → bottom tab bar ── */
+  .left-nav {
+    width: 100% !important; min-width: unset !important;
+    height: 60px; flex-direction: row;
+    padding: 0; border-right: none;
+    border-top: 1px solid var(--border);
+    order: 10; flex-shrink: 0;
+    overflow: visible;
+    position: relative; z-index: 100;
+  }
+  .nav-top-row { display: none; }
+  .nav-items-wrapper { flex-direction: row; flex: 1; justify-content: unset; }
+  .nav-items { flex-direction: row; align-items: center; justify-content: space-around; padding: 0; gap: 0; flex: 1; }
+  .nav-item { width: auto; height: 100%; flex: 1; border-radius: 0; padding: 0; flex-direction: column; gap: 3px; }
+  .nav-label { opacity: 1 !important; width: auto !important; font-size: 10px; }
+  .nav-icon { width: 20px; height: 20px; }
+  .nav-bottom { flex-direction: row; align-items: center; border-top: none; border-left: 1px solid rgba(0,0,0,.07); padding: 0 4px; gap: 2px; flex-shrink: 0; height: 100%; }
+  .nav-action-btn { width: 36px !important; height: 36px !important; border-radius: 50% !important; flex-shrink: 0; }
+  .nav-profile-btn { width: 36px !important; height: 36px !important; border-radius: 50% !important; padding: 0 !important; justify-content: center !important; flex-shrink: 0; }
+  .nav-profile-name { display: none; }
+  .nav-collapse-btn { display: none; }
+  .profile-popup { bottom: 68px; left: unset !important; right: 8px; width: 220px; }
+
+  /* ── Middle panel ── */
+  .middle-panel { width: 100% !important; min-width: unset; border-right: none; flex: 1; order: 1; }
+
+  /* ── Right panel → slide-in overlay ── */
+  .right-panel {
+    position: absolute; inset: 0; bottom: 60px;
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 50; background: #f9f8f6;
+  }
+  .app.detail-open .right-panel { transform: translateX(0); }
+
+  /* ── recIdle (home mic view) fills the right panel nicely on mobile ── */
+  .rec-idle { padding: 40px 24px 100px; justify-content: center; gap: 28px; }
+  .mic-rings { width: 130px; height: 130px; }
+  .mic-btn-idle { width: 80px; height: 80px; }
+  .mic-btn-idle svg { width: 36px; height: 36px; }
+  .mic-ring { position: absolute; border-radius: 50%; }
+  .ai-sugg-row { flex-direction: column; }
+  .ai-sugg-chip { justify-content: center; }
+
+  /* ── Back button (injected by JS) ── */
+  .mob-back-btn {
+    display: flex; align-items: center; gap: 6px;
+    position: absolute; top: 14px; left: 12px; z-index: 10;
+    background: none; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--maroon);
+    padding: 6px 8px; border-radius: 10px;
+  }
+  .mob-back-btn:hover { background: rgba(76,21,21,.06); }
+  .mob-back-btn svg { flex-shrink: 0; }
+
+  /* ── DM / channel header padding for back button ── */
+  .dm-convo-header { padding-left: 52px !important; }
+  .dm-convo-header .dm-header-actions { right: 12px !important; }
+
+  /* ── Misc ── */
+  .rec-idle { padding: 24px 20px 80px; }
+  .ai-feature-cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .home-view-greeting h2 { font-size: 22px; }
+  .profile-popup { position: fixed; }
+
+  /* ── Expanded nav class has no effect on mobile ── */
+  .left-nav.expanded { width: 100% !important; min-width: unset !important; height: 60px !important; }
+  .left-nav.expanded .nav-items { flex-direction: row; align-items: center; justify-content: space-around; padding: 0; }
+  .left-nav.expanded .nav-item { width: auto; padding: 0; flex-direction: column; gap: 3px; justify-content: center; }
+  .left-nav.expanded .nav-label { font-size: 10px; }
+  .left-nav.expanded .nav-bottom { flex-direction: row; border-left: 1px solid rgba(0,0,0,.07); border-top: none; padding: 0 4px; height: 100%; }
+  .left-nav.expanded .nav-action-btn { width: 36px !important; height: 36px !important; border-radius: 50% !important; }
+  .left-nav.expanded .nav-profile-btn { width: 36px !important; height: 36px !important; border-radius: 50% !important; }
+  .left-nav.expanded ~ .profile-popup { left: unset !important; right: 8px; }
+}

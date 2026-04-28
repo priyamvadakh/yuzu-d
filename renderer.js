@@ -131,6 +131,14 @@ function showHome() {
   switchMiddleView('home');
   updateProfileDisplay();
   document.getElementById('navActionBtn').classList.add('inactive');
+  // On mobile: auto-show mic screen (recIdle is in the right panel)
+  if (isMobile()) {
+    mobOpenDetail();
+    setTimeout(() => {
+      const backBtn = document.getElementById('mobBackBtn');
+      if (backBtn) backBtn.style.display = 'none';
+    }, 50);
+  }
 }
 
 // ── MIDDLE PANEL NAV ──
@@ -1411,3 +1419,49 @@ function createAndShowTask(title, dueDate, status) {
     document.querySelectorAll('.task-new').forEach(t => t.classList.remove('task-new'));
   }, 2200);
 }
+
+// ── MOBILE: push-navigation ──
+const isMobile = () => window.innerWidth <= 768;
+const appEl = document.querySelector('.app');
+
+function mobOpenDetail() {
+  if (!isMobile()) return;
+  appEl.classList.add('detail-open');
+  if (!document.getElementById('mobBackBtn')) {
+    const btn = document.createElement('button');
+    btn.id = 'mobBackBtn';
+    btn.className = 'mob-back-btn';
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Back`;
+    btn.addEventListener('click', mobCloseDetail);
+    document.querySelector('.right-panel').prepend(btn);
+  }
+}
+
+function mobCloseDetail() {
+  appEl.classList.remove('detail-open');
+}
+
+// Patch showPanel to trigger mobile push
+const _origShowPanel = showPanel;
+function showPanel(id) {
+  _origShowPanel(id);
+  if (!isMobile()) return;
+  mobOpenDetail();
+  // Only show back button for non-home detail panels
+  const backBtn = document.getElementById('mobBackBtn');
+  if (backBtn) backBtn.style.display = id === 'recIdle' ? 'none' : 'flex';
+}
+
+// Close detail when switching nav tabs on mobile (except home → show mic)
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!isMobile()) return;
+    if (btn.dataset.tab === 'home') {
+      mobOpenDetail();
+      const backBtn = document.getElementById('mobBackBtn');
+      if (backBtn) backBtn.style.display = 'none';
+    } else {
+      mobCloseDetail();
+    }
+  }, true);
+});
