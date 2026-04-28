@@ -130,15 +130,8 @@ function showHome() {
   showIdle();
   switchMiddleView('home');
   updateProfileDisplay();
-  document.getElementById('navActionBtn').classList.add('inactive');
-  // On mobile: auto-show mic screen (recIdle is in the right panel)
-  if (isMobile()) {
-    mobOpenDetail();
-    setTimeout(() => {
-      const backBtn = document.getElementById('mobBackBtn');
-      if (backBtn) backBtn.style.display = 'none';
-    }, 50);
-  }
+  // Desktop: inactive on home. Mobile: always active so user can tap to open mic
+  document.getElementById('navActionBtn').classList.toggle('inactive', !isMobile());
 }
 
 // ── MIDDLE PANEL NAV ──
@@ -170,7 +163,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('navActionBtn').classList.toggle('inactive', btn.dataset.tab === 'home');
+    document.getElementById('navActionBtn').classList.toggle('inactive', btn.dataset.tab === 'home' && !isMobile());
     switchMiddleView(btn.dataset.tab);
   });
 });
@@ -660,6 +653,11 @@ function showPanel(id) {
     const el = document.getElementById(p);
     if (el) el.classList.toggle('hidden', p !== id);
   });
+  if (typeof isMobile === 'function' && isMobile()) {
+    mobOpenDetail();
+    const backBtn = document.getElementById('mobBackBtn');
+    if (backBtn) backBtn.style.display = 'flex';
+  }
 }
 
 function showIdle()          { teardownRecording(); showPanel('recIdle'); }
@@ -860,7 +858,7 @@ function navigateTo(tab) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const btn = document.querySelector(`.nav-item[data-tab="${tab}"]`);
   if (btn) btn.classList.add('active');
-  document.getElementById('navActionBtn').classList.toggle('inactive', tab === 'home');
+  document.getElementById('navActionBtn').classList.toggle('inactive', tab === 'home' && !isMobile());
   switchMiddleView(tab);
 }
 
@@ -1441,27 +1439,14 @@ function mobCloseDetail() {
   appEl.classList.remove('detail-open');
 }
 
-// Patch showPanel to trigger mobile push
-const _origShowPanel = showPanel;
-function showPanel(id) {
-  _origShowPanel(id);
-  if (!isMobile()) return;
-  mobOpenDetail();
-  // Only show back button for non-home detail panels
-  const backBtn = document.getElementById('mobBackBtn');
-  if (backBtn) backBtn.style.display = id === 'recIdle' ? 'none' : 'flex';
-}
+// Activities button — slide back to middle panel
+document.getElementById('mobActivitiesBtn').addEventListener('click', () => {
+  mobCloseDetail();
+});
 
-// Close detail when switching nav tabs on mobile (except home → show mic)
+// On mobile: any nav tab tap goes back to the list (middle panel)
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (!isMobile()) return;
-    if (btn.dataset.tab === 'home') {
-      mobOpenDetail();
-      const backBtn = document.getElementById('mobBackBtn');
-      if (backBtn) backBtn.style.display = 'none';
-    } else {
-      mobCloseDetail();
-    }
+    if (isMobile()) mobCloseDetail();
   }, true);
 });

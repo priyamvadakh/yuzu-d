@@ -498,6 +498,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 
 /* STATE 1: Idle */
 .rec-idle { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100%; gap: 24px; overflow-y: auto; padding: 36px 48px 40px; }
+.mob-activities-btn { display: none; }
 .rec-idle::-webkit-scrollbar { width: 3px; }
 .rec-idle::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
 
@@ -835,15 +836,57 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 
   /* ── Onboarding screens ── */
   .auth-shell { flex-direction: column; }
-  .ob-left { width: 100%; min-width: unset; height: 230px; flex-shrink: 0; }
-  .ob-right { flex: 1; }
-  .ob-right-inner { max-width: 100%; padding: 0 28px; }
-  .ob-title { font-size: 22px; }
-  .ob-next-btn { height: 46px; font-size: 14px; }
-  .ob-collage-wrap { transform: scale(0.72); transform-origin: center center; }
-  .ob-chat-mockup { transform: scale(0.75); transform-origin: top center; }
-  .ob-task-board { transform: scale(0.75); transform-origin: top center; }
-  .ob-mic-scene { transform: scale(0.68); transform-origin: top center; }
+
+  /* Full-screen dark brown background for the whole onboarding shell */
+  #screen-onboarding .auth-shell {
+    background: linear-gradient(180deg, #1a0606 0%, #2a0a0a 50%, #4c1515 100%);
+    height: 100%;
+  }
+
+  /* Illustration area — upper 52% of screen */
+  .ob-left {
+    width: 100%; min-width: unset;
+    height: 58%; flex-shrink: 0;
+    background: transparent;
+  }
+  .ob-slide-left { background: transparent; }
+
+  /* Scale illustrations to fit nicely */
+  .ob-collage-wrap { transform: scale(0.88); transform-origin: center center; }
+  .ob-chat-mockup  { transform: scale(0.88); transform-origin: center center; }
+  .ob-task-board   { transform: scale(0.88); transform-origin: center center; }
+  .ob-mic-scene    { transform: scale(0.82); transform-origin: center center; }
+
+  /* Right text panel — lower 48%, dark bg, text pushed to bottom */
+  .ob-right {
+    flex: 1; background: transparent;
+    align-items: flex-end;
+  }
+  .ob-right-inner {
+    max-width: 100%;
+    padding: 0 28px 36px;
+    gap: 0;
+    justify-content: flex-end;
+    height: 100%;
+  }
+
+  /* White text on dark bg */
+  .ob-skip-btn { color: rgba(255,255,255,0.45); }
+  .ob-skip-btn:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.08); }
+  .auth-logo-small span { color: #fff; }
+  .ob-step-pill { background: rgba(246,196,83,0.18); color: rgba(246,196,83,0.9); }
+  .ob-title { color: #fff; font-size: 24px; }
+  .ob-desc  { color: rgba(255,255,255,0.6); font-size: 14px; }
+  .ob-dot   { background: rgba(255,255,255,0.2); }
+  .ob-dot.active { background: var(--amber); }
+  .ob-next-btn { background: linear-gradient(135deg, #f6c453, #d97706); color: #2a0a0a; font-weight: 700; }
+
+  /* Text block + footer tight together at bottom */
+  .ob-text { gap: 8px; margin-bottom: 0; }
+  .ob-footer { margin-top: 24px; gap: 20px; }
+
+  /* Hide the logo in the right panel on mobile (already shown elsewhere) */
+  .ob-right-inner .auth-logo-small { display: none; }
 
   /* ── Auth screens (login / email / OTP) — hide brand panel, full-width form ── */
   #screen-login .brand-panel,
@@ -919,14 +962,11 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
   }
   .app.detail-open .right-panel { transform: translateX(0); }
 
-  /* ── recIdle (home mic view) fills the right panel nicely on mobile ── */
-  .rec-idle { padding: 40px 24px 100px; justify-content: center; gap: 28px; }
-  .mic-rings { width: 130px; height: 130px; }
-  .mic-btn-idle { width: 80px; height: 80px; }
-  .mic-btn-idle svg { width: 36px; height: 36px; }
-  .mic-ring { position: absolute; border-radius: 50%; }
+  /* ── recIdle: same look as desktop, just tighter padding ── */
+  .rec-idle { padding: 48px 24px 24px; justify-content: flex-start; gap: 20px; min-height: 100%; }
   .ai-sugg-row { flex-direction: column; }
   .ai-sugg-chip { justify-content: center; }
+  .ai-feature-cards { grid-template-columns: 1fr 1fr; gap: 10px; }
 
   /* ── Back button (injected by JS) ── */
   .mob-back-btn {
