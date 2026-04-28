@@ -37,13 +37,7 @@ function goTo(id) {
 }
 
 // ── MOBILE SPLASH → LANDING flow ──
-if (window.innerWidth <= 768) {
-  // Start on splash instead of onboarding
-  document.getElementById('screen-onboarding').classList.remove('active');
-  document.getElementById('screen-splash').classList.add('active');
-  // Auto-advance to landing after 2s
-  setTimeout(() => goTo('screen-landing'), 2000);
-}
+// Mobile uses the standard onboarding flow (screen-splash/landing are hidden)
 document.getElementById('landingCreateBtn').addEventListener('click', () => goTo('screen-login'));
 document.getElementById('landingSignInBtn').addEventListener('click', () => goTo('screen-login'));
 document.getElementById('landingJoinBtn').addEventListener('click', () => goTo('screen-login'));
@@ -374,12 +368,17 @@ function renderPeopleList(filter) {
 
   list.querySelectorAll('.people-item').forEach(el => {
     el.addEventListener('click', e => {
-      if (e.target.closest('.people-dm-btn')) return;
+      if (e.target.closest('.people-hover-actions')) return;
       showContactDetail(el.dataset.personKey);
     });
-    el.querySelector('.people-dm-btn')?.addEventListener('click', () => {
+    el.querySelector('.pha-msg')?.addEventListener('click', e => {
+      e.stopPropagation();
       const key = el.dataset.personKey;
       if (dmData[key]) { activeDm = key; navigateTo('dms'); }
+    });
+    el.querySelector('.pha-call')?.addEventListener('click', e => {
+      e.stopPropagation();
+      startCall(el.dataset.personKey);
     });
   });
 }
@@ -436,8 +435,7 @@ function showContactDetail(personKey) {
 }
 
 function personRow(p) {
-  const dotClass = p.online ? 'online-dot' : '';
-  return `<div class="people-item" data-person-key="${p.key}">
+  return `<div class="people-item" data-person-key="${p.key}" data-name="${p.name}" data-role="${p.role}" data-color="${p.color}" data-initials="${p.initials}">
     <div class="people-avatar" style="background:${p.color}">
       ${p.initials}
       ${p.online ? '<div class="online-dot" style="position:absolute;bottom:0;right:0;width:10px;height:10px;border:2px solid #fff;border-radius:50%;background:var(--online)"></div>' : ''}
@@ -446,9 +444,16 @@ function personRow(p) {
       <div class="people-name">${p.name}</div>
       <div class="people-role">${p.role}</div>
     </div>
-    <button class="people-dm-btn" title="Send DM">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14 9C14 9.35 13.86 9.69 13.61 9.94C13.36 10.19 13.02 10.33 12.67 10.33H4.67L2 13V3.67C2 3.32 2.14 2.98 2.39 2.73C2.64 2.48 2.98 2.33 3.33 2.33H12.67C13.02 2.33 13.36 2.48 13.61 2.73C13.86 2.98 14 3.32 14 3.67V9Z" stroke="#6b7280" stroke-width="1.2" stroke-linejoin="round"/></svg>
-    </button>
+    <div class="people-hover-actions">
+      <button class="pha-btn pha-msg" title="Message" data-action="msg">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M14 9C14 9.35 13.86 9.69 13.61 9.94C13.36 10.19 13.02 10.33 12.67 10.33H4.67L2 13V3.67C2 3.32 2.14 2.98 2.39 2.73C2.64 2.48 2.98 2.33 3.33 2.33H12.67C13.02 2.33 13.36 2.48 13.61 2.73C13.86 2.98 14 3.32 14 3.67V9Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        Message
+      </button>
+      <button class="pha-btn pha-call" title="Call" data-action="call">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg>
+        Call
+      </button>
+    </div>
   </div>`;
 }
 
@@ -1535,20 +1540,18 @@ document.querySelectorAll('.ndm-person').forEach(p => {
 });
 
 // ── CALL SCREEN ──
-let callTimerInterval = null;
+let csTimerInterval = null;
 
 function startCallWith(name, role, color, initials) {
-  // populate
   const av = document.getElementById('csAvatar');
   av.textContent = initials;
   av.style.background = color;
   document.getElementById('csName').textContent = name;
   document.getElementById('csRole').textContent = role;
-  // reset timer
-  clearInterval(callTimerInterval);
+  clearInterval(csTimerInterval);
   let secs = 0;
   document.getElementById('csTimer').textContent = '00:00';
-  callTimerInterval = setInterval(() => {
+  csTimerInterval = setInterval(() => {
     secs++;
     const m = String(Math.floor(secs / 60)).padStart(2, '0');
     const s = String(secs % 60).padStart(2, '0');
@@ -1557,13 +1560,13 @@ function startCallWith(name, role, color, initials) {
   document.getElementById('callScreen').classList.remove('hidden');
 }
 
-function endCall() {
-  clearInterval(callTimerInterval);
+function endCallScreen() {
+  clearInterval(csTimerInterval);
   document.getElementById('callScreen').classList.add('hidden');
 }
 
-document.getElementById('csHangup').addEventListener('click', endCall);
-document.getElementById('csMinimize').addEventListener('click', endCall);
+document.getElementById('csHangup').addEventListener('click', endCallScreen);
+document.getElementById('csMinimize').addEventListener('click', endCallScreen);
 
 // Mute / Speaker / Hold toggles
 ['csMuteBtn','csHoldBtn'].forEach(id => {

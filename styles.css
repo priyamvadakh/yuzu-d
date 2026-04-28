@@ -740,13 +740,19 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .people-list::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
 .people-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; transition: background .12s; }
 .people-item:hover { background: #f5f5f7; }
+.people-hover-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; opacity: 0; pointer-events: none; transition: opacity .15s; flex-shrink: 0; }
+.people-item:hover .people-hover-actions { opacity: 1; pointer-events: auto; }
+.pha-btn { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border); background: #fff; cursor: pointer; transition: background .12s, border-color .12s; flex-shrink: 0; }
+.pha-btn span { display: none; }
+.pha-msg { color: var(--maroon); }
+.pha-msg:hover { background: #fff7db; border-color: var(--amber); }
+.pha-call { color: #059669; }
+.pha-call:hover { background: #f0fdf4; border-color: #86efac; }
 .people-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; flex-shrink: 0; position: relative; }
 .people-avatar .online-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border: 2px solid #fff; }
 .people-info { flex: 1; min-width: 0; }
 .people-name { font-size: 13px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .people-role { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.people-dm-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .12s, border-color .12s; }
-.people-dm-btn:hover { background: #fff7db; border-color: var(--amber); }
 .people-group-label { font-size: 10px; font-weight: 700; letter-spacing: .06em; color: var(--text-muted); text-transform: uppercase; padding: 10px 10px 4px; }
 .people-item-selected { background: #fff7db !important; }
 .people-speak-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 14px; background: linear-gradient(135deg,rgba(76,21,21,.06),rgba(246,196,83,.1)); border: 1px dashed rgba(246,196,83,.5); border-radius: 12px; cursor: pointer; transition: background .15s, border-color .15s; color: var(--text-amber); font-size: 12px; font-weight: 500; font-family: inherit; }
@@ -1092,9 +1098,8 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
   .left-nav.expanded .nav-profile-btn { width: 36px !important; height: 36px !important; border-radius: 50% !important; }
   .left-nav.expanded ~ .profile-popup { left: unset !important; right: 8px; }
 
-  /* ── Mobile splash + landing screens ── */
-  #screen-splash, #screen-landing { display: block; }
-  #screen-onboarding { display: none; }
+  /* ── Mobile splash + landing screens hidden; use standard onboarding ── */
+  #screen-splash, #screen-landing { display: none; }
 
   /* Splash */
   .mob-splash-bg {
