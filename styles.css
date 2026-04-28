@@ -7,7 +7,7 @@
   --teal-bg: rgba(13,143,130,0.1); --red: #c94040; --orange: #f5c842;
   --radius-sm: 10px; --radius-md: 14px; --radius-lg: 18px;
 }
-body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-height: 100vh; overflow: auto; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: #dcdde1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-height: 100vh; overflow: auto; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
 
 /* ── APP WINDOW (desktop shell) ── */
 .app-window { width: 1200px; height: 860px; border-radius: 20px; overflow: hidden; position: relative; border: 1px solid rgba(0,0,0,.12); flex-shrink: 0; background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
