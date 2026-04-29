@@ -659,52 +659,106 @@
       </div>
     </div>
 
-    <!-- CALL PEOPLE PICKER (mobile bottom sheet) -->
+    <!-- CALL PEOPLE PICKER -->
     <div class="ep-modal-overlay hidden" id="callPeopleModal">
-      <div class="ep-modal cc-modal">
+      <div class="ep-modal cc-modal cpm-modal">
         <div class="ep-modal-header">
           <span class="ep-modal-title">Start a Call</span>
           <button class="ep-modal-close" id="callPeopleClose">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </button>
         </div>
-        <div class="ep-modal-body cc-body">
-          <div class="cc-field-group">
-            <div class="cc-input-wrap">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><circle cx="7" cy="7" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M11 11L14 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
-              <input type="text" class="cc-input" id="callPeopleSearch" placeholder="Search…" />
+        <!-- Selected chips -->
+        <div class="cpm-chips hidden" id="cpmChips"></div>
+        <div class="cpm-search-wrap">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M11 11L14 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input type="text" class="cpm-search" id="callPeopleSearch" placeholder="Search contacts…" />
+        </div>
+        <div class="cpm-list" id="cpmList">
+          <div class="cpm-person" data-key="sarah" data-name="Sarah Jenkins" data-role="Mobile Dev" data-color="#7c3aed" data-initials="SJ" data-online="1">
+            <div class="cpm-avatar" style="background:#7c3aed">SJ<div class="cpm-online-dot"></div></div>
+            <div class="cpm-info"><span>Sarah Jenkins</span><small>Mobile Dev</small></div>
+            <div class="cpm-check hidden"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#22c55e"/><path d="M6 10L9 13L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="cpm-person" data-key="david" data-name="David Chen" data-role="Backend Engineer" data-color="#2563eb" data-initials="DC" data-online="0">
+            <div class="cpm-avatar" style="background:#2563eb">DC</div>
+            <div class="cpm-info"><span>David Chen</span><small>Backend Engineer</small></div>
+            <div class="cpm-check hidden"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#22c55e"/><path d="M6 10L9 13L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="cpm-person" data-key="jessica" data-name="Jessica Park" data-role="Product Manager" data-color="#d97706" data-initials="JP" data-online="1">
+            <div class="cpm-avatar" style="background:#d97706">JP<div class="cpm-online-dot"></div></div>
+            <div class="cpm-info"><span>Jessica Park</span><small>Product Manager</small></div>
+            <div class="cpm-check hidden"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#22c55e"/><path d="M6 10L9 13L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="cpm-person" data-key="alex" data-name="Alex Kim" data-role="Designer" data-color="#059669" data-initials="AK" data-online="0">
+            <div class="cpm-avatar" style="background:#059669">AK</div>
+            <div class="cpm-info"><span>Alex Kim</span><small>Designer</small></div>
+            <div class="cpm-check hidden"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#22c55e"/><path d="M6 10L9 13L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="cpm-person" data-key="noor" data-name="Noor Al-Rashid" data-role="QA Lead" data-color="#be185d" data-initials="NA" data-online="1">
+            <div class="cpm-avatar" style="background:#be185d">NA<div class="cpm-online-dot"></div></div>
+            <div class="cpm-info"><span>Noor Al-Rashid</span><small>QA Lead</small></div>
+            <div class="cpm-check hidden"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#22c55e"/><path d="M6 10L9 13L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+        </div>
+        <div class="cpm-footer">
+          <button class="cpm-voice-btn" id="cpmVoiceBtn" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
+            Voice Call
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE CALL MODAL -->
+    <div class="ep-modal-overlay hidden" id="scheduleCallModal">
+      <div class="ep-modal cc-modal sc-modal">
+        <div class="ep-modal-header">
+          <span class="ep-modal-title">Schedule Call</span>
+          <button class="ep-modal-close" id="scClose">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="ep-modal-body sc-body">
+          <div class="sc-field">
+            <label class="sc-label">Call Title</label>
+            <input type="text" class="sc-input" id="scTitle" placeholder="e.g. Weekly Design Sync" />
+          </div>
+          <div class="sc-row">
+            <div class="sc-field">
+              <label class="sc-label">Date</label>
+              <div class="sc-input-wrap">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="#9ca3af" stroke-width="1.2"/><path d="M5 1V4M11 1V4M1 7H15" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <input type="date" class="sc-input sc-date" id="scDate" />
+              </div>
+            </div>
+            <div class="sc-field">
+              <label class="sc-label">Time</label>
+              <div class="sc-input-wrap">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M8 4.5V8.5L10.5 10" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <input type="time" class="sc-input sc-time" id="scTime" />
+              </div>
             </div>
           </div>
-          <div class="ndm-people-list">
-            <div class="ndm-person call-person" data-call="sarah" data-name="Sarah Jenkins" data-role="Mobile Dev" data-color="#7c3aed" data-initials="SJ">
-              <div class="dm-letter-avatar" style="background:#7c3aed;width:36px;height:36px;font-size:13px">SJ</div>
-              <div class="ndm-person-info"><span>Sarah Jenkins</span><small>Mobile Dev</small></div>
-              <button class="cp-call-now">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
-              </button>
-            </div>
-            <div class="ndm-person call-person" data-call="david" data-name="David Chen" data-role="Engineering" data-color="#2563eb" data-initials="DC">
-              <div class="dm-letter-avatar" style="background:#2563eb;width:36px;height:36px;font-size:13px">DC</div>
-              <div class="ndm-person-info"><span>David Chen</span><small>Engineering</small></div>
-              <button class="cp-call-now">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
-              </button>
-            </div>
-            <div class="ndm-person call-person" data-call="alex" data-name="Alex Kim" data-role="Design" data-color="#059669" data-initials="AK">
-              <div class="dm-letter-avatar" style="background:#059669;width:36px;height:36px;font-size:13px">AK</div>
-              <div class="ndm-person-info"><span>Alex Kim</span><small>Design</small></div>
-              <button class="cp-call-now">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
-              </button>
-            </div>
-            <div class="ndm-person call-person" data-call="jessica" data-name="Jessica Park" data-role="Marketing" data-color="#d97706" data-initials="JP">
-              <div class="dm-letter-avatar" style="background:#d97706;width:36px;height:36px;font-size:13px">JP</div>
-              <div class="ndm-person-info"><span>Jessica Park</span><small>Marketing</small></div>
-              <button class="cp-call-now">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
-              </button>
+          <div class="sc-field">
+            <label class="sc-label">Duration</label>
+            <div class="sc-dur-row">
+              <button class="sc-dur-btn" data-min="15">15m</button>
+              <button class="sc-dur-btn sc-dur-active" data-min="30">30m</button>
+              <button class="sc-dur-btn" data-min="45">45m</button>
+              <button class="sc-dur-btn" data-min="60">60m</button>
             </div>
           </div>
+          <div class="sc-field">
+            <label class="sc-label">Participants</label>
+            <div class="sc-input-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="#9ca3af" stroke-width="1.4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <input type="text" class="sc-input" id="scParticipants" placeholder="Add participants…" />
+            </div>
+          </div>
+        </div>
+        <div class="cc-modal-footer">
+          <button class="cc-create-btn" id="scSubmit">Schedule Call</button>
         </div>
       </div>
     </div>
@@ -789,11 +843,11 @@
 
     <section class="middle-panel">
       <div class="quick-actions-bar">
-        <button class="quick-action" id="quickNewDmBtn"><div class="quick-action-icon" style="background:rgba(246,196,83,0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="#7a5510" stroke-width="1.5" stroke-linejoin="round"/></svg></div><span>New DM</span></button>
-        <button class="quick-action" id="quickChannelBtn"><div class="quick-action-icon" style="background:rgba(13,143,130,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6H20M4 10H16M4 14H12" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Channel</span></button>
-        <button class="quick-action" id="quickCallBtn"><div class="quick-action-icon" style="background:rgba(0,173,94,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="#00ad5e" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg></div><span>Call</span></button>
-        <button class="quick-action" id="scheduleBtn"><div class="quick-action-icon" style="background:rgba(139,92,246,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#7c3aed" stroke-width="1.5"/><path d="M16 2V6M8 2V6M3 10H21" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Schedule</span></button>
-        <button class="quick-action" id="taskBtn"><div class="quick-action-icon" style="background:rgba(246,196,83,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="#7a5510" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Task</span></button>
+        <button class="quick-action" id="quickNewDmBtn" data-tooltip="New Direct Message"><div class="quick-action-icon" style="background:rgba(246,196,83,0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="#7a5510" stroke-width="1.5" stroke-linejoin="round"/></svg></div><span>New DM</span></button>
+        <button class="quick-action" id="quickChannelBtn" data-tooltip="Create Channel"><div class="quick-action-icon" style="background:rgba(13,143,130,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6H20M4 10H16M4 14H12" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Channel</span></button>
+        <button class="quick-action" id="quickCallBtn" data-tooltip="Start a Call"><div class="quick-action-icon" style="background:rgba(0,173,94,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="#00ad5e" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg></div><span>Call</span></button>
+        <button class="quick-action" id="scheduleBtn" data-tooltip="Schedule Call"><div class="quick-action-icon" style="background:rgba(139,92,246,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#7c3aed" stroke-width="1.5"/><path d="M16 2V6M8 2V6M3 10H21" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Schedule</span></button>
+        <button class="quick-action" id="taskBtn" data-tooltip="Create Task"><div class="quick-action-icon" style="background:rgba(246,196,83,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="#7a5510" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Task</span></button>
       </div>
 
       <!-- DMs view (shown when DMs nav is active) -->

@@ -1574,40 +1574,105 @@ document.getElementById('csMinimize').addEventListener('click', endCallScreen);
   });
 });
 
-// Call people picker
+// ── CALL PEOPLE PICKER (redesigned) ──
+const cpmSelected = new Set();
+
+function cpmRefreshChips() {
+  const chips = document.getElementById('cpmChips');
+  chips.innerHTML = '';
+  if (cpmSelected.size === 0) { chips.classList.add('hidden'); return; }
+  chips.classList.remove('hidden');
+  cpmSelected.forEach(key => {
+    const p = document.querySelector(`.cpm-person[data-key="${key}"]`);
+    if (!p) return;
+    const chip = document.createElement('div');
+    chip.className = 'cpm-chip';
+    chip.innerHTML = `<div class="cpm-chip-av" style="background:${p.dataset.color}">${p.dataset.initials}<div class="cpm-chip-x"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1L7 7M7 1L1 7" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg></div></div><span>${p.dataset.name.split(' ')[0]}</span>`;
+    chip.addEventListener('click', () => { cpmSelected.delete(key); cpmRefresh(); });
+    chips.appendChild(chip);
+  });
+}
+
+function cpmRefresh() {
+  cpmRefreshChips();
+  document.querySelectorAll('.cpm-person').forEach(p => {
+    const sel = cpmSelected.has(p.dataset.key);
+    p.classList.toggle('cpm-selected', sel);
+    p.querySelector('.cpm-check').classList.toggle('hidden', !sel);
+  });
+  document.getElementById('cpmVoiceBtn').disabled = cpmSelected.size === 0;
+}
+
+function openCallPicker() {
+  cpmSelected.clear();
+  cpmRefresh();
+  document.getElementById('callPeopleSearch').value = '';
+  document.querySelectorAll('.cpm-person').forEach(p => p.style.display = '');
+  openModal('callPeopleModal');
+}
+
 document.getElementById('callPeopleClose').addEventListener('click', () => closeModal('callPeopleModal'));
 document.getElementById('callPeopleModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal('callPeopleModal');
 });
 document.getElementById('callPeopleSearch').addEventListener('input', function() {
   const q = this.value.toLowerCase();
-  document.querySelectorAll('.call-person').forEach(p => {
+  document.querySelectorAll('.cpm-person').forEach(p => {
     p.style.display = p.dataset.name.toLowerCase().includes(q) ? '' : 'none';
   });
 });
-document.querySelectorAll('.call-person').forEach(p => {
+document.querySelectorAll('.cpm-person').forEach(p => {
   p.addEventListener('click', () => {
-    closeModal('callPeopleModal');
-    startCallWith(p.dataset.name, p.dataset.role, p.dataset.color, p.dataset.initials);
+    const key = p.dataset.key;
+    if (cpmSelected.has(key)) cpmSelected.delete(key);
+    else cpmSelected.add(key);
+    cpmRefresh();
+  });
+});
+document.getElementById('cpmVoiceBtn').addEventListener('click', () => {
+  if (cpmSelected.size === 0) return;
+  const first = document.querySelector(`.cpm-person[data-key="${[...cpmSelected][0]}"]`);
+  closeModal('callPeopleModal');
+  startCallWith(first.dataset.name, first.dataset.role, first.dataset.color, first.dataset.initials);
+});
+
+// Call button
+document.getElementById('quickCallBtn').addEventListener('click', () => {
+  openCallPicker();
+});
+
+// ── SCHEDULE CALL MODAL ──
+document.getElementById('scClose').addEventListener('click', () => closeModal('scheduleCallModal'));
+document.getElementById('scheduleCallModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal('scheduleCallModal');
+});
+
+// Duration pills
+document.querySelectorAll('.sc-dur-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sc-dur-btn').forEach(b => b.classList.remove('sc-dur-active'));
+    btn.classList.add('sc-dur-active');
   });
 });
 
-// Call button → people picker on mobile, People tab on desktop
-document.getElementById('quickCallBtn').addEventListener('click', () => {
-  if (isMobile()) {
-    openModal('callPeopleModal');
-  } else {
-    switchMiddleView('people');
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-tab="people"]')?.classList.add('active');
-  }
+// Enable submit when title is filled
+const scTitle = document.getElementById('scTitle');
+const scSubmit = document.getElementById('scSubmit');
+scTitle.addEventListener('input', () => {
+  scSubmit.classList.toggle('ready', scTitle.value.trim().length > 0);
+});
+scSubmit.addEventListener('click', () => {
+  if (!scTitle.value.trim()) return;
+  closeModal('scheduleCallModal');
+  scTitle.value = '';
+  scSubmit.classList.remove('ready');
+  document.querySelectorAll('.sc-dur-btn').forEach((b, i) => b.classList.toggle('sc-dur-active', i === 1));
 });
 
-// Schedule button
+// Schedule button → open Schedule Call modal
 document.getElementById('scheduleBtn').addEventListener('click', () => {
-  switchMiddleView('home');
-  showPanel('scheduleDetail');
-  if (isMobile()) mobOpenDetail();
+  openModal('scheduleCallModal');
+  setTimeout(() => scTitle.focus(), 100);
 });
 
 // Task button
