@@ -460,7 +460,7 @@ input[type="date"].sc-date, input[type="time"].sc-time { -webkit-appearance: non
 .greeting-email { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 .home-view-greeting { text-align: center; }
 .home-view-greeting h2 { font-size: 28px; font-weight: 700; color: var(--maroon); }
-.home-view-greeting .greeting-email { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
+.greeting-sub { font-size: 16px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
 .section { display: flex; flex-direction: column; gap: 8px; }
 .section-header { display: flex; align-items: center; justify-content: space-between; }
 .section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: -.02px; }
@@ -619,7 +619,7 @@ input[type="date"].sc-date, input[type="time"].sc-time { -webkit-appearance: non
 .right-panel { flex: 1; background: #f9f8f6; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 
 /* STATE 1: Idle */
-.rec-idle { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100%; gap: 24px; overflow-y: auto; padding: 36px 48px 40px; }
+.rec-idle { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 24px; overflow-y: auto; padding: 36px 48px 40px; }
 .mob-activities-btn { display: none; }
 .mob-back-btn { display: none; }
 .rec-idle::-webkit-scrollbar { width: 3px; }

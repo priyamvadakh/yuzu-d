@@ -126,11 +126,15 @@ function clearOtp() {
 // ── HOME ──
 function showHome() {
   const h = new Date().getHours();
-  const greetEmoji = h < 12 ? 'Good morning 👋' : h < 18 ? 'Good afternoon 👋' : 'Good evening 👋';
-  const timeWord = h < 12 ? 'Morning' : h < 18 ? 'Afternoon' : 'Evening';
-  const name = userEmail ? userEmail.split('@')[0] : 'friend';
-  document.getElementById('greetingMsg').textContent = greetEmoji;
-  document.getElementById('greetingEmail').textContent = userEmail;
+  const greetWord = h < 12 ? 'Morning' : h < 17 ? 'Afternoon' : h < 21 ? 'Evening' : 'Hey';
+  const greetSub = h < 12 ? "Let's add some zest to your day 🍋"
+    : h < 17 ? "Let's keep the momentum going"
+    : h < 21 ? "Let's finish strong"
+    : "Winding things down?";
+  const timeWord = greetWord;
+  const name = 'Eric';
+  document.getElementById('greetingMsg').textContent = `${greetWord} ${name},`;
+  document.getElementById('greetingSub').textContent = greetSub;
   document.getElementById('chatGreeting').textContent = timeWord + ', ' + name;
   goTo('screen-home');
   showIdle();
