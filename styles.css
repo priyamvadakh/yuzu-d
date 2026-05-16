@@ -1,8 +1,11 @@
+@import '../yuzu-tokens.css';
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --maroon-dark: #2a0a0a; --maroon: #4c1515; --maroon-light: #601919;
-  --amber: #f6c453; --bg: #f5f5f7; --white: #ffffff; --border: #e8e8ec;
-  --text-primary: #1a1a2e; --text-secondary: #52525b; --text-muted: #8b8fa8;
+  /* local aliases → shared tokens */
+  --maroon-dark: var(--yuzu-950); --maroon: var(--yuzu-900); --maroon-light: var(--yuzu-800);
+  --amber: var(--yuzu-400); --bg: var(--neutral-100); --white: var(--neutral-0); --border: var(--neutral-200);
+  --text-primary: var(--brand-text); --text-secondary: var(--brand-text-secondary); --text-muted: var(--brand-text-tertiary);
   --text-amber: #7a5510; --green: #007a42; --online: #00ad5e;
   --teal-bg: rgba(13,143,130,0.1); --red: #c94040; --orange: #f5c842;
   --radius-sm: 10px; --radius-md: 14px; --radius-lg: 18px;
@@ -51,8 +54,8 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .auth-divider { display: flex; align-items: center; gap: 10px; margin: 4px 0; }
 .auth-divider span { flex: 1; height: 1px; background: #e4e4e7; }
 .auth-divider p { font-size: 11px; font-weight: 600; color: #1f2329; white-space: nowrap; }
-.auth-email-btn { height: 50px; background: var(--amber); border: none; border-radius: 32px; font-size: 14px; font-weight: 700; color: var(--maroon); cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,.05); transition: opacity .15s; margin-top: 4px; width: 100%; }
-.auth-email-btn:hover { opacity: .9; }
+.auth-email-btn { height: 50px; background: #f6c453; border: none; border-radius: 32px; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; box-shadow: 0 4px 14px rgba(246,196,83,.45); transition: opacity .15s; margin-top: 4px; width: 100%; }
+.auth-email-btn:hover { opacity: .88; }
 .auth-trouble { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 20px; }
 .auth-trouble-link { color: #ff8a00; text-decoration: none; font-weight: 500; }
 .back-btn { width: 40px; height: 40px; border-radius: 48px; background: #fff; border: 1px solid #f5ede7; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 3px -2px #f5f5f5; transition: background .15s; flex-shrink: 0; }
@@ -207,7 +210,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .ob-dots { display: flex; gap: 7px; align-items: center; }
 .ob-dot { width: 7px; height: 7px; border-radius: 50%; background: #e4e4e7; transition: all 0.3s ease; flex-shrink: 0; }
 .ob-dot.active { width: 22px; border-radius: 4px; background: var(--amber); }
-.ob-next-btn { height: 50px; background: linear-gradient(135deg,var(--maroon-light),var(--maroon-dark)); border: none; border-radius: 32px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+.ob-next-btn { height: 50px; background: #f6c453; border: none; border-radius: 32px; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px rgba(246,196,83,.45); transition: opacity .15s; }
 .ob-next-btn:hover { opacity: .88; }
 
 
@@ -235,7 +238,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .ep-modal-footer { display: flex; gap: 10px; padding-top: 4px; }
 .ep-cancel-btn { flex: 1; height: 44px; border: 1.5px solid #e4e4e7; border-radius: 32px; background: #fff; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: background .15s; }
 .ep-cancel-btn:hover { background: #f4f4f5; }
-.ep-save-btn { flex: 2; height: 44px; border: none; border-radius: 32px; background: linear-gradient(135deg,var(--maroon-light),var(--maroon-dark)); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+.ep-save-btn { flex: 2; height: 44px; border: none; border-radius: 32px; background: #f6c453; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(246,196,83,.45); transition: opacity .15s; }
 .ep-save-btn:hover { opacity: .88; }
 
 /* ── CREATE CHANNEL / NEW DM MODALS ── */
@@ -262,7 +265,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .cc-textarea::placeholder { color: #b0b0b8; }
 .cc-modal-footer { border-top: 1px solid #f0ece8; padding: 16px 24px; }
 .cc-create-btn { width: 100%; height: 50px; background: #e5e5ea; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; color: #6b7280; cursor: pointer; transition: background .15s, color .15s; }
-.cc-create-btn.ready { background: linear-gradient(135deg,var(--maroon-light),var(--maroon-dark)); color: #fff; }
+.cc-create-btn.ready { background: #f6c453; color: #fff; box-shadow: 0 4px 14px rgba(246,196,83,.45); }
 /* New DM people list */
 .ndm-people-list { display: flex; flex-direction: column; gap: 2px; margin-top: -6px; }
 .ndm-person { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-radius: 10px; cursor: pointer; transition: background .12s; }
@@ -1191,8 +1194,9 @@ input[type="date"].sc-date, input[type="time"].sc-time { -webkit-appearance: non
   .mob-landing-btns { width: 100%; display: flex; flex-direction: column; gap: 10px; }
   .mob-landing-create {
     width: 100%; height: 52px; border-radius: 32px;
-    background: #4c1515; border: none; color: #fff;
+    background: #f6c453; border: none; color: #fff;
     font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(246,196,83,.45);
     transition: opacity .15s;
   }
   .mob-landing-create:hover { opacity: .88; }
