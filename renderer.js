@@ -1227,17 +1227,55 @@ function createAndShowSchedule(title, date, time, duration, withName) {
 }
 
 function showScheduleDetail(s) {
+  window._currentSchedule = s;
+
   document.getElementById('scheduleDetailTitle').textContent = s.title;
   document.getElementById('scheduleDetailDateText').textContent = `${s.date} at ${s.time}`;
   document.getElementById('scheduleDetailDuration').textContent = s.duration || '30 minutes';
 
-  // Attendees: me + withName person if specified
   const attendees = document.getElementById('scheduleAttendees');
   const withPerson = s.withName ? peopleData.find(p => p.name.toLowerCase().includes(s.withName.toLowerCase().split(' ')[0])) : null;
   const meAvatar = `<div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:var(--maroon);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">M</div></div>`;
   const meRow = `<div class="contact-info-item">${meAvatar}<span class="ci-value">You <span style="font-size:11px;color:#9096b0">(organiser)</span></span></div>`;
-  const personRow = withPerson ? `<div class="contact-info-item"><div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:${withPerson.color};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${withPerson.initials.charAt(0)}</div></div><span class="ci-value">${withPerson.name}</span></div>` : '';
-  attendees.innerHTML = meRow + personRow;
+  const guestRow = withPerson ? `<div class="contact-info-item"><div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:${withPerson.color};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${withPerson.initials.charAt(0)}</div></div><span class="ci-value">${withPerson.name}</span></div>` : '';
+  attendees.innerHTML = meRow + guestRow;
+
+  const joinBtn = document.querySelector('#scheduleDetail .ca-action-btn:nth-child(1)');
+  const editBtn = document.querySelector('#scheduleDetail .ca-action-btn:nth-child(2)');
+  const cancelBtn = document.querySelector('#scheduleDetail .ca-action-btn:nth-child(3)');
+
+  joinBtn.onclick = () => {
+    if (withPerson) {
+      startCallWith(withPerson.name, withPerson.role || '', withPerson.color, withPerson.initials, true);
+    } else {
+      startCallWith(s.title, 'Meeting', '#3d5af1', '📅', true);
+    }
+  };
+
+  editBtn.onclick = () => {
+    window._sdEditMode = true;
+    document.getElementById('scTitle').value = s.title;
+    document.getElementById('scDate').value = s.date;
+    document.getElementById('scTime').value = s.time;
+    const durMap = { '15': 0, '30': 1, '45': 2, '60': 3 };
+    const durKey = s.duration ? s.duration.replace(/[^0-9]/g, '') : '30';
+    document.querySelectorAll('.sc-dur-btn').forEach((b, i) => b.classList.toggle('sc-dur-active', i === (durMap[durKey] ?? 1)));
+    document.getElementById('scParticipants').value = s.withName || '';
+    openModal('scheduleCallModal');
+  };
+
+  cancelBtn.onclick = () => {
+    const list = document.getElementById('upcomingList');
+    const items = list.querySelectorAll('.upcoming-item');
+    items.forEach(el => {
+      if (el.dataset.scheduleTitle === s.title) el.remove();
+    });
+    const remaining = list.querySelectorAll('.upcoming-item');
+    if (!remaining.length) document.getElementById('upcomingSection').classList.add('hidden');
+    navigateTo('home');
+    showIdle();
+  };
+
   showPanel('scheduleDetail');
 }
 
@@ -2176,16 +2214,38 @@ document.getElementById('scSubmit').addEventListener('click', () => {
   const date = document.getElementById('scDate').value;
   const time = document.getElementById('scTime').value;
   const dur  = document.querySelector('.sc-dur-btn.sc-dur-active')?.dataset.min || '30';
+  const withName = document.getElementById('scParticipants').value.trim() || null;
+  const durLabel = dur === '60' ? '1 hour' : `${dur} minutes`;
   closeModal('scheduleCallModal');
+
+  if (window._sdEditMode && window._currentSchedule) {
+    const old = window._currentSchedule;
+    window._sdEditMode = false;
+    const list = document.getElementById('upcomingList');
+    const domItem = list.querySelector(`[data-schedule-title="${old.title}"]`);
+    const updated = { title, date, time, duration: durLabel, withName };
+    if (domItem) {
+      domItem.dataset.scheduleTitle = title;
+      domItem.querySelector('.upcoming-name').textContent = title;
+      domItem.querySelector('.upcoming-meta').textContent = `${date} · ${time} · ${durLabel}${withName ? ' · with ' + withName : ''}`;
+      domItem.onclick = null;
+      domItem.addEventListener('click', () => showScheduleDetail(updated));
+    }
+    showScheduleDetail(updated);
+    return;
+  }
+
   const upcomingList = document.getElementById('upcomingList');
   const upcomingSection = document.getElementById('upcomingSection');
   if (upcomingList && upcomingSection) {
     upcomingSection.classList.remove('hidden');
     const item = document.createElement('div');
     item.className = 'upcoming-item';
-    const d = date ? new Date(date + 'T' + (time || '00:00')) : new Date();
-    const label = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) + (time ? ` · ${time}` : '');
-    item.innerHTML = `<div class="upcoming-icon">📞</div><div class="upcoming-body"><div class="upcoming-title">${title}</div><div class="upcoming-meta">${label} · ${dur}m</div></div>`;
+    item.style.cursor = 'pointer';
+    item.dataset.scheduleTitle = title;
+    const scheduleObj = { title, date, time, duration: durLabel, withName };
+    item.innerHTML = `<div class="upcoming-icon">📞</div><div class="upcoming-body"><span class="upcoming-name">${title}</span><span class="upcoming-meta">${date} · ${time} · ${durLabel}${withName ? ' · with ' + withName : ''}</span></div><span class="upcoming-badge">Scheduled</span>`;
+    item.addEventListener('click', () => showScheduleDetail(scheduleObj));
     upcomingList.prepend(item);
   }
 });
