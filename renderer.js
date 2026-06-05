@@ -405,11 +405,11 @@ function showContactDetail(personKey) {
   document.getElementById('contactStatusText').textContent = p.online ? 'Online now' : 'Offline';
 
   document.getElementById('contactEmailRow').innerHTML = `
-    <div class="ci-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="#6b7280" stroke-width="1.2"/><path d="M1 5L8 9L15 5" stroke="#6b7280" stroke-width="1.2"/></svg></div>
+    <div class="ci-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M1 5L8 9L15 5" stroke="currentColor" stroke-width="1.3"/></svg></div>
     <span class="ci-value">${p.email}</span>
   `;
   document.getElementById('contactDeptRow').innerHTML = `
-    <div class="ci-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="14" height="10" rx="1.5" stroke="#6b7280" stroke-width="1.2"/><path d="M5 5V4C5 2.9 5.9 2 7 2H9C10.1 2 11 2.9 11 4V5" stroke="#6b7280" stroke-width="1.2"/></svg></div>
+    <div class="ci-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 5V4C5 2.9 5.9 2 7 2H9C10.1 2 11 2.9 11 4V5" stroke="currentColor" stroke-width="1.3"/></svg></div>
     <span class="ci-value">${p.role} · ${p.dept}</span>
   `;
 
@@ -432,9 +432,19 @@ function showContactDetail(personKey) {
     if (dmData[personKey]) { activeDm = personKey; navigateTo('dms'); }
   };
   document.getElementById('caCallBtn').onclick = () => startCall(personKey);
-  document.getElementById('caVideoBtn').onclick = () => startCall(personKey);
+  document.getElementById('caVideoBtn').onclick = () => {
+    const pd = peopleData.find(x => x.key === personKey) || dmData[personKey];
+    if (pd) startCallWith(pd.name, pd.role || '', pd.color, pd.initials, true);
+  };
   document.getElementById('caScheduleBtn').onclick = () => {
-    showRecordingView(); startRecording();
+    const pd = peopleData.find(x => x.key === personKey) || dmData[personKey];
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('scTitle').value = pd ? `Call with ${pd.name}` : '';
+    document.getElementById('scDate').value = today;
+    document.getElementById('scTime').value = '10:00';
+    document.querySelectorAll('.sc-dur-btn').forEach((b, i) => b.classList.toggle('sc-dur-active', i === 1));
+    if (pd) document.getElementById('scParticipants').value = pd.name;
+    openModal('scheduleCallModal');
   };
 
   document.querySelectorAll('.contact-tab').forEach(btn => {
@@ -1224,16 +1234,10 @@ function showScheduleDetail(s) {
   // Attendees: me + withName person if specified
   const attendees = document.getElementById('scheduleAttendees');
   const withPerson = s.withName ? peopleData.find(p => p.name.toLowerCase().includes(s.withName.toLowerCase().split(' ')[0])) : null;
-  attendees.innerHTML = `
-    <div class="schedule-attendee">
-      <div class="schedule-attendee-avatar" style="background:var(--maroon)">ME</div>
-      <span class="schedule-attendee-name">You <span class="schedule-attendee-you">(organiser)</span></span>
-    </div>
-    ${withPerson ? `<div class="schedule-attendee">
-      <div class="schedule-attendee-avatar" style="background:${withPerson.color}">${withPerson.initials}</div>
-      <span class="schedule-attendee-name">${withPerson.name}</span>
-    </div>` : ''}
-  `;
+  const meAvatar = `<div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:var(--maroon);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">M</div></div>`;
+  const meRow = `<div class="contact-info-item">${meAvatar}<span class="ci-value">You <span style="font-size:11px;color:#9096b0">(organiser)</span></span></div>`;
+  const personRow = withPerson ? `<div class="contact-info-item"><div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:${withPerson.color};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${withPerson.initials.charAt(0)}</div></div><span class="ci-value">${withPerson.name}</span></div>` : '';
+  attendees.innerHTML = meRow + personRow;
   showPanel('scheduleDetail');
 }
 
@@ -2156,10 +2160,34 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
   });
 })();
 
-// Keep old schedule modal wired (still in DOM)
+document.querySelectorAll('.sc-dur-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sc-dur-btn').forEach(b => b.classList.remove('sc-dur-active'));
+    btn.classList.add('sc-dur-active');
+  });
+});
 document.getElementById('scClose').addEventListener('click', () => closeModal('scheduleCallModal'));
 document.getElementById('scheduleCallModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal('scheduleCallModal');
+});
+document.getElementById('scSubmit').addEventListener('click', () => {
+  const title = document.getElementById('scTitle').value.trim();
+  if (!title) return;
+  const date = document.getElementById('scDate').value;
+  const time = document.getElementById('scTime').value;
+  const dur  = document.querySelector('.sc-dur-btn.sc-dur-active')?.dataset.min || '30';
+  closeModal('scheduleCallModal');
+  const upcomingList = document.getElementById('upcomingList');
+  const upcomingSection = document.getElementById('upcomingSection');
+  if (upcomingList && upcomingSection) {
+    upcomingSection.classList.remove('hidden');
+    const item = document.createElement('div');
+    item.className = 'upcoming-item';
+    const d = date ? new Date(date + 'T' + (time || '00:00')) : new Date();
+    const label = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) + (time ? ` · ${time}` : '');
+    item.innerHTML = `<div class="upcoming-icon">📞</div><div class="upcoming-body"><div class="upcoming-title">${title}</div><div class="upcoming-meta">${label} · ${dur}m</div></div>`;
+    upcomingList.prepend(item);
+  }
 });
 
 // ── SCHEDULE DROPDOWN ──

@@ -1245,45 +1245,50 @@
 
       <!-- SCHEDULE DETAIL VIEW -->
       <div class="schedule-detail hidden" id="scheduleDetail">
-        <div class="schedule-detail-header">
-          <div class="schedule-detail-icon">📅</div>
-          <div class="schedule-detail-title-wrap">
-            <div class="schedule-detail-title" id="scheduleDetailTitle">Meeting</div>
-            <span class="td-chip status-in-progress" id="scheduleDetailBadge">Scheduled</span>
-          </div>
+        <div class="schedule-hero-section">
+          <div class="schedule-hero-icon">📅</div>
+          <div class="schedule-hero-title" id="scheduleDetailTitle">Meeting</div>
+          <span class="schedule-hero-badge" id="scheduleDetailBadge">Scheduled</span>
         </div>
-        <div class="schedule-detail-body">
-          <div class="task-detail-section">
-            <span class="task-detail-label">Date & Time</span>
-            <div class="schedule-meta-row" id="scheduleDetailDateTime">
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="#6b7280" stroke-width="1.2"/><path d="M5 1V4M11 1V4M1 7H15" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <span id="scheduleDetailDateText">—</span>
+        <div class="contact-action-row">
+          <button class="ca-action-btn ca-action-primary">
+            <div class="ca-action-circle ca-action-join">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 6C2 5.45 2.45 5 3 5H13C13.55 5 14 5.45 14 6V14C14 14.55 13.55 15 13 15H3C2.45 15 2 14.55 2 14V6Z" stroke="currentColor" stroke-width="1.5"/><path d="M14 8L18 6V14L14 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span>Join</span>
+          </button>
+          <button class="ca-action-btn">
+            <div class="ca-action-circle">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5C11.78 2.22 12.15 2.06 12.54 2.06C12.93 2.06 13.3 2.22 13.57 2.5C13.85 2.77 14 3.14 14 3.53C14 3.92 13.85 4.3 13.57 4.57L5 13.14L2 14L2.86 11L11.5 2.5Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span>Edit</span>
+          </button>
+          <button class="ca-action-btn">
+            <div class="ca-action-circle">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <span>Cancel</span>
+          </button>
+        </div>
+        <div class="contact-info-body">
+          <div class="contact-tab-panel">
+            <div class="contact-section-label">DETAILS</div>
+            <div class="contact-info-item">
+              <div class="ci-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 1V4M11 1V4M1 7H15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+              <span class="ci-value" id="scheduleDetailDateText">—</span>
+            </div>
+            <div class="contact-info-item">
+              <div class="ci-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4V8.5L11 10.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+              <span class="ci-value" id="scheduleDetailDuration">30 minutes</span>
+            </div>
+            <div class="contact-info-item">
+              <div class="ci-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M6 8.5C6 8.5 6.5 9.5 8 9.5C9.5 9.5 10 8.5 10 8.5M2 8.5C2 10.16 3.34 11.5 5 11.5H11C12.66 11.5 14 10.16 14 8.5C14 6.84 12.66 5.5 11 5.5H10M2 8.5C2 6.84 3.34 5.5 5 5.5H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+              <span class="ci-value schedule-link">yuzu.meet/q3-sync</span>
             </div>
           </div>
-          <div class="task-detail-section">
-            <span class="task-detail-label">Duration</span>
-            <div class="schedule-meta-row">
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#6b7280" stroke-width="1.2"/><path d="M8 4V8.5L11 10.5" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <span id="scheduleDetailDuration">30 minutes</span>
-            </div>
-          </div>
-          <div class="task-detail-section">
-            <span class="task-detail-label">Attendees</span>
-            <div class="schedule-attendees" id="scheduleAttendees"></div>
-          </div>
-          <div class="task-detail-section">
-            <span class="task-detail-label">Meeting Link</span>
-            <div class="schedule-meta-row">
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M6 8.5C6 8.5 6.5 9.5 8 9.5C9.5 9.5 10 8.5 10 8.5M2 8.5C2 10.16 3.34 11.5 5 11.5H11C12.66 11.5 14 10.16 14 8.5C14 6.84 12.66 5.5 11 5.5H10M2 8.5C2 6.84 3.34 5.5 5 5.5H6" stroke="#7c3aed" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <span class="schedule-link">yuzu.meet/q3-sync</span>
-            </div>
-          </div>
-          <div class="schedule-detail-actions">
-            <button class="schedule-join-btn">
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M2 6C2 5.44772 2.44772 5 3 5H13C13.5523 5 14 5.44772 14 6V14C14 14.5523 13.5523 15 13 15H3C2.44772 15 2 14.5523 2 14V6Z" stroke="white" stroke-width="1.4"/><path d="M14 8L18 6V14L14 12" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Join Meeting
-            </button>
-            <button class="schedule-edit-btn">Edit</button>
+          <div class="contact-tab-panel" style="padding-top:0">
+            <div class="contact-section-label">ATTENDEES</div>
+            <div id="scheduleAttendees"></div>
           </div>
         </div>
       </div>
@@ -1514,6 +1519,7 @@
           <button class="contact-tab" data-ctab="messages">Messages</button>
           <button class="contact-tab" data-ctab="files">Files</button>
         </div>
+        <div class="contact-tabs-line"></div>
         <div class="contact-info-body">
           <div class="contact-tab-panel" id="ctabInfo">
             <div class="contact-info-section">
