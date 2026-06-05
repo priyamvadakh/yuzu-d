@@ -1062,6 +1062,21 @@ input[type="date"].sd-dt-input, input[type="time"].sd-dt-input { -webkit-appeara
 .subtask-item.done .subtask-check { background: #16a34a; border-color: #16a34a; }
 .subtask-item.done .subtask-check::after { content: ''; display: block; width: 8px; height: 5px; border-left: 1.5px solid white; border-bottom: 1.5px solid white; transform: rotate(-45deg) translate(0px, -1px); }
 .subtask-text { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+.task-subtasks:empty { display: none; }
+.task-subtasks:empty + .add-subtask-row { border-radius: 14px; border-top: .625px solid var(--border); }
+.add-subtask-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: #fff; border: .625px solid var(--border); border-radius: 0 0 14px 14px; border-top: none; cursor: text; transition: background .12s; }
+.add-subtask-row:focus-within { background: #fffbeb; }
+.add-subtask-icon { width: 18px; height: 18px; border-radius: 50%; border: 1.5px dashed #d1d5db; display: flex; align-items: center; justify-content: center; color: #9ca3af; flex-shrink: 0; }
+.add-subtask-input { flex: 1; border: none; outline: none; background: transparent; font-size: 13px; color: var(--text-primary); font-family: inherit; }
+.add-subtask-input::placeholder { color: #9ca3af; }
+
+/* Task Status Dropdown */
+.task-status-dd { position: fixed; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.13); z-index: 700; overflow: hidden; min-width: 140px; }
+.task-status-dd.hidden { display: none; }
+.tsd-opt { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 14px; text-align: left; font-size: 13px; font-weight: 500; color: #374151; background: none; border: none; cursor: pointer; transition: background .1s; }
+.tsd-opt:hover { background: #f9fafb; }
+.tsd-opt.active { color: var(--maroon); font-weight: 700; }
+.tsd-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
 .task-activity { display: flex; flex-direction: column; gap: 12px; }
 .activity-item { display: flex; gap: 10px; align-items: flex-start; }

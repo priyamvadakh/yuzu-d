@@ -1288,6 +1288,12 @@
           <div class="task-detail-section">
             <span class="task-detail-label">Subtasks</span>
             <div class="task-subtasks" id="taskSubtasks"></div>
+            <div class="add-subtask-row">
+              <div class="add-subtask-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1V9M1 5H9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </div>
+              <input class="add-subtask-input" id="addSubtaskInput" placeholder="Add a subtask…" autocomplete="off" />
+            </div>
           </div>
           <div class="task-detail-section">
             <span class="task-detail-label">Activity</span>
@@ -1537,6 +1543,14 @@
     </main>
 
   </div>
+
+  <!-- TASK STATUS DROPDOWN -->
+  <div class="task-status-dd hidden" id="taskStatusDd">
+    <button class="tsd-opt" data-status="To Do">To Do</button>
+    <button class="tsd-opt" data-status="In Progress">In Progress</button>
+    <button class="tsd-opt" data-status="Done">Done</button>
+  </div>
+
 </div>
 
 <script src="renderer.js"></script>

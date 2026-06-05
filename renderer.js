@@ -633,7 +633,7 @@ function loadTaskDetail(taskId) {
     <button class="td-chip priority-${t.priority.toLowerCase()}">${t.priority} Priority</button>
     <span class="td-chip due-chip">⏱ ${t.due}</span>
   `;
-  document.getElementById('tdStatusChip').addEventListener('click', () => cycleTaskStatus(t));
+  document.getElementById('tdStatusChip').addEventListener('click', e => { e.stopPropagation(); showTaskStatusDd(e.currentTarget, t); });
 
   // Assignee
   document.getElementById('taskDetailAssignee').innerHTML = `
@@ -675,19 +675,37 @@ function loadTaskDetail(taskId) {
   showPanel('taskDetail');
 }
 
-function cycleTaskStatus(t) {
-  const cycle = ['To Do', 'In Progress', 'Done'];
-  t.status = cycle[(cycle.indexOf(t.status) + 1) % cycle.length];
+const STATUS_DOTS = { 'To Do': '#9ca3af', 'In Progress': '#2563eb', 'Done': '#16a34a' };
+
+function showTaskStatusDd(chipEl, t) {
+  const dd = document.getElementById('taskStatusDd');
+  const rect = chipEl.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 4) + 'px';
+  dd.style.left = rect.left + 'px';
+  dd.querySelectorAll('.tsd-opt').forEach(opt => {
+    const status = opt.dataset.status;
+    opt.classList.toggle('active', status === t.status);
+    opt.innerHTML = `<span class="tsd-dot" style="background:${STATUS_DOTS[status]}"></span>${status}`;
+    opt.onclick = (e) => {
+      e.stopPropagation();
+      applyTaskStatus(t, status);
+      dd.classList.add('hidden');
+    };
+  });
+  dd.classList.remove('hidden');
+  setTimeout(() => document.addEventListener('click', () => dd.classList.add('hidden'), { once: true }), 0);
+}
+
+function applyTaskStatus(t, newStatus) {
+  t.status = newStatus;
   const chip = document.getElementById('tdStatusChip');
   if (chip) {
-    chip.textContent = t.status;
-    chip.className = `td-chip ${statusClass(t.status)}`;
-    chip.addEventListener('click', () => cycleTaskStatus(t));
+    chip.textContent = newStatus;
+    chip.className = `td-chip ${statusClass(newStatus)}`;
   }
-  // Sync task list items
   document.querySelectorAll(`.task-item[data-task-id="${t.id}"] .task-status`).forEach(el => {
-    el.textContent = t.status;
-    el.className = 'task-status ' + t.status.toLowerCase().replace(/\s+/g, '-');
+    el.textContent = newStatus;
+    el.className = 'task-status ' + newStatus.toLowerCase().replace(/\s+/g, '-');
   });
 }
 
@@ -1112,6 +1130,28 @@ document.getElementById('tasksFullList').addEventListener('click', e => {
 document.getElementById('myTasksCard').addEventListener('click', e => {
   const item = e.target.closest('.task-item[data-task-id]');
   if (item) { switchMiddleView('tasks'); loadTaskDetail(item.dataset.taskId); }
+});
+
+// ── ADD SUBTASK ──
+document.getElementById('addSubtaskInput').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const text = e.target.value.trim();
+  if (!text) return;
+  e.target.value = '';
+  const t = taskData.find(x => x.id === activeTaskId);
+  if (!t) return;
+  const idx = t.subtasks.length;
+  t.subtasks.push({ done: false, text });
+  const stEl = document.getElementById('taskSubtasks');
+  const el = document.createElement('div');
+  el.className = 'subtask-item';
+  el.dataset.subtask = idx;
+  el.innerHTML = `<div class="subtask-check"></div><span class="subtask-text">${text}</span>`;
+  el.addEventListener('click', () => {
+    t.subtasks[idx].done = !t.subtasks[idx].done;
+    el.classList.toggle('done', t.subtasks[idx].done);
+  });
+  stEl.appendChild(el);
 });
 
 // ── DM LIST CLICKS ──
