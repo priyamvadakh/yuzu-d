@@ -1109,6 +1109,10 @@ document.getElementById('tasksFullList').addEventListener('click', e => {
   const item = e.target.closest('.task-item[data-task-id]');
   if (item) loadTaskDetail(item.dataset.taskId);
 });
+document.getElementById('myTasksCard').addEventListener('click', e => {
+  const item = e.target.closest('.task-item[data-task-id]');
+  if (item) { switchMiddleView('tasks'); loadTaskDetail(item.dataset.taskId); }
+});
 
 // ── DM LIST CLICKS ──
 document.getElementById('dmList').addEventListener('click', e => {
@@ -1494,14 +1498,14 @@ document.getElementById('channelView').addEventListener('click', e => {
   if (e.target.closest('.dm-header-btn[title="Call"]')) startCall(activeChannel || 'sarah');
 });
 
-function createAndShowTask(title, dueDate, status) {
+function createAndShowTask(title, dueDate, status, priority) {
   const newId = 'task' + (taskData.length + 1);
   taskData.push({
-    id: newId, title, due: dueDate, status, priority: 'Medium',
+    id: newId, title, due: dueDate, status: status || 'To Do', priority: priority || 'Medium',
     assignee: { initials: 'ME', color: '#4c1515', name: 'Me' },
     description: '',
     subtasks: [],
-    activity: [{ initials: 'ME', color: '#4c1515', name: 'You', text: 'Created this task via voice', time: 'Just now' }]
+    activity: [{ initials: 'ME', color: '#4c1515', name: 'You', text: 'Created this task', time: 'Just now' }]
   });
   activeTaskId = newId;
   const html = taskItemHTML(title, dueDate, status, newId);
@@ -2368,19 +2372,9 @@ document.getElementById('scSubmit').addEventListener('click', () => {
     if (!title) return;
     const due = document.getElementById('qdTaskDue').value;
     const pri = document.querySelector('#qdPriRow .qd-pill-active')?.dataset.pri || 'medium';
+    const priLabel = pri === 'high' ? 'High' : pri === 'low' ? 'Low' : 'Medium';
     closeAllQuickDds();
     titleIn.value = '';
-    // Add task to the tasks list
-    const tasksList = document.getElementById('tasksFullList');
-    const myTasksCard = document.getElementById('myTasksCard');
-    const priLabel = pri === 'high' ? 'High' : pri === 'low' ? 'Low' : 'Medium';
-    const priClass = pri === 'high' ? 'high-priority' : pri === 'low' ? '' : 'in-progress';
-    const taskHtml = `<div class="task-item no-border"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">${title}</span><div class="task-meta">${due ? '<span class="task-due">⏱ ' + due + '</span><span class="task-dot">•</span>' : ''}<span class="task-status ${priClass}">${priLabel}</span></div></div></div>`;
-    if (tasksList) tasksList.insertAdjacentHTML('beforeend', taskHtml);
-    if (myTasksCard) myTasksCard.insertAdjacentHTML('beforeend', taskHtml);
-    // Switch to tasks view
-    switchMiddleView('tasks');
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-tab="tasks"]')?.classList.add('active');
+    createAndShowTask(title, due || 'No due date', 'To Do', priLabel);
   });
 })();
