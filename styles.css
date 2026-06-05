@@ -739,6 +739,7 @@ input[type="date"].sc-date, input[type="time"].sc-time { -webkit-appearance: non
 .middle-content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 .greeting-email { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 .home-view-greeting { text-align: center; }
+.home-greeting-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--maroon); color: #fff; font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
 .home-view-greeting h2 { font-size: 28px; font-weight: 700; color: var(--maroon); }
 .greeting-sub { font-size: 16px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
 .section { display: flex; flex-direction: column; gap: 8px; }

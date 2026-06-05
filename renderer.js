@@ -982,6 +982,7 @@ function updateProfileDisplay() {
   const initials = name.slice(0,2).toUpperCase();
   document.getElementById('navProfileInitials').textContent = initials;
   document.getElementById('navProfileName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+  document.getElementById('homeGreetingAvatar').textContent = name.charAt(0).toUpperCase();
   document.getElementById('profilePopupAvatar').textContent = initials;
   document.getElementById('profilePopupName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
   document.getElementById('profilePopupEmail').textContent = userEmail || '';
