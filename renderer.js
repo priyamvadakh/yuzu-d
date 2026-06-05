@@ -261,7 +261,7 @@ function makeBubble(msg, dm, showAvatar) {
       return `<div class="dm-msg-row me"><div class="dm-msg-col-me">${voiceHTML}</div></div>`;
     } else {
       const avatarHTML = showAvatar
-        ? `<div class="dm-msg-avatar" style="background:${dm.color}">${dm.initials}</div>`
+        ? `<div class="dm-msg-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}</div>`
         : `<div class="dm-msg-avatar-spacer"></div>`;
       const senderHTML = showAvatar ? `<div class="dm-msg-sender">${dm.name}</div>` : '';
       return `<div class="dm-msg-row them ${showAvatar ? 'group-start' : ''}">
@@ -280,7 +280,7 @@ function makeBubble(msg, dm, showAvatar) {
     </div>`;
   } else {
     const avatarHTML = showAvatar
-      ? `<div class="dm-msg-avatar" style="background:${dm.color}">${dm.initials}</div>`
+      ? `<div class="dm-msg-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}</div>`
       : `<div class="dm-msg-avatar-spacer"></div>`;
     const senderHTML = showAvatar ? `<div class="dm-msg-sender">${dm.name}</div>` : '';
     return `<div class="dm-msg-row them ${showAvatar ? 'group-start' : ''}">
@@ -297,7 +297,7 @@ function loadDmConversation(dmKey) {
 
   // Header
   document.getElementById('dmConvoHeader').innerHTML = `
-    <div class="dm-convo-avatar" style="background:${dm.color}">${dm.initials}${dm.online ? '<div class="online-dot"></div>' : ''}</div>
+    <div class="dm-convo-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}${dm.online ? '<div class="online-dot"></div>' : ''}</div>
     <div class="dm-convo-info">
       <div class="dm-convo-name">${dm.name}</div>
       <div class="dm-convo-status ${dm.online ? '' : 'offline'}">${dm.online ? 'Online' : 'Offline'}</div>
@@ -397,7 +397,7 @@ function showContactDetail(personKey) {
   );
 
   const avatarEl = document.getElementById('contactAvatarXl');
-  avatarEl.textContent = p.initials;
+  avatarEl.textContent = p.initials.charAt(0);
   avatarEl.style.background = p.color;
   document.getElementById('contactHeroName').textContent = p.name;
   document.getElementById('contactHeroRole').textContent = p.role;
@@ -432,9 +432,24 @@ function showContactDetail(personKey) {
     if (dmData[personKey]) { activeDm = personKey; navigateTo('dms'); }
   };
   document.getElementById('caCallBtn').onclick = () => startCall(personKey);
+  document.getElementById('caVideoBtn').onclick = () => startCall(personKey);
   document.getElementById('caScheduleBtn').onclick = () => {
     showRecordingView(); startRecording();
   };
+
+  document.querySelectorAll('.contact-tab').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.contact-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.ctab;
+      ['ctabInfo','ctabMessages','ctabFiles'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== 'ctab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+      });
+    };
+  });
+  document.querySelectorAll('.contact-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.contact-tab[data-ctab="info"]').classList.add('active');
+  ['ctabInfo','ctabMessages','ctabFiles'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== 'ctabInfo'));
 
   showPanel('contactView');
 }
@@ -442,7 +457,7 @@ function showContactDetail(personKey) {
 function personRow(p) {
   return `<div class="people-item" data-person-key="${p.key}" data-name="${p.name}" data-role="${p.role}" data-color="${p.color}" data-initials="${p.initials}">
     <div class="people-avatar" style="background:${p.color}">
-      ${p.initials}
+      ${p.initials.charAt(0)}
       ${p.online ? '<div class="online-dot" style="position:absolute;bottom:0;right:0;width:10px;height:10px;border:2px solid #fff;border-radius:50%;background:var(--online)"></div>' : ''}
     </div>
     <div class="people-info">
@@ -538,7 +553,7 @@ function loadChannelConversation(channelKey) {
     if (isMe) {
       msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row me"><div class="dm-msg-col-me"><div class="dm-bubble">${msg.text}</div>${timeHTML}</div></div>`);
     } else {
-      const avatarHTML = showSender ? `<div class="dm-msg-avatar" style="background:${msg.color}">${msg.initials}</div>` : `<div class="dm-msg-avatar-spacer"></div>`;
+      const avatarHTML = showSender ? `<div class="dm-msg-avatar" style="background:${msg.color}">${msg.initials.charAt(0)}</div>` : `<div class="dm-msg-avatar-spacer"></div>`;
       const senderHTML = showSender ? `<div class="dm-msg-sender">${msg.name}</div>` : '';
       msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row them ${showSender ? 'group-start' : ''}">${avatarHTML}<div class="dm-msg-col">${senderHTML}<div class="dm-bubble">${msg.text}</div>${timeHTML}</div></div>`);
     }
