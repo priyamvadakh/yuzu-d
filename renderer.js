@@ -175,6 +175,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('navActionBtn').classList.toggle('inactive', btn.dataset.tab === 'home' && !isMobile());
     switchMiddleView(btn.dataset.tab);
+    if (isMobile()) mobOpenHome();
   });
 });
 
@@ -673,9 +674,13 @@ function showPanel(id) {
     if (el) el.classList.toggle('hidden', p !== id);
   });
   if (typeof isMobile === 'function' && isMobile()) {
-    mobOpenDetail();
-    const backBtn = document.getElementById('mobBackBtn');
-    if (backBtn) backBtn.style.display = 'flex';
+    if (id === 'recIdle') {
+      mobCloseDetail();
+    } else {
+      mobOpenDetail();
+      const backBtn = document.getElementById('mobBackBtn');
+      if (backBtn) backBtn.style.display = 'flex';
+    }
   }
 }
 
@@ -879,6 +884,10 @@ function navigateTo(tab) {
   if (btn) btn.classList.add('active');
   document.getElementById('navActionBtn').classList.toggle('inactive', tab === 'home' && !isMobile());
   switchMiddleView(tab);
+  if (isMobile()) {
+    if (tab === 'home') { mobCloseDetail(); mobCloseHome(); }
+    else mobOpenHome();
+  }
 }
 
 document.getElementById('resultConfirmBtn').addEventListener('click', () => {
@@ -1377,6 +1386,8 @@ function startCall(personKey) {
 function endCall() {
   clearInterval(callTimerInterval);
   document.getElementById('callWidget').classList.add('hidden');
+  if (typeof hideDialPad === 'function') hideDialPad();
+  document.getElementById('cwKeypadBtn').classList.remove('cw-btn-active');
 }
 
 document.getElementById('cwEndBtn').addEventListener('click', endCall);
@@ -1441,6 +1452,15 @@ function createAndShowTask(title, dueDate, status) {
 const isMobile = () => window.innerWidth <= 768;
 const appEl = document.querySelector('.app');
 
+function mobOpenHome() {
+  if (!isMobile()) return;
+  appEl.classList.add('home-open');
+}
+
+function mobCloseHome() {
+  appEl.classList.remove('home-open');
+}
+
 function mobOpenDetail() {
   if (!isMobile()) return;
   appEl.classList.add('detail-open');
@@ -1458,15 +1478,16 @@ function mobCloseDetail() {
   appEl.classList.remove('detail-open');
 }
 
-// Activities button — slide back to middle panel
+// Activities button — show the home list (middle panel)
 document.getElementById('mobActivitiesBtn').addEventListener('click', () => {
   mobCloseDetail();
+  mobOpenHome();
 });
 
-// On mobile: any nav tab tap goes back to the list (middle panel)
+// On mobile: any nav tab tap opens the list (middle panel)
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (isMobile()) mobCloseDetail();
+    if (isMobile()) mobOpenHome();
   }, true);
 });
 
@@ -1478,104 +1499,532 @@ function closeModal(id) {
   document.getElementById(id).classList.add('hidden');
 }
 
-// Channel button → Create Channel modal
-document.getElementById('quickChannelBtn').addEventListener('click', () => openModal('createChannelModal'));
-document.getElementById('createChannelClose').addEventListener('click', () => closeModal('createChannelModal'));
-document.getElementById('createChannelModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal('createChannelModal');
-});
+// ── QUICK ACTION DROPDOWNS ──────────────────────────────────────────────────
 
-// Public / Private toggle
-const ccPublicBtn = document.getElementById('ccPublicBtn');
-const ccPrivateBtn = document.getElementById('ccPrivateBtn');
-ccPublicBtn.addEventListener('click', () => { ccPublicBtn.classList.add('active'); ccPrivateBtn.classList.remove('active'); });
-ccPrivateBtn.addEventListener('click', () => { ccPrivateBtn.classList.add('active'); ccPublicBtn.classList.remove('active'); });
+function positionDropdown(ddEl, triggerBtn) {
+  const appEl = triggerBtn.closest('.app');
+  const bRect = triggerBtn.getBoundingClientRect();
+  const aRect = appEl.getBoundingClientRect();
+  ddEl.style.left = (bRect.left - aRect.left) + 'px';
+  ddEl.style.top  = (bRect.bottom - aRect.top + 8) + 'px';
+}
 
-// Activate Create Channel button when name is typed
-const ccNameInput = document.getElementById('ccNameInput');
-const ccCreateBtn = document.getElementById('ccCreateBtn');
-ccNameInput.addEventListener('input', () => {
-  ccCreateBtn.classList.toggle('ready', ccNameInput.value.trim().length > 0);
-});
-ccCreateBtn.addEventListener('click', () => {
-  const name = ccNameInput.value.trim().replace(/\s+/g, '-').toLowerCase();
-  if (!name) return;
-  closeModal('createChannelModal');
-  ccNameInput.value = '';
-  document.getElementById('ccDescInput').value = '';
-  ccCreateBtn.classList.remove('ready');
-  // Load the new channel in the right panel
-  if (!channelData[name]) {
-    channelData[name] = { name, displayName: name, members: 1, messages: [] };
-  }
-  loadChannelConversation(name);
-  if (isMobile()) mobOpenDetail();
-});
+function openQuickDd(ddEl, triggerBtn, onOpen) {
+  closeAllQuickDds();
+  positionDropdown(ddEl, triggerBtn);
+  ddEl.classList.remove('hidden');
+  if (onOpen) onOpen();
+}
 
-// New DM button
-document.getElementById('quickNewDmBtn').addEventListener('click', () => {
-  openModal('newDmModal');
-  document.getElementById('newDmInput').focus();
-});
-document.getElementById('newDmClose').addEventListener('click', () => closeModal('newDmModal'));
-document.getElementById('newDmModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal('newDmModal');
-});
-
-// Filter people list on search
-document.getElementById('newDmInput').addEventListener('input', function() {
-  const q = this.value.toLowerCase();
-  document.querySelectorAll('.ndm-person').forEach(p => {
-    p.style.display = p.querySelector('span').textContent.toLowerCase().includes(q) ? '' : 'none';
+function closeAllQuickDds() {
+  ['dmDropdown','channelDropdown','scheduleDropdown','taskDropdown','callDropdown'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
   });
+}
+
+document.addEventListener('click', e => {
+  const dds = ['dmDropdown','channelDropdown','scheduleDropdown','taskDropdown','callDropdown'];
+  const btns = ['quickNewDmBtn','quickChannelBtn','scheduleBtn','taskBtn','quickCallBtn'];
+  const clickedOutside = dds.every(id => !document.getElementById(id).contains(e.target));
+  const clickedTrigger = btns.some(id => document.getElementById(id).contains(e.target));
+  if (clickedOutside && !clickedTrigger) closeAllQuickDds();
 });
 
-// Click person → open DM
-document.querySelectorAll('.ndm-person').forEach(p => {
-  p.addEventListener('click', () => {
-    const dmKey = p.dataset.dm;
-    closeModal('newDmModal');
-    switchMiddleView('dms');
-    loadDmConversation(dmKey);
+// ── DM DROPDOWN ──
+(function() {
+  const btn = document.getElementById('quickNewDmBtn');
+  const dd  = document.getElementById('dmDropdown');
+  const search = document.getElementById('ddmSearch');
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    dd.classList.contains('hidden')
+      ? openQuickDd(dd, btn, () => { search.value = ''; filterDdm(''); search.focus(); })
+      : closeAllQuickDds();
+  });
+
+  function filterDdm(q) {
+    document.querySelectorAll('.qd-dm-item').forEach(item => {
+      item.style.display = item.querySelector('span').textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  search.addEventListener('input', function() { filterDdm(this.value.toLowerCase()); });
+
+  document.querySelectorAll('.qd-dm-item').forEach(item => {
+    item.addEventListener('click', e => {
+      e.stopPropagation();
+      closeAllQuickDds();
+      switchMiddleView('dms');
+      loadDmConversation(item.dataset.dm);
+      if (isMobile()) mobOpenDetail();
+    });
+  });
+})();
+
+// ── CHANNEL DROPDOWN ──
+(function() {
+  const btn = document.getElementById('quickChannelBtn');
+  const dd  = document.getElementById('channelDropdown');
+  const nameInput  = document.getElementById('qdChannelName');
+  const createBtn  = document.getElementById('qdChannelCreate');
+  const publicBtn  = document.getElementById('qdPublicBtn');
+  const privateBtn = document.getElementById('qdPrivateBtn');
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    dd.classList.contains('hidden')
+      ? openQuickDd(dd, btn, () => { nameInput.value = ''; publicBtn.classList.add('active'); privateBtn.classList.remove('active'); nameInput.focus(); })
+      : closeAllQuickDds();
+  });
+
+  publicBtn.addEventListener('click',  e => { e.stopPropagation(); publicBtn.classList.add('active'); privateBtn.classList.remove('active'); });
+  privateBtn.addEventListener('click', e => { e.stopPropagation(); privateBtn.classList.add('active'); publicBtn.classList.remove('active'); });
+
+  createBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const name = nameInput.value.trim().replace(/\s+/g, '-').toLowerCase();
+    if (!name) return;
+    closeAllQuickDds();
+    nameInput.value = '';
+    if (!channelData[name]) {
+      channelData[name] = { name, displayName: name, members: 1, messages: [] };
+    }
+    loadChannelConversation(name);
     if (isMobile()) mobOpenDetail();
   });
-});
+})();
+
+// Keep old modal handlers wired (modal still exists in DOM, just not opened via btn)
+document.getElementById('createChannelClose').addEventListener('click', () => closeModal('createChannelModal'));
+document.getElementById('createChannelModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('createChannelModal'); });
+document.getElementById('newDmClose').addEventListener('click', () => closeModal('newDmModal'));
+document.getElementById('newDmModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('newDmModal'); });
 
 // ── CALL SCREEN ──
 let csTimerInterval = null;
 
-function startCallWith(name, role, color, initials) {
+// ── VIDEO CALL — WebRTC ──────────────────────────────────────────────────
+let vcStream = null;       // local MediaStream (camera + mic)
+let vcPc1 = null;          // local peer  (sends our tracks)
+let vcPc2 = null;          // remote peer (receives tracks, simulates far-end)
+let vcCameraOn = false;
+let vcMuted = false;
+
+const RTC_CONFIG = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+  ],
+};
+
+async function startVideoStream() {
+  try {
+    vcStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    const localEl = document.getElementById('localVideo');
+    localEl.srcObject = vcStream;
+    document.getElementById('csSelfFallback').classList.add('hidden');
+    vcCameraOn = true;
+
+    // Build loopback RTCPeerConnection to demonstrate the remote tile
+    vcPc1 = new RTCPeerConnection(RTC_CONFIG);
+    vcPc2 = new RTCPeerConnection(RTC_CONFIG);
+
+    // Forward ICE candidates between the two ends
+    vcPc1.onicecandidate = e => { if (e.candidate) vcPc2.addIceCandidate(e.candidate).catch(() => {}); };
+    vcPc2.onicecandidate = e => { if (e.candidate) vcPc1.addIceCandidate(e.candidate).catch(() => {}); };
+
+    // When remote side gets tracks → display in remote tile & hide overlay
+    vcPc2.ontrack = e => {
+      const remoteEl = document.getElementById('remoteVideo');
+      if (!remoteEl.srcObject) remoteEl.srcObject = e.streams[0];
+      document.getElementById('csVideoOverlay').classList.add('connected');
+    };
+
+    // Add local tracks to pc1 (the "sending" side)
+    vcStream.getTracks().forEach(t => vcPc1.addTrack(t, vcStream));
+
+    // Offer → Answer exchange (all local, no network needed)
+    const offer = await vcPc1.createOffer();
+    await vcPc1.setLocalDescription(offer);
+    await vcPc2.setRemoteDescription(offer);
+    const answer = await vcPc2.createAnswer();
+    await vcPc2.setLocalDescription(answer);
+    await vcPc1.setRemoteDescription(answer);
+  } catch (err) {
+    console.warn('Camera unavailable:', err.message);
+    document.getElementById('csSelfFallback').classList.remove('hidden');
+    vcCameraOn = false;
+  }
+}
+
+function stopVideoStream() {
+  if (vcStream) { vcStream.getTracks().forEach(t => t.stop()); vcStream = null; }
+  if (vcPc1) { vcPc1.close(); vcPc1 = null; }
+  if (vcPc2) { vcPc2.close(); vcPc2 = null; }
+  const localEl = document.getElementById('localVideo');
+  const remoteEl = document.getElementById('remoteVideo');
+  localEl.srcObject = null;
+  remoteEl.srcObject = null;
+  document.getElementById('csVideoOverlay').classList.remove('connected');
+  document.getElementById('csSelfFallback').classList.remove('hidden');
+  vcCameraOn = false;
+  vcMuted = false;
+}
+// ────────────────────────────────────────────────────────────────────────────
+
+function hexToRgb(hex) {
+  const c = hex.replace('#', '');
+  const full = c.length === 3 ? c.split('').map(x => x + x).join('') : c;
+  return [
+    parseInt(full.slice(0, 2), 16),
+    parseInt(full.slice(2, 4), 16),
+    parseInt(full.slice(4, 6), 16),
+  ].join(', ');
+}
+
+function startCallWith(name, role, color, initials, video = false) {
+  // Set dynamic accent colour (gradient + avatar glow)
+  const screen = document.getElementById('callScreen');
+  try { screen.style.setProperty('--call-rgb', hexToRgb(color)); } catch (_) {}
+
   const av = document.getElementById('csAvatar');
   av.textContent = initials;
   av.style.background = color;
   document.getElementById('csName').textContent = name;
-  document.getElementById('csRole').textContent = role;
+  document.getElementById('csStatus').textContent = 'Ringing…';
+  document.getElementById('csStatus').classList.remove('hidden');
+  document.getElementById('csTimer').classList.add('hidden');
   clearInterval(csTimerInterval);
   let secs = 0;
-  document.getElementById('csTimer').textContent = '00:00';
-  csTimerInterval = setInterval(() => {
-    secs++;
-    const m = String(Math.floor(secs / 60)).padStart(2, '0');
-    const s = String(secs % 60).padStart(2, '0');
-    document.getElementById('csTimer').textContent = `${m}:${s}`;
-  }, 1000);
-  document.getElementById('callScreen').classList.remove('hidden');
+  setTimeout(() => {
+    document.getElementById('csStatus').classList.add('hidden');
+    const timerEl = document.getElementById('csTimer');
+    timerEl.textContent = '00:00';
+    timerEl.classList.remove('hidden');
+    csTimerInterval = setInterval(() => {
+      secs++;
+      timerEl.textContent =
+        String(Math.floor(secs / 60)).padStart(2, '0') + ':' +
+        String(secs % 60).padStart(2, '0');
+    }, 1000);
+  }, 2000);
+  screen.classList.remove('hidden');
+  setVideoMode(video, color, initials, name);
+}
+
+function setVideoMode(on, color, initials, name) {
+  const screen = document.getElementById('callScreen');
+  const grid   = document.getElementById('csVideoGrid');
+  const camIcon = document.getElementById('csCameraBtn').querySelector('.cs-btn-icon');
+
+  screen.classList.toggle('video-mode', on);
+  grid.classList.toggle('hidden', !on);
+  camIcon.classList.toggle('cs-btn-icon-blue', on);
+
+  if (on) {
+    // Populate avatar overlay (shown while WebRTC connects)
+    if (color) {
+      const va = document.getElementById('csVideoAvatar');
+      va.textContent = initials || '';
+      va.style.background = color;
+      document.getElementById('csVideoName').textContent = name || '';
+    }
+    startVideoStream();
+  } else {
+    stopVideoStream();
+  }
+}
+
+// Stored state so expand can restore the full-screen call
+let csCallState = null;
+let cmMuted = false;
+
+function _hideCallScreen() {
+  const screen = document.getElementById('callScreen');
+  screen.classList.add('hidden');
+  screen.classList.remove('video-mode');
+  document.getElementById('csVideoGrid').classList.add('hidden');
+  document.getElementById('csCameraBtn').querySelector('.cs-btn-icon').classList.remove('cs-btn-icon-blue');
+  document.getElementById('csMuteBtn').querySelector('.cs-btn-icon').classList.remove('cs-btn-icon-white');
+  document.getElementById('csSpeakerBtn').querySelector('.cs-btn-icon').classList.remove('cs-btn-icon-white');
 }
 
 function endCallScreen() {
   clearInterval(csTimerInterval);
-  document.getElementById('callScreen').classList.add('hidden');
+  stopVideoStream();
+  csCallState = null;
+  _hideCallScreen();
+  document.getElementById('callMini').classList.add('hidden');
+  if (typeof hideDialPad === 'function') hideDialPad();
 }
 
-document.getElementById('csHangup').addEventListener('click', endCallScreen);
-document.getElementById('csMinimize').addEventListener('click', endCallScreen);
+function minimizeCallScreen() {
+  clearInterval(csTimerInterval);
+  stopVideoStream();
 
-// Mute / Speaker / Hold toggles
-['csMuteBtn','csHoldBtn'].forEach(id => {
-  document.getElementById(id).addEventListener('click', function() {
-    this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-white');
-    this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-active');
+  // Snapshot call state
+  const avEl = document.getElementById('csAvatar');
+  const timerText = document.getElementById('csTimer').textContent || '00:00';
+  const [mm, ss] = timerText.split(':').map(Number);
+  callSeconds = (mm || 0) * 60 + (ss || 0);
+  csCallState = {
+    name:     document.getElementById('csName').textContent,
+    initials: avEl.textContent,
+    color:    avEl.style.background,
+  };
+
+  _hideCallScreen();
+
+  // Populate mini card
+  const cmAv = document.getElementById('cmAvatar');
+  cmAv.textContent = csCallState.initials;
+  cmAv.style.background = csCallState.color;
+  document.getElementById('cmName').textContent = csCallState.name;
+  cmMuted = false;
+  document.getElementById('cmMuteBtn').classList.remove('muted');
+
+  // Sync timer and keep ticking
+  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  document.getElementById('cmTimer').textContent = fmt(callSeconds);
+  clearInterval(callTimerInterval);
+  callTimerInterval = setInterval(() => {
+    callSeconds++;
+    const el = document.getElementById('cmTimer');
+    if (el) el.textContent = fmt(callSeconds);
+  }, 1000);
+
+  document.getElementById('callMini').classList.remove('hidden');
+}
+
+function expandMiniCall() {
+  if (!csCallState) return;
+  clearInterval(callTimerInterval);
+  document.getElementById('callMini').classList.add('hidden');
+
+  // Restore full-screen call at the current elapsed time
+  const avEl = document.getElementById('csAvatar');
+  avEl.textContent = csCallState.initials;
+  avEl.style.background = csCallState.color;
+  document.getElementById('csName').textContent = csCallState.name;
+  document.getElementById('csStatus').classList.add('hidden');
+
+  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  const timerEl = document.getElementById('csTimer');
+  timerEl.textContent = fmt(callSeconds);
+  timerEl.classList.remove('hidden');
+  document.getElementById('callScreen').classList.remove('hidden');
+
+  clearInterval(csTimerInterval);
+  let secs = callSeconds;
+  csTimerInterval = setInterval(() => {
+    secs++;
+    timerEl.textContent = fmt(secs);
+  }, 1000);
+}
+
+// Mini card buttons
+document.getElementById('cmExpand').addEventListener('click', expandMiniCall);
+document.getElementById('cmEndBtn').addEventListener('click', () => {
+  clearInterval(callTimerInterval);
+  csCallState = null;
+  document.getElementById('callMini').classList.add('hidden');
+  if (typeof hideDialPad === 'function') hideDialPad();
+});
+document.getElementById('cmMuteBtn').addEventListener('click', function() {
+  cmMuted = !cmMuted;
+  this.classList.toggle('muted', cmMuted);
+});
+document.getElementById('cmVideoBtn').addEventListener('click', () => {
+  if (!csCallState) return;
+  expandMiniCall();
+  setTimeout(() => setVideoMode(true, csCallState.color, csCallState.initials, csCallState.name), 50);
+});
+
+// Mini card drag
+(function() {
+  const mini = document.getElementById('callMini');
+  const handle = document.getElementById('cmHandle');
+  let dragging = false, ox = 0, oy = 0;
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    const r = mini.getBoundingClientRect();
+    ox = e.clientX - r.left; oy = e.clientY - r.top;
+    mini.style.bottom = ''; mini.style.right = '';
+    mini.style.left = r.left + 'px'; mini.style.top = r.top + 'px';
+    e.preventDefault();
   });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const cr = (mini.closest('.app') || document.body).getBoundingClientRect();
+    const pr = mini.getBoundingClientRect();
+    mini.style.left = Math.max(0, Math.min(e.clientX - cr.left - ox, cr.width  - pr.width))  + 'px';
+    mini.style.top  = Math.max(0, Math.min(e.clientY - cr.top  - oy, cr.height - pr.height)) + 'px';
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+})();
+
+document.getElementById('csHangup').addEventListener('click', endCallScreen);
+document.getElementById('csMinimize').addEventListener('click', minimizeCallScreen);
+document.getElementById('cwExpandBtn').addEventListener('click', expandMiniCall);
+
+// Camera toggle — enable/disable video track on the fly
+document.getElementById('csCameraBtn').addEventListener('click', function() {
+  const screen = document.getElementById('callScreen');
+  const isVideo = screen.classList.contains('video-mode');
+
+  if (!isVideo) {
+    // Switch to video mode mid-call
+    const av = document.getElementById('csAvatar');
+    setVideoMode(true, av.style.background, av.textContent, document.getElementById('csName').textContent);
+    return;
+  }
+
+  // Toggle camera track enabled state
+  if (vcStream) {
+    const vTrack = vcStream.getVideoTracks()[0];
+    if (vTrack) {
+      vTrack.enabled = !vTrack.enabled;
+      vcCameraOn = vTrack.enabled;
+      const fallback = document.getElementById('csSelfFallback');
+      fallback.classList.toggle('hidden', vcCameraOn);
+      this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-blue', vcCameraOn);
+    }
+  }
+});
+
+// Mute — disable audio track
+document.getElementById('csMuteBtn').addEventListener('click', function() {
+  vcMuted = !vcMuted;
+  if (vcStream) {
+    vcStream.getAudioTracks().forEach(t => { t.enabled = !vcMuted; });
+  }
+  this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-white', vcMuted);
+});
+
+// Speaker button — visual toggle only (actual output device API requires Electron permissions)
+document.getElementById('csSpeakerBtn').addEventListener('click', function() {
+  this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-white');
+});
+
+// ── FLOATING DIALPAD ──
+(function() {
+  const pad = document.getElementById('dialPad');
+  const display = document.getElementById('dpDisplay');
+  const handle = document.getElementById('dpHandle');
+  let digits = '';
+
+  // Show / hide
+  function showDialPad() {
+    digits = '';
+    display.textContent = '';
+    pad.classList.remove('hidden');
+    // Default bottom-left inside .app; reset to default position
+    if (!pad.style.left && !pad.style.bottom) {
+      pad.style.left = '24px';
+      pad.style.bottom = '100px';
+      pad.style.top = '';
+      pad.style.right = '';
+    }
+  }
+  function hideDialPad() {
+    pad.classList.add('hidden');
+    digits = '';
+    display.textContent = '';
+  }
+  window.showDialPad = showDialPad;
+  window.hideDialPad = hideDialPad;
+
+  // Digit buttons
+  pad.querySelectorAll('.dp-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      digits += btn.dataset.digit;
+      display.textContent = digits;
+    });
+  });
+
+  // Backspace
+  document.getElementById('dpBackspace').addEventListener('click', () => {
+    digits = digits.slice(0, -1);
+    display.textContent = digits;
+  });
+
+  // Close button
+  document.getElementById('dpClose').addEventListener('click', hideDialPad);
+
+  // ── Drag to move ──
+  let dragging = false, ox = 0, oy = 0;
+
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    const rect = pad.getBoundingClientRect();
+    ox = e.clientX - rect.left;
+    oy = e.clientY - rect.top;
+    pad.style.bottom = '';
+    pad.style.right = '';
+    pad.style.left = rect.left + 'px';
+    pad.style.top = rect.top + 'px';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const container = pad.closest('.app') || document.body;
+    const cr = container.getBoundingClientRect();
+    const pr = pad.getBoundingClientRect();
+    let x = e.clientX - cr.left - ox;
+    let y = e.clientY - cr.top - oy;
+    // Clamp within container
+    x = Math.max(0, Math.min(x, cr.width - pr.width));
+    y = Math.max(0, Math.min(y, cr.height - pr.height));
+    pad.style.left = x + 'px';
+    pad.style.top = y + 'px';
+  });
+
+  document.addEventListener('mouseup', () => { dragging = false; });
+
+  // Touch drag support
+  handle.addEventListener('touchstart', e => {
+    dragging = true;
+    const t = e.touches[0];
+    const rect = pad.getBoundingClientRect();
+    ox = t.clientX - rect.left;
+    oy = t.clientY - rect.top;
+    pad.style.bottom = '';
+    pad.style.right = '';
+    pad.style.left = rect.left + 'px';
+    pad.style.top = rect.top + 'px';
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const t = e.touches[0];
+    const container = pad.closest('.app') || document.body;
+    const cr = container.getBoundingClientRect();
+    const pr = pad.getBoundingClientRect();
+    let x = t.clientX - cr.left - ox;
+    let y = t.clientY - cr.top - oy;
+    x = Math.max(0, Math.min(x, cr.width - pr.width));
+    y = Math.max(0, Math.min(y, cr.height - pr.height));
+    pad.style.left = x + 'px';
+    pad.style.top = y + 'px';
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', () => { dragging = false; });
+})();
+
+// Keypad button on call widget
+document.getElementById('cwKeypadBtn').addEventListener('click', function() {
+  const pad = document.getElementById('dialPad');
+  if (pad.classList.contains('hidden')) {
+    showDialPad();
+    this.classList.add('cw-btn-active');
+  } else {
+    hideDialPad();
+    this.classList.remove('cw-btn-active');
+  }
 });
 
 // ── CALL PEOPLE PICKER (redesigned) ──
@@ -1605,6 +2054,7 @@ function cpmRefresh() {
     p.querySelector('.cpm-check').classList.toggle('hidden', !sel);
   });
   document.getElementById('cpmVoiceBtn').disabled = cpmSelected.size === 0;
+  document.getElementById('cpmVideoBtn').disabled = cpmSelected.size === 0;
 }
 
 function openCallPicker() {
@@ -1637,51 +2087,162 @@ document.getElementById('cpmVoiceBtn').addEventListener('click', () => {
   if (cpmSelected.size === 0) return;
   const first = document.querySelector(`.cpm-person[data-key="${[...cpmSelected][0]}"]`);
   closeModal('callPeopleModal');
-  startCallWith(first.dataset.name, first.dataset.role, first.dataset.color, first.dataset.initials);
+  startCallWith(first.dataset.name, first.dataset.role, first.dataset.color, first.dataset.initials, false);
 });
 
-// Call button
-document.getElementById('quickCallBtn').addEventListener('click', () => {
-  openCallPicker();
+document.getElementById('cpmVideoBtn').addEventListener('click', () => {
+  if (cpmSelected.size === 0) return;
+  const first = document.querySelector(`.cpm-person[data-key="${[...cpmSelected][0]}"]`);
+  closeModal('callPeopleModal');
+  startCallWith(first.dataset.name, first.dataset.role, first.dataset.color, first.dataset.initials, true);
 });
 
-// ── SCHEDULE CALL MODAL ──
+// ── CALL DROPDOWN ──
+(function() {
+  const btn = document.getElementById('quickCallBtn');
+  const dd  = document.getElementById('callDropdown');
+  const search = document.getElementById('cdSearch');
+
+  function openDropdown() {
+    closeAllQuickDds();
+    search.value = '';
+    document.querySelectorAll('.cd-item').forEach(el => el.style.display = '');
+    positionDropdown(dd, btn);
+    dd.classList.remove('hidden');
+    search.focus();
+  }
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    dd.classList.contains('hidden') ? openDropdown() : closeAllQuickDds();
+  });
+
+  // Search filter
+  search.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.cd-item').forEach(el => {
+      el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+
+  // Per-person call buttons
+  dd.querySelectorAll('.cd-item').forEach(item => {
+    item.querySelector('.cd-voice').addEventListener('click', e => {
+      e.stopPropagation();
+      closeDropdown();
+      startCallWith(item.dataset.name, item.dataset.role, item.dataset.color, item.dataset.initials, false);
+    });
+    item.querySelector('.cd-video').addEventListener('click', e => {
+      e.stopPropagation();
+      closeDropdown();
+      startCallWith(item.dataset.name, item.dataset.role, item.dataset.color, item.dataset.initials, true);
+    });
+  });
+})();
+
+// Keep old schedule modal wired (still in DOM)
 document.getElementById('scClose').addEventListener('click', () => closeModal('scheduleCallModal'));
 document.getElementById('scheduleCallModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal('scheduleCallModal');
 });
 
-// Duration pills
-document.querySelectorAll('.sc-dur-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.sc-dur-btn').forEach(b => b.classList.remove('sc-dur-active'));
-    btn.classList.add('sc-dur-active');
+// ── SCHEDULE DROPDOWN ──
+(function() {
+  const btn     = document.getElementById('scheduleBtn');
+  const dd      = document.getElementById('scheduleDropdown');
+  const titleIn = document.getElementById('qdScTitle');
+  const scheduleBtn = document.getElementById('qdScSchedule');
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    dd.classList.contains('hidden')
+      ? openQuickDd(dd, btn, () => {
+          titleIn.value = '';
+          const today = new Date().toISOString().split('T')[0];
+          document.getElementById('qdScDate').value = today;
+          document.getElementById('qdScTime').value = '10:00';
+          document.querySelectorAll('#qdDurRow .qd-pill').forEach((p, i) => p.classList.toggle('qd-pill-active', i === 1));
+          titleIn.focus();
+        })
+      : closeAllQuickDds();
   });
-});
 
-// Enable submit when title is filled
-const scTitle = document.getElementById('scTitle');
-const scSubmit = document.getElementById('scSubmit');
-scTitle.addEventListener('input', () => {
-  scSubmit.classList.toggle('ready', scTitle.value.trim().length > 0);
-});
-scSubmit.addEventListener('click', () => {
-  if (!scTitle.value.trim()) return;
-  closeModal('scheduleCallModal');
-  scTitle.value = '';
-  scSubmit.classList.remove('ready');
-  document.querySelectorAll('.sc-dur-btn').forEach((b, i) => b.classList.toggle('sc-dur-active', i === 1));
-});
+  document.getElementById('qdDurRow').addEventListener('click', e => {
+    const pill = e.target.closest('.qd-pill');
+    if (!pill) return;
+    e.stopPropagation();
+    document.querySelectorAll('#qdDurRow .qd-pill').forEach(p => p.classList.remove('qd-pill-active'));
+    pill.classList.add('qd-pill-active');
+  });
 
-// Schedule button → open Schedule Call modal
-document.getElementById('scheduleBtn').addEventListener('click', () => {
-  openModal('scheduleCallModal');
-  setTimeout(() => scTitle.focus(), 100);
-});
+  scheduleBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const title = titleIn.value.trim();
+    if (!title) return;
+    const date = document.getElementById('qdScDate').value;
+    const time = document.getElementById('qdScTime').value;
+    const dur  = document.querySelector('#qdDurRow .qd-pill-active')?.dataset.min || '30';
+    closeAllQuickDds();
+    titleIn.value = '';
+    // Add to upcoming section
+    const upcomingList = document.getElementById('upcomingList');
+    const upcomingSection = document.getElementById('upcomingSection');
+    if (upcomingList && upcomingSection) {
+      upcomingSection.classList.remove('hidden');
+      const item = document.createElement('div');
+      item.className = 'upcoming-item';
+      item.innerHTML = `<div class="upcoming-icon">📅</div><div class="upcoming-body"><span class="upcoming-title">${title}</span><span class="upcoming-meta">${date ? date + ' · ' : ''}${time || ''} · ${dur}m</span></div>`;
+      upcomingList.appendChild(item);
+    }
+  });
+})();
 
-// Task button
-document.getElementById('taskBtn').addEventListener('click', () => {
-  switchMiddleView('tasks');
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.querySelector('[data-tab="tasks"]')?.classList.add('active');
-});
+// ── TASK DROPDOWN ──
+(function() {
+  const btn       = document.getElementById('taskBtn');
+  const dd        = document.getElementById('taskDropdown');
+  const titleIn   = document.getElementById('qdTaskTitle');
+  const createBtn = document.getElementById('qdTaskCreate');
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    dd.classList.contains('hidden')
+      ? openQuickDd(dd, btn, () => {
+          titleIn.value = '';
+          document.getElementById('qdTaskDue').value = '';
+          document.querySelectorAll('#qdPriRow .qd-pill').forEach((p, i) => p.classList.toggle('qd-pill-active', i === 1));
+          titleIn.focus();
+        })
+      : closeAllQuickDds();
+  });
+
+  document.getElementById('qdPriRow').addEventListener('click', e => {
+    const pill = e.target.closest('.qd-pill');
+    if (!pill) return;
+    e.stopPropagation();
+    document.querySelectorAll('#qdPriRow .qd-pill').forEach(p => p.classList.remove('qd-pill-active'));
+    pill.classList.add('qd-pill-active');
+  });
+
+  createBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const title = titleIn.value.trim();
+    if (!title) return;
+    const due = document.getElementById('qdTaskDue').value;
+    const pri = document.querySelector('#qdPriRow .qd-pill-active')?.dataset.pri || 'medium';
+    closeAllQuickDds();
+    titleIn.value = '';
+    // Add task to the tasks list
+    const tasksList = document.getElementById('tasksFullList');
+    const myTasksCard = document.getElementById('myTasksCard');
+    const priLabel = pri === 'high' ? 'High' : pri === 'low' ? 'Low' : 'Medium';
+    const priClass = pri === 'high' ? 'high-priority' : pri === 'low' ? '' : 'in-progress';
+    const taskHtml = `<div class="task-item no-border"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">${title}</span><div class="task-meta">${due ? '<span class="task-due">⏱ ' + due + '</span><span class="task-dot">•</span>' : ''}<span class="task-status ${priClass}">${priLabel}</span></div></div></div>`;
+    if (tasksList) tasksList.insertAdjacentHTML('beforeend', taskHtml);
+    if (myTasksCard) myTasksCard.insertAdjacentHTML('beforeend', taskHtml);
+    // Switch to tasks view
+    switchMiddleView('tasks');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-tab="tasks"]')?.classList.add('active');
+  });
+})();

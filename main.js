@@ -2,9 +2,10 @@ const { app, BrowserWindow, systemPreferences } = require('electron');
 const path = require('path');
 
 async function createWindow() {
-  // Request microphone access on macOS before the window opens
+  // Request microphone + camera access on macOS before the window opens
   if (process.platform === 'darwin') {
     await systemPreferences.askForMediaAccess('microphone');
+    await systemPreferences.askForMediaAccess('camera');
   }
 
   const win = new BrowserWindow({
@@ -20,13 +21,10 @@ async function createWindow() {
     },
   });
 
-  // Allow microphone permission requests from the renderer
+  // Allow media permission requests from the renderer (mic + camera)
   win.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
-    if (permission === 'media' || permission === 'microphone' || permission === 'audioCapture') {
-      callback(true);
-    } else {
-      callback(false);
-    }
+    const allowed = ['media', 'microphone', 'audioCapture', 'camera', 'video'];
+    callback(allowed.includes(permission));
   });
 
   win.loadFile('index.html');
