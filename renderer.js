@@ -437,13 +437,13 @@ function showContactDetail(personKey) {
     if (pd) startCallWith(pd.name, pd.role || '', pd.color, pd.initials, true);
   };
   document.getElementById('caScheduleBtn').onclick = () => {
-    const pd = peopleData.find(x => x.key === personKey) || dmData[personKey];
+    const pd = peopleData.find(x => x.key === personKey);
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('scTitle').value = pd ? `Call with ${pd.name}` : '';
     document.getElementById('scDate').value = today;
     document.getElementById('scTime').value = '10:00';
-    document.querySelectorAll('.sc-dur-btn').forEach((b, i) => b.classList.toggle('sc-dur-active', i === 1));
-    if (pd) document.getElementById('scParticipants').value = pd.name;
+    document.querySelectorAll('#scDurRow .sd-dur-btn').forEach((b, i) => b.classList.toggle('sd-dur-active', i === 1));
+    renderSchedulePeople('scPeopleRow', pd ? pd.key : null);
     openModal('scheduleCallModal');
   };
 
@@ -1194,6 +1194,33 @@ function createAndShowDraft(recipientName, messageText) {
   navigateTo('dms');
 }
 
+// ── SCHEDULE PEOPLE PICKER ──
+function renderSchedulePeople(containerId, preselectedKey) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = peopleData.map(p => `
+    <div class="sd-person${p.key === preselectedKey ? ' selected' : ''}" data-person-key="${p.key}">
+      <div class="sd-person-av-wrap">
+        <div class="sd-person-av" style="background:${p.color}">${p.initials.charAt(0)}</div>
+        <div class="sd-person-check">✓</div>
+      </div>
+      <span class="sd-person-name">${p.name.split(' ')[0]}</span>
+    </div>
+  `).join('');
+  container.querySelectorAll('.sd-person').forEach(el => {
+    el.addEventListener('click', () => el.classList.toggle('selected'));
+  });
+}
+
+function getSelectedPeopleNames(containerId) {
+  const names = [];
+  document.querySelectorAll(`#${containerId} .sd-person.selected`).forEach(el => {
+    const p = peopleData.find(x => x.key === el.dataset.personKey);
+    if (p) names.push(p.name);
+  });
+  return names.join(', ') || null;
+}
+
 // ── SCHEDULE EVENT → Home Upcoming ──
 function createAndShowSchedule(title, date, time, duration, withName) {
   const section = document.getElementById('upcomingSection');
@@ -1259,8 +1286,9 @@ function showScheduleDetail(s) {
     document.getElementById('scTime').value = s.time;
     const durMap = { '15': 0, '30': 1, '45': 2, '60': 3 };
     const durKey = s.duration ? s.duration.replace(/[^0-9]/g, '') : '30';
-    document.querySelectorAll('.sc-dur-btn').forEach((b, i) => b.classList.toggle('sc-dur-active', i === (durMap[durKey] ?? 1)));
-    document.getElementById('scParticipants').value = s.withName || '';
+    document.querySelectorAll('#scDurRow .sd-dur-btn').forEach((b, i) => b.classList.toggle('sd-dur-active', i === (durMap[durKey] ?? 1)));
+    const preKey = s.withName ? (peopleData.find(p => p.name.toLowerCase().includes(s.withName.toLowerCase().split(' ')[0]))?.key || null) : null;
+    renderSchedulePeople('scPeopleRow', preKey);
     openModal('scheduleCallModal');
   };
 
@@ -2198,11 +2226,11 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
   });
 })();
 
-document.querySelectorAll('.sc-dur-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.sc-dur-btn').forEach(b => b.classList.remove('sc-dur-active'));
-    btn.classList.add('sc-dur-active');
-  });
+document.getElementById('scDurRow').addEventListener('click', e => {
+  const btn = e.target.closest('.sd-dur-btn');
+  if (!btn) return;
+  document.querySelectorAll('#scDurRow .sd-dur-btn').forEach(b => b.classList.remove('sd-dur-active'));
+  btn.classList.add('sd-dur-active');
 });
 document.getElementById('scClose').addEventListener('click', () => closeModal('scheduleCallModal'));
 document.getElementById('scheduleCallModal').addEventListener('click', e => {
@@ -2213,8 +2241,8 @@ document.getElementById('scSubmit').addEventListener('click', () => {
   if (!title) return;
   const date = document.getElementById('scDate').value;
   const time = document.getElementById('scTime').value;
-  const dur  = document.querySelector('.sc-dur-btn.sc-dur-active')?.dataset.min || '30';
-  const withName = document.getElementById('scParticipants').value.trim() || null;
+  const dur  = document.querySelector('#scDurRow .sd-dur-btn.sd-dur-active')?.dataset.min || '30';
+  const withName = getSelectedPeopleNames('scPeopleRow');
   const durLabel = dur === '60' ? '1 hour' : `${dur} minutes`;
   closeModal('scheduleCallModal');
 
@@ -2265,18 +2293,19 @@ document.getElementById('scSubmit').addEventListener('click', () => {
           const today = new Date().toISOString().split('T')[0];
           document.getElementById('qdScDate').value = today;
           document.getElementById('qdScTime').value = '10:00';
-          document.querySelectorAll('#qdDurRow .qd-pill').forEach((p, i) => p.classList.toggle('qd-pill-active', i === 1));
+          document.querySelectorAll('#qdDurRow .sd-dur-btn').forEach((b, i) => b.classList.toggle('sd-dur-active', i === 1));
+          renderSchedulePeople('qdPeopleRow', null);
           titleIn.focus();
         })
       : closeAllQuickDds();
   });
 
   document.getElementById('qdDurRow').addEventListener('click', e => {
-    const pill = e.target.closest('.qd-pill');
-    if (!pill) return;
+    const btn = e.target.closest('.sd-dur-btn');
+    if (!btn) return;
     e.stopPropagation();
-    document.querySelectorAll('#qdDurRow .qd-pill').forEach(p => p.classList.remove('qd-pill-active'));
-    pill.classList.add('qd-pill-active');
+    document.querySelectorAll('#qdDurRow .sd-dur-btn').forEach(b => b.classList.remove('sd-dur-active'));
+    btn.classList.add('sd-dur-active');
   });
 
   scheduleBtn.addEventListener('click', e => {
@@ -2285,17 +2314,22 @@ document.getElementById('scSubmit').addEventListener('click', () => {
     if (!title) return;
     const date = document.getElementById('qdScDate').value;
     const time = document.getElementById('qdScTime').value;
-    const dur  = document.querySelector('#qdDurRow .qd-pill-active')?.dataset.min || '30';
+    const dur  = document.querySelector('#qdDurRow .sd-dur-btn.sd-dur-active')?.dataset.min || '30';
+    const withName = getSelectedPeopleNames('qdPeopleRow');
+    const durLabel = dur === '60' ? '1 hour' : `${dur} minutes`;
     closeAllQuickDds();
     titleIn.value = '';
-    // Add to upcoming section
     const upcomingList = document.getElementById('upcomingList');
     const upcomingSection = document.getElementById('upcomingSection');
     if (upcomingList && upcomingSection) {
       upcomingSection.classList.remove('hidden');
       const item = document.createElement('div');
       item.className = 'upcoming-item';
-      item.innerHTML = `<div class="upcoming-icon">📅</div><div class="upcoming-body"><span class="upcoming-title">${title}</span><span class="upcoming-meta">${date ? date + ' · ' : ''}${time || ''} · ${dur}m</span></div>`;
+      item.style.cursor = 'pointer';
+      item.dataset.scheduleTitle = title;
+      const scheduleObj = { title, date, time, duration: durLabel, withName };
+      item.innerHTML = `<div class="upcoming-icon">📅</div><div class="upcoming-body"><span class="upcoming-name">${title}</span><span class="upcoming-meta">${date} · ${time} · ${durLabel}${withName ? ' · with ' + withName : ''}</span></div><span class="upcoming-badge">Scheduled</span>`;
+      item.addEventListener('click', () => showScheduleDetail(scheduleObj));
       upcomingList.appendChild(item);
     }
   });

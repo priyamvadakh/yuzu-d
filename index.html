@@ -721,54 +721,29 @@
 
     <!-- SCHEDULE CALL MODAL -->
     <div class="ep-modal-overlay hidden" id="scheduleCallModal">
-      <div class="ep-modal cc-modal sc-modal">
-        <div class="ep-modal-header">
-          <span class="ep-modal-title">Schedule Call</span>
-          <button class="ep-modal-close" id="scClose">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-        <div class="ep-modal-body sc-body">
-          <div class="sc-field">
-            <label class="sc-label">Call Title</label>
-            <input type="text" class="sc-input" id="scTitle" placeholder="e.g. Weekly Design Sync" />
+      <div class="sd-modal-card">
+        <button class="sd-close" id="scClose">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <input type="text" class="sd-title" id="scTitle" placeholder="Call title…" autocomplete="off" />
+        <div class="sd-dt-row">
+          <div class="sd-dt-field">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="#9ca3af" stroke-width="1.2"/><path d="M5 1V4M11 1V4M1 7H15" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <input type="date" class="sd-dt-input" id="scDate" />
           </div>
-          <div class="sc-row">
-            <div class="sc-field">
-              <label class="sc-label">Date</label>
-              <div class="sc-input-wrap">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="#9ca3af" stroke-width="1.2"/><path d="M5 1V4M11 1V4M1 7H15" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
-                <input type="date" class="sc-input sc-date" id="scDate" />
-              </div>
-            </div>
-            <div class="sc-field">
-              <label class="sc-label">Time</label>
-              <div class="sc-input-wrap">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M8 4.5V8.5L10.5 10" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
-                <input type="time" class="sc-input sc-time" id="scTime" />
-              </div>
-            </div>
-          </div>
-          <div class="sc-field">
-            <label class="sc-label">Duration</label>
-            <div class="sc-dur-row">
-              <button class="sc-dur-btn" data-min="15">15m</button>
-              <button class="sc-dur-btn sc-dur-active" data-min="30">30m</button>
-              <button class="sc-dur-btn" data-min="45">45m</button>
-              <button class="sc-dur-btn" data-min="60">60m</button>
-            </div>
-          </div>
-          <div class="sc-field">
-            <label class="sc-label">Participants</label>
-            <div class="sc-input-wrap">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="#9ca3af" stroke-width="1.4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/></svg>
-              <input type="text" class="sc-input" id="scParticipants" placeholder="Add participants…" />
-            </div>
+          <div class="sd-dt-field">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M8 4.5V8.5L10.5 10" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <input type="time" class="sd-dt-input" id="scTime" />
           </div>
         </div>
-        <div class="cc-modal-footer">
-          <button class="cc-create-btn" id="scSubmit">Schedule Call</button>
+        <div class="sd-dur-row" id="scDurRow">
+          <button class="sd-dur-btn" data-min="15">15m</button>
+          <button class="sd-dur-btn sd-dur-active" data-min="30">30m</button>
+          <button class="sd-dur-btn" data-min="45">45m</button>
+          <button class="sd-dur-btn" data-min="60">60m</button>
         </div>
+        <div class="sd-people-row" id="scPeopleRow"></div>
+        <button class="sd-btn" id="scSubmit">Schedule</button>
       </div>
     </div>
 
@@ -959,28 +934,25 @@
 
     <!-- SCHEDULE DROPDOWN -->
     <div class="quick-dd hidden" id="scheduleDropdown">
-      <div class="qd-field-pad">
-        <input type="text" class="qd-text-input" id="qdScTitle" placeholder="Call title…" />
-      </div>
-      <div class="qd-dt-row">
-        <div class="qd-dt-wrap">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="#9ca3af" stroke-width="1.2"/><path d="M5 1V4M11 1V4M1 7H15" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <input type="date" class="qd-dt-input" id="qdScDate" />
+      <input type="text" class="sd-title" id="qdScTitle" placeholder="Call title…" autocomplete="off" />
+      <div class="sd-dt-row">
+        <div class="sd-dt-field">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="#9ca3af" stroke-width="1.2"/><path d="M5 1V4M11 1V4M1 7H15" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <input type="date" class="sd-dt-input" id="qdScDate" />
         </div>
-        <div class="qd-dt-wrap">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M8 4.5V8.5L10.5 10" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <input type="time" class="qd-dt-input" id="qdScTime" />
+        <div class="sd-dt-field">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M8 4.5V8.5L10.5 10" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <input type="time" class="sd-dt-input" id="qdScTime" />
         </div>
       </div>
-      <div class="qd-pill-row" id="qdDurRow">
-        <button class="qd-pill" data-min="15">15m</button>
-        <button class="qd-pill qd-pill-active" data-min="30">30m</button>
-        <button class="qd-pill" data-min="45">45m</button>
-        <button class="qd-pill" data-min="60">60m</button>
+      <div class="sd-dur-row" id="qdDurRow">
+        <button class="sd-dur-btn" data-min="15">15m</button>
+        <button class="sd-dur-btn sd-dur-active" data-min="30">30m</button>
+        <button class="sd-dur-btn" data-min="45">45m</button>
+        <button class="sd-dur-btn" data-min="60">60m</button>
       </div>
-      <div class="qd-footer">
-        <button class="qd-create-btn" id="qdScSchedule">Schedule</button>
-      </div>
+      <div class="sd-people-row" id="qdPeopleRow"></div>
+      <button class="sd-btn" id="qdScSchedule">Schedule</button>
     </div>
 
     <!-- TASK DROPDOWN -->
