@@ -227,23 +227,41 @@ const dmData = {
 };
 
 let _dmSort = 'newest';
+let _dmFilterMode = 'all';
 
 function renderDmList() {
   const search = (document.getElementById('dmSearch')?.value || '').toLowerCase().trim();
-  const filter = document.querySelector('.dm-filter-pill.active')?.dataset.filter || 'all';
+  const qf = document.querySelector('.dm-qf-pill.active')?.dataset.qf || 'all';
   const list = document.getElementById('dmList');
   if (!list) return;
 
   let keys = Object.keys(dmData);
+  const today = new Date().toDateString();
 
-  if (filter === 'online') keys = keys.filter(k => dmData[k].online);
-  if (filter === 'unread') keys = keys.filter(k => dmData[k].unread > 0);
+  // Quick filter OR filter mode (whichever is active)
+  const activeMode = _dmFilterMode !== 'all' ? _dmFilterMode : qf;
 
-  if (search) keys = keys.filter(k => {
-    const dm = dmData[k];
-    const last = dm.messages[dm.messages.length - 1];
-    return dm.name.toLowerCase().includes(search) || (last?.text || '').toLowerCase().includes(search);
+  if (activeMode === 'unread') keys = keys.filter(k => dmData[k].unread > 0);
+  else if (activeMode === 'online') keys = keys.filter(k => dmData[k].online);
+  else if (activeMode === 'voice') keys = keys.filter(k => dmData[k].messages.some(m => m.type === 'voice'));
+  else if (activeMode === 'recent') keys = keys.filter(k => {
+    const last = dmData[k].messages[dmData[k].messages.length - 1];
+    return last?.time && !['Yesterday', '2h ago', '1h ago'].includes(last.time);
   });
+
+  // Search scoped by filter mode
+  if (search) {
+    if (_dmFilterMode === 'name') keys = keys.filter(k => dmData[k].name.toLowerCase().includes(search));
+    else if (_dmFilterMode === 'message') keys = keys.filter(k => {
+      const last = dmData[k].messages[dmData[k].messages.length - 1];
+      return (last?.text || '').toLowerCase().includes(search);
+    });
+    else keys = keys.filter(k => {
+      const dm = dmData[k];
+      const last = dm.messages[dm.messages.length - 1];
+      return dm.name.toLowerCase().includes(search) || (last?.text || '').toLowerCase().includes(search);
+    });
+  }
 
   if (_dmSort === 'az') keys.sort((a, b) => dmData[a].name.localeCompare(dmData[b].name));
   else if (_dmSort === 'oldest') keys = keys.reverse();
@@ -269,6 +287,41 @@ function renderDmList() {
       ${dm.unread ? `<div class="unread-badge">${dm.unread}</div>` : ''}
     </div>`;
   }).join('');
+}
+
+function setDmFilterMode(mode, label) {
+  _dmFilterMode = mode;
+  const searchModeEl = document.getElementById('dmSearchMode');
+  const activeFilterEl = document.getElementById('dmActiveFilter');
+  const activeLabelEl = document.getElementById('dmActiveFilterLabel');
+  const needsSearch = ['name', 'message'].includes(mode);
+  const placeholderMap = { name: 'Search by name…', message: 'Search by message…' };
+
+  if (mode === 'all') {
+    searchModeEl?.classList.add('hidden');
+    activeFilterEl?.classList.add('hidden');
+    document.getElementById('dmSearch').placeholder = 'Search conversations…';
+  } else {
+    if (needsSearch) {
+      searchModeEl.textContent = label;
+      searchModeEl.classList.remove('hidden');
+      document.getElementById('dmSearch').placeholder = placeholderMap[mode];
+      document.getElementById('dmSearch').focus();
+      activeFilterEl?.classList.add('hidden');
+    } else {
+      searchModeEl?.classList.add('hidden');
+      activeLabelEl.textContent = `Filtered: ${label}`;
+      activeFilterEl.classList.remove('hidden');
+    }
+  }
+
+  // Sync filter button active state
+  document.getElementById('dmFilterBtn')?.classList.toggle('active', mode !== 'all');
+  // Reset quick filter pills if a direct filter is active
+  if (['unread','online','voice','recent'].includes(mode)) {
+    document.querySelectorAll('.dm-qf-pill').forEach(p => p.classList.toggle('active', p.dataset.qf === mode));
+  }
+  renderDmList();
 }
 
 let _vnId = 0;
@@ -1210,28 +1263,76 @@ document.getElementById('dmList').addEventListener('click', e => {
 // ── DM SEARCH / FILTER / SORT ──
 document.getElementById('dmSearch').addEventListener('input', renderDmList);
 
-document.getElementById('dmContent').addEventListener('click', e => {
-  const pill = e.target.closest('.dm-filter-pill');
-  if (pill) {
-    document.querySelectorAll('.dm-filter-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    renderDmList();
-  }
+// Quick filter pills
+document.getElementById('dmQuickFilters').addEventListener('click', e => {
+  const pill = e.target.closest('.dm-qf-pill');
+  if (!pill) return;
+  document.querySelectorAll('.dm-qf-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  _dmFilterMode = 'all';
+  document.getElementById('dmSearchMode')?.classList.add('hidden');
+  document.getElementById('dmActiveFilter')?.classList.add('hidden');
+  document.getElementById('dmSearch').placeholder = 'Search conversations…';
+  document.getElementById('dmFilterBtn')?.classList.remove('active');
+  renderDmList();
 });
 
+// Clear active filter
+document.getElementById('dmAfClear').addEventListener('click', () => {
+  setDmFilterMode('all', '');
+  document.querySelectorAll('.dm-qf-pill').forEach(p => p.classList.toggle('active', p.dataset.qf === 'all'));
+});
+
+// Filter button → open Image #8-style dropdown
+document.getElementById('dmFilterBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const dd = document.getElementById('dmFilterDd');
+  const rect = e.currentTarget.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 6) + 'px';
+  dd.style.left = rect.left + 'px';
+  // Sync active state
+  dd.querySelectorAll('.dfd-opt').forEach(opt => opt.classList.toggle('active', opt.dataset.fmode === _dmFilterMode));
+  dd.classList.remove('hidden');
+  document.getElementById('dmFilterSearch').value = '';
+  document.getElementById('dmFilterSearch').focus();
+  setTimeout(() => document.addEventListener('click', () => dd.classList.add('hidden'), { once: true }), 0);
+});
+
+// Filter search (search within the filter options list)
+document.getElementById('dmFilterSearch').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll('.dfd-opt').forEach(opt => {
+    opt.style.display = opt.querySelector('span').textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+document.getElementById('dmFilterSearch').addEventListener('click', e => e.stopPropagation());
+
+// Filter option selection
+document.getElementById('dmFilterDd').addEventListener('click', e => {
+  const opt = e.target.closest('.dfd-opt');
+  if (!opt) return;
+  e.stopPropagation();
+  const mode = opt.dataset.fmode;
+  const label = opt.querySelector('span').textContent;
+  document.getElementById('dmFilterDd').classList.add('hidden');
+  document.querySelectorAll('.dfd-opt').forEach(o => o.classList.toggle('active', o.dataset.fmode === mode));
+  setDmFilterMode(mode, label);
+});
+
+// Sort button
 document.getElementById('dmSortBtn').addEventListener('click', e => {
   e.stopPropagation();
   const dd = document.getElementById('dmSortDd');
   const rect = e.currentTarget.getBoundingClientRect();
-  dd.style.top = (rect.bottom + 4) + 'px';
+  dd.style.top = (rect.bottom + 6) + 'px';
   dd.style.left = rect.left + 'px';
   dd.querySelectorAll('.dsd-opt').forEach(opt => {
     opt.classList.toggle('active', opt.dataset.sort === _dmSort);
-    opt.onclick = (ev) => {
+    opt.onclick = ev => {
       ev.stopPropagation();
       _dmSort = opt.dataset.sort;
       document.getElementById('dmSortLabel').textContent = { newest: 'Newest', oldest: 'Oldest', az: 'A–Z' }[_dmSort];
-      dd.querySelectorAll('.dsd-opt').forEach(o => o.classList.toggle('active', o.dataset.sort === _dmSort));
+      document.getElementById('dmSortBtn').classList.toggle('active', _dmSort !== 'newest');
       dd.classList.add('hidden');
       renderDmList();
     };
