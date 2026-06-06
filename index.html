@@ -1053,25 +1053,22 @@
             New
           </button>
         </div>
-        <div class="dm-list" id="dmList">
-          <div class="dm-item selected" data-dm="sarah">
-            <div class="dm-avatar-wrap"><div class="dm-letter-avatar" style="background:#7c3aed">S</div><div class="online-dot"></div></div>
-            <div class="dm-body"><div class="dm-row"><span class="dm-name">Sarah Jenkins</span><span class="dm-time">12:01 PM</span></div><span class="dm-preview">Sure! Available at 3pm today?</span></div>
-            <div class="unread-badge">2</div>
-          </div>
-          <div class="dm-item" data-dm="david">
-            <div class="dm-avatar-wrap"><div class="dm-letter-avatar" style="background:#2563eb">D</div></div>
-            <div class="dm-body"><div class="dm-row"><span class="dm-name">David Chen</span><span class="dm-time">2h ago</span></div><span class="dm-preview">Got it, will review by EOD</span></div>
-          </div>
-          <div class="dm-item" data-dm="alex">
-            <div class="dm-avatar-wrap"><div class="dm-letter-avatar" style="background:#059669">A</div><div class="online-dot"></div></div>
-            <div class="dm-body"><div class="dm-row"><span class="dm-name">Alex Kim</span><span class="dm-time">Yesterday</span></div><span class="dm-preview">The new brand looks 🔥</span></div>
-          </div>
-          <div class="dm-item" data-dm="jessica">
-            <div class="dm-avatar-wrap"><div class="dm-letter-avatar" style="background:#d97706">J</div></div>
-            <div class="dm-body"><div class="dm-row"><span class="dm-name">Jessica Park</span><span class="dm-time">Yesterday</span></div><span class="dm-preview">I'll share the campaign slides tomorrow</span></div>
-          </div>
+        <div class="dm-search-bar">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M11 11L14 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input type="text" id="dmSearch" class="dm-search-input" placeholder="Search conversations…" autocomplete="off" />
         </div>
+        <div class="dm-filter-bar">
+          <div class="dm-filter-pills">
+            <button class="dm-filter-pill active" data-filter="all">All</button>
+            <button class="dm-filter-pill" data-filter="online">Online</button>
+            <button class="dm-filter-pill" data-filter="unread">Unread</button>
+          </div>
+          <button class="dm-sort-btn" id="dmSortBtn">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span id="dmSortLabel">Newest</span>
+          </button>
+        </div>
+        <div class="dm-list" id="dmList"></div>
       </div>
 
       <!-- People view (shown when People nav is active) -->
@@ -1542,6 +1539,13 @@
 
     </main>
 
+  </div>
+
+  <!-- DM SORT DROPDOWN -->
+  <div class="dm-sort-dd hidden" id="dmSortDd">
+    <button class="dsd-opt active" data-sort="newest">Newest first</button>
+    <button class="dsd-opt" data-sort="oldest">Oldest first</button>
+    <button class="dsd-opt" data-sort="az">A → Z</button>
   </div>
 
   <!-- TASK STATUS DROPDOWN -->

@@ -157,6 +157,7 @@ function switchMiddleView(tab) {
 
   // Right panel
   if (tab === 'dms') {
+    renderDmList();
     showPanel('dmView');
     loadDmConversation(activeDm);
   } else if (tab === 'tasks') {
@@ -188,7 +189,7 @@ let activeDm = 'sarah';
 
 const dmData = {
   sarah: {
-    name: 'Sarah Jenkins', color: '#7c3aed', initials: 'SJ', online: true,
+    name: 'Sarah Jenkins', color: '#7c3aed', initials: 'SJ', online: true, unread: 2,
     messages: [
       { from: 'them', text: 'Hey! Just shared the brand assets folder with you 📁', time: '11:32 AM' },
       { from: 'them', text: 'Let me know what you think of the new color palette', time: '11:33 AM' },
@@ -224,6 +225,51 @@ const dmData = {
     ]
   }
 };
+
+let _dmSort = 'newest';
+
+function renderDmList() {
+  const search = (document.getElementById('dmSearch')?.value || '').toLowerCase().trim();
+  const filter = document.querySelector('.dm-filter-pill.active')?.dataset.filter || 'all';
+  const list = document.getElementById('dmList');
+  if (!list) return;
+
+  let keys = Object.keys(dmData);
+
+  if (filter === 'online') keys = keys.filter(k => dmData[k].online);
+  if (filter === 'unread') keys = keys.filter(k => dmData[k].unread > 0);
+
+  if (search) keys = keys.filter(k => {
+    const dm = dmData[k];
+    const last = dm.messages[dm.messages.length - 1];
+    return dm.name.toLowerCase().includes(search) || (last?.text || '').toLowerCase().includes(search);
+  });
+
+  if (_dmSort === 'az') keys.sort((a, b) => dmData[a].name.localeCompare(dmData[b].name));
+  else if (_dmSort === 'oldest') keys = keys.reverse();
+
+  if (!keys.length) {
+    list.innerHTML = '<div class="dm-empty">No conversations found</div>';
+    return;
+  }
+
+  list.innerHTML = keys.map(k => {
+    const dm = dmData[k];
+    const last = dm.messages[dm.messages.length - 1];
+    const preview = last ? (last.type === 'voice' ? '🎙 Voice message' : last.text) : '';
+    return `<div class="dm-item${k === activeDm ? ' selected' : ''}" data-dm="${k}">
+      <div class="dm-avatar-wrap">
+        <div class="dm-letter-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}</div>
+        ${dm.online ? '<div class="online-dot"></div>' : ''}
+      </div>
+      <div class="dm-body">
+        <div class="dm-row"><span class="dm-name">${dm.name}</span><span class="dm-time">${last?.time || ''}</span></div>
+        <span class="dm-preview">${preview}</span>
+      </div>
+      ${dm.unread ? `<div class="unread-badge">${dm.unread}</div>` : ''}
+    </div>`;
+  }).join('');
+}
 
 let _vnId = 0;
 function makeVoiceBubble(msg, isMe) {
@@ -294,6 +340,7 @@ function loadDmConversation(dmKey) {
   activeDm = dmKey;
   const dm = dmData[dmKey];
   if (!dm) return;
+  if (dm.unread) { dm.unread = 0; renderDmList(); }
 
   // Header
   document.getElementById('dmConvoHeader').innerHTML = `
@@ -1159,6 +1206,41 @@ document.getElementById('dmList').addEventListener('click', e => {
   const item = e.target.closest('.dm-item');
   if (item) loadDmConversation(item.dataset.dm);
 });
+
+// ── DM SEARCH / FILTER / SORT ──
+document.getElementById('dmSearch').addEventListener('input', renderDmList);
+
+document.getElementById('dmContent').addEventListener('click', e => {
+  const pill = e.target.closest('.dm-filter-pill');
+  if (pill) {
+    document.querySelectorAll('.dm-filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    renderDmList();
+  }
+});
+
+document.getElementById('dmSortBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const dd = document.getElementById('dmSortDd');
+  const rect = e.currentTarget.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 4) + 'px';
+  dd.style.left = rect.left + 'px';
+  dd.querySelectorAll('.dsd-opt').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.sort === _dmSort);
+    opt.onclick = (ev) => {
+      ev.stopPropagation();
+      _dmSort = opt.dataset.sort;
+      document.getElementById('dmSortLabel').textContent = { newest: 'Newest', oldest: 'Oldest', az: 'A–Z' }[_dmSort];
+      dd.querySelectorAll('.dsd-opt').forEach(o => o.classList.toggle('active', o.dataset.sort === _dmSort));
+      dd.classList.add('hidden');
+      renderDmList();
+    };
+  });
+  dd.classList.remove('hidden');
+  setTimeout(() => document.addEventListener('click', () => dd.classList.add('hidden'), { once: true }), 0);
+});
+
+renderDmList();
 
 // ── MIC ↔ SEND TOGGLE ──
 const MIC_SVG  = `<svg class="icon-mic" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`;
