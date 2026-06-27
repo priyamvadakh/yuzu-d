@@ -144,16 +144,26 @@ function showHome() {
   document.getElementById('navActionBtn').classList.toggle('inactive', !isMobile());
 }
 
+let _emptyStateOn = false;
+
 // ── MIDDLE PANEL NAV ──
 function switchMiddleView(tab) {
-  ['homeContent','tasksFullView','dmContent','peopleContent'].forEach(id => {
+  ['homeContent','homeEmpty','tasksFullView','dmContent','peopleContent','aigroupContent'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
   });
-  if (tab === 'tasks')       document.getElementById('tasksFullView').classList.remove('hidden');
-  else if (tab === 'dms')    document.getElementById('dmContent').classList.remove('hidden');
-  else if (tab === 'people') document.getElementById('peopleContent').classList.remove('hidden');
-  else                       document.getElementById('homeContent').classList.remove('hidden');
+  if (tab === 'tasks') {
+    document.getElementById('tasksFullView').classList.remove('hidden');
+    const hasTasks = document.querySelectorAll('#tasksFullList .task-item').length > 0;
+    document.getElementById('tasksEmptyState').classList.toggle('hidden', hasTasks);
+  }
+  else if (tab === 'dms')     document.getElementById('dmContent').classList.remove('hidden');
+  else if (tab === 'people')  document.getElementById('peopleContent').classList.remove('hidden');
+  else if (tab === 'aigroup') document.getElementById('aigroupContent').classList.remove('hidden');
+  else {
+    if (_emptyStateOn) document.getElementById('homeEmpty').classList.remove('hidden');
+    else               document.getElementById('homeContent').classList.remove('hidden');
+  }
 
   // Right panel
   if (tab === 'dms') {
@@ -165,6 +175,8 @@ function switchMiddleView(tab) {
   } else if (tab === 'people') {
     renderPeopleList();
     showIdle();
+  } else if (tab === 'aigroup') {
+    showPanel('aigroupChat');
   } else {
     showIdle();
   }
@@ -195,8 +207,10 @@ const dmData = {
       { from: 'them', text: 'Let me know what you think of the new color palette', time: '11:33 AM' },
       { from: 'me',   text: 'Just saw them — looks great! The typography is clean 🔥', time: '11:45 AM' },
       { from: 'me',   text: 'Can we discuss the amber accent? Think we can go a bit darker', time: '11:46 AM' },
+      { from: 'them', type: 'call', callType: 'missed', video: false, time: '11:58 AM' },
       { from: 'them', type: 'voice', dur: '0:18', bars: [3,5,8,6,9,7,4,8,6,10,7,5,9,6,4,7,5,8,6,3], translation: "Totally agree on the amber. I can darken it a shade or two. Are you free for a quick call at 3pm today to go over the final palette together?", time: '12:01 PM' },
-      { from: 'me',   text: '3pm works perfectly! See you then 👍', time: '12:03 PM' },
+      { from: 'them', type: 'call', callType: 'inbound', video: false, dur: '2:34', time: '12:03 PM' },
+      { from: 'me',   text: 'That was helpful, thanks! See you at 3pm 👍', time: '12:05 PM' },
     ]
   },
   david: {
@@ -205,7 +219,8 @@ const dmData = {
       { from: 'them', text: 'Sent the Q3 report document over 📎', time: '2h ago' },
       { from: 'me',   text: 'Got it, will review by EOD', time: '2h ago' },
       { from: 'them', type: 'voice', dur: '0:24', bars: [5,9,6,10,4,8,7,5,9,6,8,10,5,7,4,9,6,8,5,7], translation: "Hey, no rush on the report. I just wanted to flag that slide 14 has some placeholder numbers — make sure to replace those before you share it with the team. Let me know if you have questions.", time: '1h ago' },
-      { from: 'me',   text: 'Thanks for the heads-up, will fix slide 14 🙏', time: '1h ago' },
+      { from: 'me',   text: 'Thanks for the heads-up, will fix slide 14 🙏', time: '55m ago' },
+      { from: 'me',   type: 'call', callType: 'outbound', video: false, dur: '5:12', time: '45m ago' },
     ]
   },
   alex: {
@@ -215,6 +230,7 @@ const dmData = {
       { from: 'me',   text: 'Thanks! Still a work in progress', time: 'Yesterday' },
       { from: 'them', text: 'What stack are you using for the desktop app?', time: 'Yesterday' },
       { from: 'me',   type: 'voice', dur: '0:11', bars: [4,7,5,9,6,8,5,7,4,6,8,5,7,4,9,6,5,8,4,6], translation: "Electron with vanilla JS, no frameworks. Just keeping it lean and fast.", time: 'Yesterday' },
+      { from: 'me',   type: 'call', callType: 'outbound', video: true, dur: '12:05', time: 'Yesterday' },
     ]
   },
   jessica: {
@@ -266,15 +282,31 @@ function renderDmList() {
   if (_dmSort === 'az') keys.sort((a, b) => dmData[a].name.localeCompare(dmData[b].name));
   else if (_dmSort === 'oldest') keys = keys.reverse();
 
+  const dmEmpty = document.getElementById('dmEmptyState');
   if (!keys.length) {
-    list.innerHTML = '<div class="dm-empty">No conversations found</div>';
+    if (Object.keys(dmData).length === 0) {
+      list.innerHTML = '';
+      dmEmpty?.classList.remove('hidden');
+    } else {
+      list.innerHTML = '<div class="dm-empty">No conversations found</div>';
+      dmEmpty?.classList.add('hidden');
+    }
     return;
   }
+  dmEmpty?.classList.add('hidden');
 
   list.innerHTML = keys.map(k => {
     const dm = dmData[k];
     const last = dm.messages[dm.messages.length - 1];
-    const preview = last ? (last.type === 'voice' ? '🎙 Voice message' : last.text) : '';
+    let preview = '', previewClass = '';
+    if (last) {
+      if (last.type === 'voice') { preview = '🎙 Voice message'; }
+      else if (last.type === 'call') {
+        if (last.callType === 'missed') { preview = '📞 Missed call'; previewClass = 'missed'; }
+        else if (last.video) { preview = `📹 Video call${last.dur ? ' · ' + last.dur : ''}`; }
+        else { preview = `📞 ${last.callType === 'inbound' ? 'Incoming' : 'Outgoing'} call${last.dur ? ' · ' + last.dur : ''}`; }
+      } else { preview = last.text; }
+    }
     return `<div class="dm-item${k === activeDm ? ' selected' : ''}" data-dm="${k}">
       <div class="dm-avatar-wrap">
         <div class="dm-letter-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}</div>
@@ -282,7 +314,7 @@ function renderDmList() {
       </div>
       <div class="dm-body">
         <div class="dm-row"><span class="dm-name">${dm.name}</span><span class="dm-time">${last?.time || ''}</span></div>
-        <span class="dm-preview">${preview}</span>
+        <span class="dm-preview${previewClass ? ' ' + previewClass : ''}">${preview}</span>
       </div>
       ${dm.unread ? `<div class="unread-badge">${dm.unread}</div>` : ''}
     </div>`;
@@ -350,9 +382,63 @@ function makeVoiceBubble(msg, isMe) {
   </div>`;
 }
 
+function makeCallBubble(msg) {
+  const isMe = msg.from === 'me';
+  const isMissed = msg.callType === 'missed';
+  const isVideo = msg.video;
+
+  const label = isMissed ? 'Missed call'
+    : isVideo ? (isMe ? 'Outgoing video call' : 'Incoming video call')
+    : (isMe ? 'Outgoing call' : 'Incoming call');
+
+  // Standard 24×24 phone / video icons
+  const phoneIcon = isVideo
+    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="13" height="10" rx="2"/>
+        <path d="M22 8.5l-5 3.5 5 3.5V8.5z"/>
+      </svg>`
+    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.8 19.8 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/>
+      </svg>`;
+
+  // Small directional arrow badge (12×12)
+  const arrowColor = isMissed ? '#ef4444' : '#b07d1a';
+  const arrowIcon = isMe
+    ? `<svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+        <path d="M2 9L9 2" stroke="${arrowColor}" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M3 2h6v6" stroke="${arrowColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`
+    : `<svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+        <path d="M9 2L2 9" stroke="${arrowColor}" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M8 9H2V3" stroke="${arrowColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+
+  const iconColor = isMissed ? '#ef4444' : '#b07d1a';
+  const cardClass = isMissed ? 'missed' : isMe ? 'outbound' : 'inbound';
+
+  return `<div class="dm-call-event">
+    <div class="dce-inner ${cardClass}">
+      <div class="dce-icon-wrap" style="color:${iconColor}">
+        ${phoneIcon}
+        <div class="dce-arrow">${arrowIcon}</div>
+      </div>
+      <div class="dce-body">
+        <span class="dce-label${isMissed ? ' missed' : ''}">${label}</span>
+        ${msg.dur ? `<span class="dce-dur">${msg.dur}</span>` : ''}
+      </div>
+      <div class="dce-right">
+        <span class="dce-time">${msg.time}</span>
+        <button class="dce-cb-btn">Call back</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function makeBubble(msg, dm, showAvatar) {
   const isMe = msg.from === 'me';
   const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <span class="dm-tick">✓✓</span>' : ''}</div>`;
+
+  if (msg.type === 'call') return makeCallBubble(msg);
 
   if (msg.type === 'voice') {
     const voiceHTML = makeVoiceBubble(msg, isMe);
@@ -420,7 +506,7 @@ function loadDmConversation(dmKey) {
   msgs.innerHTML = '<div class="dm-date-sep">Today</div>';
   dm.messages.forEach((msg, i) => {
     const prevMsg = dm.messages[i - 1];
-    const showAvatar = msg.from === 'them' && (!prevMsg || prevMsg.from !== 'them');
+    const showAvatar = msg.from === 'them' && msg.type !== 'call' && (!prevMsg || prevMsg.from !== 'them' || prevMsg.type === 'call');
     msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, showAvatar));
   });
   msgs.scrollTop = msgs.scrollHeight;
@@ -439,6 +525,109 @@ function sendDmMessage(text) {
   const msgs = document.getElementById('dmMessages');
   msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, false));
   msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── DM VOICE RECORDING ──
+let _dmRec = {
+  mediaRecorder: null, mediaStream: null, audioContext: null,
+  analyser: null, chunks: [], seconds: 0, timerInterval: null,
+  animFrame: null, barSamples: [], barEls: []
+};
+
+const DM_REC_BARS = 28;
+
+function _dmRecFmt(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+function startDmRecording() {
+  const recBar  = document.getElementById('dmRecBar');
+  const inputRow = document.getElementById('dmInputRow');
+  const wave    = document.getElementById('dmRecWave');
+  const timerEl = document.getElementById('dmRecTimer');
+
+  // Build bar elements
+  wave.innerHTML = Array.from({ length: DM_REC_BARS }, () =>
+    `<div class="dm-rec-bar-el" style="height:4px"></div>`
+  ).join('');
+  _dmRec.barEls = Array.from(wave.querySelectorAll('.dm-rec-bar-el'));
+  _dmRec.barSamples = Array(DM_REC_BARS).fill(4);
+
+  inputRow.classList.add('hidden');
+  recBar.classList.remove('hidden');
+
+  _dmRec.seconds = 0;
+  timerEl.textContent = '0:00';
+  _dmRec.timerInterval = setInterval(() => {
+    _dmRec.seconds++;
+    timerEl.textContent = _dmRecFmt(_dmRec.seconds);
+  }, 1000);
+
+  navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
+    _dmRec.mediaStream = stream;
+    _dmRec.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    _dmRec.analyser = _dmRec.audioContext.createAnalyser();
+    _dmRec.analyser.fftSize = 64;
+    _dmRec.analyser.smoothingTimeConstant = 0.75;
+    _dmRec.audioContext.createMediaStreamSource(stream).connect(_dmRec.analyser);
+
+    _dmRec.mediaRecorder = new MediaRecorder(stream);
+    _dmRec.chunks = [];
+    _dmRec.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) _dmRec.chunks.push(e.data); };
+    _dmRec.mediaRecorder.start(100);
+
+    const data = new Uint8Array(_dmRec.analyser.frequencyBinCount);
+    function drawBars() {
+      _dmRec.animFrame = requestAnimationFrame(drawBars);
+      _dmRec.analyser.getByteFrequencyData(data);
+      const bins = data.length;
+      for (let i = 0; i < DM_REC_BARS; i++) {
+        const bin = Math.floor((i / DM_REC_BARS) * bins);
+        const h = 4 + (data[bin] / 255) * 26;
+        _dmRec.barSamples[i] = h;
+        if (_dmRec.barEls[i]) _dmRec.barEls[i].style.height = h + 'px';
+      }
+    }
+    drawBars();
+  }).catch(() => {
+    // Mic denied — animate bars with fake data so UI still works
+    function fakeBars() {
+      _dmRec.animFrame = requestAnimationFrame(fakeBars);
+      _dmRec.barEls.forEach((el, i) => {
+        const h = 4 + Math.abs(Math.sin(Date.now() / 300 + i * 0.6)) * 20;
+        el.style.height = h + 'px';
+      });
+    }
+    fakeBars();
+  });
+}
+
+function stopDmRecording(send) {
+  clearInterval(_dmRec.timerInterval);
+  cancelAnimationFrame(_dmRec.animFrame);
+  _dmRec.animFrame = null;
+
+  const dur = _dmRecFmt(_dmRec.seconds);
+  const barSnapshot = _dmRec.barSamples.map(h => Math.max(1, Math.round(h / 2.4)));
+
+  if (_dmRec.mediaRecorder && _dmRec.mediaRecorder.state !== 'inactive') _dmRec.mediaRecorder.stop();
+  if (_dmRec.mediaStream) { _dmRec.mediaStream.getTracks().forEach(t => t.stop()); _dmRec.mediaStream = null; }
+  if (_dmRec.audioContext) { _dmRec.audioContext.close(); _dmRec.audioContext = null; _dmRec.analyser = null; }
+
+  document.getElementById('dmRecBar').classList.add('hidden');
+  document.getElementById('dmInputRow').classList.remove('hidden');
+
+  if (send && _dmRec.seconds > 0) {
+    const dm = dmData[activeDm];
+    const msg = { from: 'me', type: 'voice', dur, bars: barSnapshot, translation: '', time: 'Just now' };
+    dm.messages.push(msg);
+    const msgs = document.getElementById('dmMessages');
+    msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, false));
+    msgs.scrollTop = msgs.scrollHeight;
+    renderDmList();
+  }
+
+  _dmRec.seconds = 0;
+  _dmRec.chunks = [];
+  _dmRec.barSamples = Array(DM_REC_BARS).fill(4);
 }
 
 // ── PEOPLE DATA ──
@@ -462,6 +651,12 @@ function renderPeopleList(filter) {
   const offline = items.filter(p => !p.online);
 
   list.innerHTML = '';
+  const peopleEmpty = document.getElementById('peopleEmptyState');
+  if (!items.length) {
+    peopleEmpty?.classList.remove('hidden');
+    return;
+  }
+  peopleEmpty?.classList.add('hidden');
   if (online.length) {
     list.insertAdjacentHTML('beforeend', '<div class="people-group-label">Active Now</div>');
     online.forEach(p => list.insertAdjacentHTML('beforeend', personRow(p)));
@@ -810,7 +1005,7 @@ function applyTaskStatus(t, newStatus) {
 }
 
 // ── RIGHT PANEL STATES ──
-const allPanels = ['scheduleDetail','taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult','kbView','contactView'];
+const allPanels = ['scheduleDetail','taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult','kbView','contactView','aigroupChat'];
 function showPanel(id) {
   allPanels.forEach(p => {
     const el = document.getElementById(p);
@@ -1115,9 +1310,10 @@ document.getElementById('navCollapseBtn').addEventListener('click', () => {
   navExpanded = !navExpanded;
   const nav = document.querySelector('.left-nav');
   nav.classList.toggle('expanded', navExpanded);
-  // shift profile popup when nav expands
   const popup = document.getElementById('profilePopup');
   popup.style.left = navExpanded ? '218px' : '80px';
+  const overlay = document.getElementById('settingsContent');
+  overlay.style.left = navExpanded ? '218px' : '68px';
 });
 
 function updateProfileDisplay() {
@@ -1221,6 +1417,478 @@ document.getElementById('editProfileModal').addEventListener('click', e => {
     document.getElementById('editProfileModal').classList.add('hidden');
   }
 });
+
+// ── SETTINGS ──
+const SETTINGS_SECTION_MAP = {
+  profile:   'settingsSectionProfile',
+  sounds:    'settingsSectionSounds',
+  shortcuts: 'settingsSectionShortcuts',
+};
+
+let _stgDirty = false;
+
+function _stgMarkDirty() { _stgDirty = true; }
+
+function openSettings(section = 'profile') {
+  document.getElementById('profilePopup').classList.add('hidden');
+  _stgDirty = false;
+
+  const name = profileDisplayName || (userEmail ? userEmail.split('@')[0] : 'User');
+  const parts = name.split(' ');
+  document.getElementById('stgFirstName').value = parts[0] || '';
+  document.getElementById('stgLastName').value  = parts.slice(1).join(' ') || '';
+  const initials = name.slice(0, 2).toUpperCase();
+  const avatarEl = document.getElementById('stgAvatar');
+  avatarEl.textContent = initials;
+  avatarEl.style.background = epAvatarColor;
+  document.getElementById('stgFullname').textContent = name + ' | 1001';
+  document.getElementById('stgPhone').value = '';
+  document.querySelectorAll('#stgDisplayLang .stg-pill').forEach((p,i) => p.classList.toggle('active', i===0));
+  document.querySelectorAll('#stgAppearance .stg-pill').forEach((p,i) => p.classList.toggle('active', i===0));
+
+  switchSettingsSection(section);
+  document.getElementById('settingsContent').classList.remove('hidden');
+}
+
+function _doCloseSettings() {
+  _stgDirty = false;
+  document.getElementById('settingsContent').classList.add('hidden');
+  document.getElementById('stgUnsavedOverlay').classList.add('hidden');
+}
+
+function closeSettings() {
+  if (_stgDirty) {
+    document.getElementById('stgUnsavedOverlay').classList.remove('hidden');
+  } else {
+    _doCloseSettings();
+  }
+}
+
+let _stgToastTimer = null;
+function showSettingsToast(msg = 'Changes saved') {
+  const toast = document.getElementById('stgToast');
+  document.getElementById('stgToastMsg').textContent = msg;
+  toast.classList.remove('hidden');
+  clearTimeout(_stgToastTimer);
+  _stgToastTimer = setTimeout(() => toast.classList.add('hidden'), 2800);
+}
+
+function _stgApplySave() {
+  const first = document.getElementById('stgFirstName').value.trim();
+  const last  = document.getElementById('stgLastName').value.trim();
+  const name  = [first, last].filter(Boolean).join(' ') || profileDisplayName;
+  profileDisplayName = name;
+  const initials = name.slice(0, 2).toUpperCase();
+  document.getElementById('navProfileInitials').textContent = initials;
+  document.getElementById('navProfileName').textContent = name;
+  document.getElementById('navProfileAvatar').style.background = epAvatarColor;
+  document.getElementById('profilePopupAvatar').textContent = initials;
+  document.getElementById('profilePopupAvatar').style.background = epAvatarColor;
+  document.getElementById('profilePopupName').textContent = name;
+  document.getElementById('stgAvatar').textContent = initials;
+  document.getElementById('stgFullname').textContent = name + ' | 1001';
+  _stgDirty = false;
+}
+
+function switchSettingsSection(section) {
+  Object.values(SETTINGS_SECTION_MAP).forEach(id => {
+    document.getElementById(id)?.classList.add('hidden');
+  });
+  document.getElementById(SETTINGS_SECTION_MAP[section])?.classList.remove('hidden');
+  document.querySelectorAll('.sn-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === section);
+  });
+}
+
+document.getElementById('navSettingsBtn').addEventListener('click', () => openSettings('profile'));
+document.getElementById('navSearchBtn').addEventListener('click', () => openGlobalSearch());
+document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
+
+document.getElementById('editProfileBtn').removeEventListener('click', openEditProfile);
+document.getElementById('editProfileBtn').addEventListener('click', () => openSettings('profile'));
+
+document.querySelectorAll('.sn-item').forEach(btn => {
+  btn.addEventListener('click', () => switchSettingsSection(btn.dataset.section));
+});
+
+// Pill group toggles (language + appearance)
+document.querySelectorAll('.stg-pill-group').forEach(group => {
+  group.addEventListener('click', e => {
+    const pill = e.target.closest('.stg-pill');
+    if (!pill) return;
+    group.querySelectorAll('.stg-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    _stgMarkDirty();
+  });
+});
+
+// Mark dirty on any input change inside settings
+document.getElementById('settingsContent').addEventListener('input', _stgMarkDirty);
+document.getElementById('settingsContent').addEventListener('change', _stgMarkDirty);
+
+// Save Changes
+document.getElementById('stgSaveBtn').addEventListener('click', () => {
+  _stgApplySave();
+  showSettingsToast('Profile updated');
+});
+
+// Cancel — discard and close
+document.getElementById('stgCancelBtn').addEventListener('click', () => {
+  _stgDirty = false;
+  _doCloseSettings();
+});
+
+// Unsaved changes dialog
+document.getElementById('stgSaveCloseBtn').addEventListener('click', () => {
+  _stgApplySave();
+  showSettingsToast('Profile updated');
+  _doCloseSettings();
+});
+document.getElementById('stgDiscardBtn').addEventListener('click', () => {
+  _stgDirty = false;
+  _doCloseSettings();
+});
+document.getElementById('stgKeepEditingBtn').addEventListener('click', () => {
+  document.getElementById('stgUnsavedOverlay').classList.add('hidden');
+});
+
+// ESC key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (!document.getElementById('globalSearch').classList.contains('hidden')) {
+      closeGlobalSearch();
+    } else if (!document.getElementById('stgUnsavedOverlay').classList.contains('hidden')) {
+      document.getElementById('stgUnsavedOverlay').classList.add('hidden');
+    } else if (!document.getElementById('settingsContent').classList.contains('hidden')) {
+      closeSettings();
+    }
+  }
+  // Cmd+K / Ctrl+K → open global search
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('globalSearch').classList.contains('hidden')
+      ? openGlobalSearch()
+      : closeGlobalSearch();
+  }
+});
+
+// ── GLOBAL SEARCH ────────────────────────────────────────────────────────────
+(function() {
+  const overlay   = document.getElementById('globalSearch');
+  const backdrop  = document.getElementById('gsBackdrop');
+  const input     = document.getElementById('gsInput');
+  const results   = document.getElementById('gsResults');
+  const emptyEl   = document.getElementById('gsEmpty');
+  const recentsEl = document.getElementById('gsRecents');
+  const recentsList = document.getElementById('gsRecentsList');
+
+  let gsIndex = -1;   // keyboard-nav selected item index
+  let gsItems = [];   // flat list of current result elements
+
+  // ── open / close ──
+  window.openGlobalSearch = function() {
+    overlay.classList.remove('hidden');
+    input.value = '';
+    showRecents();
+    input.focus();
+  };
+  window.closeGlobalSearch = function() {
+    overlay.classList.add('hidden');
+    gsIndex = -1;
+    gsItems = [];
+  };
+
+  backdrop.addEventListener('click', closeGlobalSearch);
+
+  // ── recent items (shown when input is empty) ──
+  const RECENTS = [
+    { type: 'dm',      key: 'sarah',              label: 'Sarah Jenkins',       meta: 'Direct message',        color: '#7c3aed', initials: 'SJ' },
+    { type: 'channel', key: 'product-launch-q3',  label: '#product-launch-q3',  meta: '12 members',            color: '#0d8f82', initials: '#' },
+    { type: 'dm',      key: 'david',              label: 'David Chen',          meta: 'Direct message',        color: '#2563eb', initials: 'DC' },
+    { type: 'channel', key: 'engineering-team',   label: '#engineering-team',   meta: '8 members',             color: '#0d8f82', initials: '#' },
+  ];
+
+  function showRecents() {
+    results.classList.add('hidden');
+    emptyEl.classList.add('hidden');
+    recentsEl.classList.remove('hidden');
+    recentsList.innerHTML = '';
+    RECENTS.forEach(r => {
+      const el = makeItem(r.type, r.key, r.label, r.meta, r.color, r.initials);
+      el.querySelector('.gs-item-tag').textContent = r.type === 'channel' ? 'Channel' : 'DM';
+      recentsList.appendChild(el);
+    });
+    indexItems();
+  }
+
+  // ── search ──
+  function highlight(text, q) {
+    if (!q) return text;
+    const idx = text.toLowerCase().indexOf(q.toLowerCase());
+    if (idx < 0) return text;
+    return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + q.length) + '</mark>' + text.slice(idx + q.length);
+  }
+
+  function snippet(text, q) {
+    const idx = text.toLowerCase().indexOf(q.toLowerCase());
+    if (idx < 0) return text.slice(0, 60);
+    const start = Math.max(0, idx - 25);
+    const raw = (start > 0 ? '…' : '') + text.slice(start, idx + q.length + 35);
+    return highlight(raw, q);
+  }
+
+  function runSearch(q) {
+    const qLow = q.toLowerCase().trim();
+    results.innerHTML = '';
+    recentsEl.classList.add('hidden');
+    emptyEl.classList.add('hidden');
+
+    if (!qLow) { showRecents(); return; }
+
+    let totalHits = 0;
+
+    // People
+    const peopleHits = peopleData.filter(p =>
+      p.name.toLowerCase().includes(qLow) ||
+      p.role.toLowerCase().includes(qLow) ||
+      p.dept.toLowerCase().includes(qLow)
+    );
+    if (peopleHits.length) {
+      totalHits += peopleHits.length;
+      const grp = document.createElement('div');
+      grp.innerHTML = '<div class="gs-group-label">PEOPLE</div>';
+      peopleHits.forEach(p => {
+        const el = makeItem('person', p.key,
+          highlight(p.name, q),
+          highlight(p.role, q),
+          p.color, p.initials);
+        el.querySelector('.gs-item-tag').textContent = 'Person';
+        grp.appendChild(el);
+      });
+      results.appendChild(grp);
+    }
+
+    // Channels
+    const chHits = Object.values(channelData).filter(ch =>
+      ch.name.toLowerCase().includes(qLow) ||
+      (ch.displayName || '').toLowerCase().includes(qLow)
+    );
+    if (chHits.length) {
+      totalHits += chHits.length;
+      const grp = document.createElement('div');
+      grp.innerHTML = '<div class="gs-group-label">CHANNELS</div>';
+      chHits.forEach(ch => {
+        const el = makeItem('channel', ch.name,
+          highlight('#' + ch.name, q),
+          ch.members + ' members',
+          '#0d8f82', '#');
+        el.querySelector('.gs-item-tag').textContent = 'Channel';
+        grp.appendChild(el);
+      });
+      results.appendChild(grp);
+    }
+
+    // DM messages
+    const msgHits = [];
+    Object.entries(dmData).forEach(([key, dm]) => {
+      dm.messages.forEach(msg => {
+        if (msg.text && msg.text.toLowerCase().includes(qLow)) {
+          msgHits.push({ key, name: dm.name, color: dm.color, initials: dm.initials, text: msg.text });
+        }
+      });
+    });
+    // Channel messages
+    Object.entries(channelData).forEach(([key, ch]) => {
+      (ch.messages || []).forEach(msg => {
+        if (msg.text && msg.text.toLowerCase().includes(qLow)) {
+          msgHits.push({ key, name: '#' + key, color: '#0d8f82', initials: '#', text: msg.text, isChannel: true });
+        }
+      });
+    });
+
+    if (msgHits.length) {
+      totalHits += msgHits.length;
+      const grp = document.createElement('div');
+      grp.innerHTML = '<div class="gs-group-label">MESSAGES</div>';
+      msgHits.slice(0, 6).forEach(m => {
+        const el = makeItem(m.isChannel ? 'channel' : 'dm', m.key,
+          m.name,
+          snippet(m.text, q),
+          m.color, m.initials);
+        el.querySelector('.gs-item-tag').textContent = 'Message';
+        el.querySelector('.gs-item-meta').innerHTML = snippet(m.text, q);
+        grp.appendChild(el);
+      });
+      results.appendChild(grp);
+    }
+
+    if (totalHits === 0) {
+      emptyEl.classList.remove('hidden');
+      document.getElementById('gsEmptyQuery').textContent = q;
+      results.classList.add('hidden');
+    } else {
+      results.classList.remove('hidden');
+    }
+    gsIndex = -1;
+    indexItems();
+  }
+
+  // ── item factory ──
+  function makeItem(type, key, nameHtml, metaHtml, color, initials) {
+    const div = document.createElement('div');
+    div.className = 'gs-item';
+    div.dataset.type = type;
+    div.dataset.key  = key;
+
+    const isChannel = type === 'channel';
+    div.innerHTML = `
+      <div class="gs-item-av ${isChannel ? 'gs-av-channel' : ''}" style="${isChannel ? '' : 'background:' + color}">${initials}</div>
+      <div class="gs-item-body">
+        <span class="gs-item-name">${nameHtml}</span>
+        <span class="gs-item-meta">${metaHtml}</span>
+      </div>
+      <span class="gs-item-tag"></span>`;
+
+    div.addEventListener('click', () => activateItem(div));
+    return div;
+  }
+
+  // ── activate (open the result) ──
+  function activateItem(el) {
+    const type = el.dataset.type;
+    const key  = el.dataset.key;
+    closeGlobalSearch();
+    if (type === 'person') {
+      switchMiddleView('people');
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-tab="people"]')?.classList.add('active');
+    } else if (type === 'channel') {
+      loadChannelConversation(key);
+      if (typeof isMobile === 'function' && isMobile()) mobOpenDetail();
+    } else if (type === 'dm' || type === 'message') {
+      switchMiddleView('dms');
+      loadDmConversation(key);
+      if (typeof isMobile === 'function' && isMobile()) mobOpenDetail();
+    }
+  }
+
+  // ── keyboard navigation ──
+  function indexItems() {
+    gsItems = Array.from(overlay.querySelectorAll('.gs-item'));
+  }
+
+  function setActive(idx) {
+    gsItems.forEach(el => el.classList.remove('gs-active'));
+    if (idx >= 0 && idx < gsItems.length) {
+      gsItems[idx].classList.add('gs-active');
+      gsItems[idx].scrollIntoView({ block: 'nearest' });
+    }
+    gsIndex = idx;
+  }
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(gsIndex + 1, gsItems.length - 1)); }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); setActive(Math.max(gsIndex - 1, 0)); }
+    if (e.key === 'Enter' && gsIndex >= 0) { activateItem(gsItems[gsIndex]); }
+  });
+
+  input.addEventListener('input', function() { runSearch(this.value); });
+})();
+
+// ── EMPTY STATE / NEW USER VIEW ──
+document.getElementById('emptyStateToggle').addEventListener('click', () => {
+  _emptyStateOn = !_emptyStateOn;
+  document.getElementById('homeContent').classList.toggle('hidden', _emptyStateOn);
+  document.getElementById('homeEmpty').classList.toggle('hidden', !_emptyStateOn);
+  document.getElementById('emptyStateToggle').classList.toggle('active', _emptyStateOn);
+  document.getElementById('emptyStateToggle').innerHTML = _emptyStateOn
+    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg> Back to normal view`
+    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg> New user view`;
+});
+
+document.getElementById('ewbDismiss').addEventListener('click', () => {
+  document.getElementById('ewbDismiss').closest('.empty-welcome-banner').style.display = 'none';
+});
+
+// Getting started step actions
+document.getElementById('ostProfile').addEventListener('click',  () => openSettings('profile'));
+document.getElementById('ostMessage').addEventListener('click',  () => navigateTo('dms'));
+document.getElementById('ostAI').addEventListener('click',       () => navigateTo('home'));
+document.getElementById('ostSchedule').addEventListener('click', () => {
+  document.getElementById('scheduleBtn').click();
+});
+
+// Mark a step done when its action is triggered
+function markOstepDone(id) {
+  const step = document.getElementById(id);
+  if (!step || step.classList.contains('done')) return;
+  step.classList.add('done');
+  step.querySelector('.ost-check').innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" fill="#16a34a"/><path d="M5.5 9L7.5 11L12.5 6.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const doneCount = document.querySelectorAll('#homeEmpty .onboarding-step.done').length;
+  const label = document.getElementById('ostProgressLabel');
+  if (label) label.textContent = `${doneCount} of 4 done`;
+}
+
+document.getElementById('ostProfile').addEventListener('click',  () => markOstepDone('ostep1'));
+document.getElementById('ostMessage').addEventListener('click',  () => markOstepDone('ostep2'));
+document.getElementById('ostAI').addEventListener('click',       () => markOstepDone('ostep3'));
+document.getElementById('ostSchedule').addEventListener('click', () => markOstepDone('ostep4'));
+
+document.getElementById('esNewDmBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const dd = document.getElementById('dmDropdown');
+  const search = document.getElementById('ddmSearch');
+  dd.classList.contains('hidden')
+    ? openQuickDd(dd, e.currentTarget, () => { search.value = ''; search.dispatchEvent(new Event('input')); search.focus(); })
+    : closeAllQuickDds();
+});
+document.getElementById('esNewChannelBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const dd = document.getElementById('channelDropdown');
+  const nameInput = document.getElementById('qdChannelName');
+  const publicBtn = document.getElementById('qdPublicBtn');
+  const privateBtn = document.getElementById('qdPrivateBtn');
+  dd.classList.contains('hidden')
+    ? openQuickDd(dd, e.currentTarget, () => { nameInput.value = ''; publicBtn.classList.add('active'); privateBtn.classList.remove('active'); nameInput.focus(); })
+    : closeAllQuickDds();
+});
+document.getElementById('esNewTaskBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const dd = document.getElementById('taskDropdown');
+  const titleIn = document.getElementById('qdTaskTitle');
+  dd.classList.contains('hidden')
+    ? openQuickDd(dd, e.currentTarget, () => {
+        titleIn.value = '';
+        document.getElementById('qdTaskDue').value = '';
+        document.querySelectorAll('#qdPriRow .qd-pill').forEach((p, i) => p.classList.toggle('qd-pill-active', i === 1));
+        titleIn.focus();
+      })
+    : closeAllQuickDds();
+});
+
+// ── PAGE EMPTY STATE CTAs ──
+document.getElementById('pesDmBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const dd = document.getElementById('dmDropdown');
+  const search = document.getElementById('ddmSearch');
+  dd.classList.contains('hidden')
+    ? openQuickDd(dd, e.currentTarget, () => { search.value = ''; search.dispatchEvent(new Event('input')); search.focus(); })
+    : closeAllQuickDds();
+});
+document.getElementById('pesTaskBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const dd = document.getElementById('taskDropdown');
+  const titleIn = document.getElementById('qdTaskTitle');
+  dd.classList.contains('hidden')
+    ? openQuickDd(dd, e.currentTarget, () => {
+        titleIn.value = '';
+        document.getElementById('qdTaskDue').value = '';
+        document.querySelectorAll('#qdPriRow .qd-pill').forEach((p, i) => p.classList.toggle('qd-pill-active', i === 1));
+        titleIn.focus();
+      })
+    : closeAllQuickDds();
+});
+document.getElementById('pesPeopleBtn').addEventListener('click', () => openSettings('profile'));
 
 // ── TASK LIST CLICKS ──
 document.getElementById('tasksFullList').addEventListener('click', e => {
@@ -1392,11 +2060,17 @@ document.addEventListener('click', e => {
 // ── DM COMPOSER ──
 document.getElementById('dmSendBtn').addEventListener('click', () => {
   const input = document.getElementById('dmInput');
-  if (!input.value.trim()) return;
+  if (!input.value.trim()) {
+    startDmRecording();
+    return;
+  }
   sendDmMessage(input.value);
   input.value = '';
   syncSendBtn(input, document.getElementById('dmSendBtn'));
 });
+
+document.getElementById('dmRecCancel').addEventListener('click', () => stopDmRecording(false));
+document.getElementById('dmRecSend').addEventListener('click',   () => stopDmRecording(true));
 document.getElementById('dmInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     sendDmMessage(e.target.value);
@@ -1837,9 +2511,9 @@ function closeAllQuickDds() {
 
 document.addEventListener('click', e => {
   const dds = ['dmDropdown','channelDropdown','scheduleDropdown','taskDropdown','callDropdown'];
-  const btns = ['quickNewDmBtn','quickChannelBtn','scheduleBtn','taskBtn','quickCallBtn'];
+  const btns = ['quickNewDmBtn','quickChannelBtn','scheduleBtn','taskBtn','quickCallBtn','esNewDmBtn','esNewChannelBtn','esNewTaskBtn','pesDmBtn','pesTaskBtn'];
   const clickedOutside = dds.every(id => !document.getElementById(id).contains(e.target));
-  const clickedTrigger = btns.some(id => document.getElementById(id).contains(e.target));
+  const clickedTrigger = btns.some(id => { const el = document.getElementById(id); return el && el.contains(e.target); });
   if (clickedOutside && !clickedTrigger) closeAllQuickDds();
 });
 
@@ -2599,5 +3273,287 @@ document.getElementById('scSubmit').addEventListener('click', () => {
     closeAllQuickDds();
     titleIn.value = '';
     createAndShowTask(title, due || 'No due date', 'To Do', priLabel);
+  });
+})();
+
+// ══════════ SHARE AI PROMPT ══════════
+(function initSharePrompt() {
+  const modal = document.getElementById('sharePromptModal');
+  const closeBtn = document.getElementById('sharePromptClose');
+  const shareBtn = document.getElementById('spmShareBtn');
+  const previewEl = document.getElementById('spmPreviewContent');
+  const peopleList = document.getElementById('spmPeopleList');
+  const openBtn = document.getElementById('resultShareBtn');
+  if (!modal || !openBtn) return;
+
+  const sharePeople = [
+    { key:'sarah', name:'Sarah Jenkins', role:'Head of Design', color:'#7c3aed', initials:'SJ' },
+    { key:'alex', name:'Alex Kim', role:'Senior Designer', color:'#059669', initials:'AK' },
+    { key:'david', name:'David Chen', role:'Lead Engineer', color:'#2563eb', initials:'DC' },
+    { key:'jessica', name:'Jessica Park', role:'Marketing Manager', color:'#d97706', initials:'JP' },
+    { key:'marcus', name:'Marcus Lee', role:'Product Manager', color:'#0891b2', initials:'ML' },
+  ];
+
+  function renderPeople() {
+    peopleList.innerHTML = sharePeople.map(p => `
+      <div class="spm-person" data-key="${p.key}">
+        <div class="spm-person-av" style="background:${p.color}">${p.initials}</div>
+        <div class="spm-person-info"><span>${p.name}</span><small>${p.role}</small></div>
+        <div class="spm-person-check"></div>
+      </div>
+    `).join('');
+    peopleList.querySelectorAll('.spm-person').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('selected'));
+    });
+  }
+
+  openBtn.addEventListener('click', () => {
+    const fields = document.getElementById('resultFields');
+    if (fields) {
+      const items = [];
+      fields.querySelectorAll('.rf-value').forEach(v => items.push(v.textContent));
+      previewEl.textContent = items.join(' · ') || 'AI-generated result';
+    }
+    renderPeople();
+    document.getElementById('spmNote').value = '';
+    modal.classList.remove('hidden');
+  });
+
+  closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+
+  shareBtn.addEventListener('click', () => {
+    const selected = peopleList.querySelectorAll('.spm-person.selected');
+    if (!selected.length) return;
+    modal.classList.add('hidden');
+    const toast = document.getElementById('stgToast');
+    const msg = document.getElementById('stgToastMsg');
+    if (toast && msg) {
+      msg.textContent = `Shared with ${selected.length} teammate${selected.length > 1 ? 's' : ''}`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2500);
+    }
+  });
+})();
+
+// ══════════ AI GROUP CHAT ══════════
+(function initAiGroupChat() {
+  const input = document.getElementById('aigroupInput');
+  const sendBtn = document.getElementById('aigroupSendBtn');
+  const messagesEl = document.getElementById('aigroupMessages');
+  const roomList = document.getElementById('aigroupList');
+  if (!input || !sendBtn || !messagesEl) return;
+
+  const roomColors = ['rgba(246,196,83,.12)','rgba(124,58,237,.1)','rgba(13,143,130,.1)','rgba(37,99,235,.1)','rgba(217,119,6,.1)','rgba(190,24,93,.1)'];
+  const roomIconColors = ['#b07d1a','#7c3aed','#0d8f82','#2563eb','#d97706','#be185d'];
+  let roomCount = 3;
+
+  const allPeople = [
+    { key:'sarah', name:'Sarah Jenkins', role:'Head of Design', color:'#7c3aed', initials:'SJ' },
+    { key:'alex', name:'Alex Kim', role:'Senior Designer', color:'#059669', initials:'AK' },
+    { key:'david', name:'David Chen', role:'Lead Engineer', color:'#2563eb', initials:'DC' },
+    { key:'jessica', name:'Jessica Park', role:'Marketing Manager', color:'#d97706', initials:'JP' },
+    { key:'marcus', name:'Marcus Lee', role:'Product Manager', color:'#0891b2', initials:'ML' },
+    { key:'noor', name:'Noor Al-Rashid', role:'QA Lead', color:'#be185d', initials:'NA' },
+  ];
+
+  function addUserMessage(text) {
+    const div = document.createElement('div');
+    div.className = 'aigroup-msg aigroup-msg-user aigroup-msg-me';
+    const time = new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+    div.innerHTML = `
+      <div class="aigroup-msg-avatar" style="background:#4c1515">PM</div>
+      <div class="aigroup-msg-content">
+        <div class="aigroup-msg-meta"><span class="aigroup-msg-name">You</span><span class="aigroup-msg-time">${time}</span></div>
+        <div class="aigroup-msg-bubble">${text.replace(/</g,'&lt;')}</div>
+      </div>
+    `;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function addAiResponse(text) {
+    const div = document.createElement('div');
+    div.className = 'aigroup-msg aigroup-msg-ai';
+    const time = new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+    div.innerHTML = `
+      <div class="aigroup-msg-avatar aigroup-ai-avatar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#f6c453"/></svg>
+      </div>
+      <div class="aigroup-msg-content">
+        <div class="aigroup-msg-meta"><span class="aigroup-msg-name">Yuzu AI</span><span class="aigroup-msg-time">${time}</span></div>
+        <div class="aigroup-msg-bubble aigroup-ai-bubble">${text}</div>
+        <div class="aigroup-msg-actions">
+          <button class="aigroup-action-chip" data-action="copy"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.6"/></svg> Copy</button>
+          <button class="aigroup-action-chip" data-action="share"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M8.59 13.51L15.42 17.49M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="1.6"/></svg> Share</button>
+          <button class="aigroup-action-chip" data-action="save"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" stroke-width="1.6"/></svg> Save</button>
+        </div>
+      </div>
+    `;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  const aiResponses = [
+    "That's a great idea! Here are a few directions we could explore:\n\n<strong>1.</strong> Focus on simplicity — keep the core interaction to one tap\n<strong>2.</strong> Add collaborative editing — let multiple people refine the prompt\n<strong>3.</strong> Create prompt templates for common workflows\n\nWould you like me to elaborate on any of these?",
+    "I've drafted a quick outline based on your input:\n\n<strong>Overview:</strong> A shared AI workspace where teams can iterate on ideas together in real-time.\n\n<strong>Key differentiators:</strong>\n• AI context carries across the conversation\n• Anyone can fork a prompt into a new thread\n• Results auto-save to the team knowledge base\n\nShall I refine this further?",
+    "Based on what the team has discussed, here's a summary:\n\n✅ <strong>Agreed:</strong> Keep the UX simple and conversational\n🔄 <strong>In progress:</strong> Naming and positioning\n❓ <strong>Open question:</strong> Should AI responses be editable by all members?\n\nLet me know how you'd like to proceed!",
+  ];
+  let aiIdx = 0;
+
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    addUserMessage(text);
+    if (text.toLowerCase().includes('@ai') || text.includes('?')) {
+      setTimeout(() => {
+        addAiResponse(aiResponses[aiIdx % aiResponses.length]);
+        aiIdx++;
+      }, 800);
+    }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+  function activateRoom(room) {
+    document.querySelectorAll('.aigroup-room').forEach(r => r.classList.remove('active'));
+    room.classList.add('active');
+    const badge = room.querySelector('.unread-badge');
+    if (badge) badge.remove();
+    const name = room.querySelector('.aigroup-room-name').textContent;
+    const meta = room.querySelector('.aigroup-room-meta').textContent;
+    document.getElementById('aigroupChatTitle').textContent = name;
+    document.getElementById('aigroupChatMembers').textContent = meta.split('·')[0].trim();
+
+    messagesEl.innerHTML = '';
+    const sysMsg = document.createElement('div');
+    sysMsg.className = 'aigroup-msg aigroup-msg-system';
+    sysMsg.innerHTML = `<span>Room created · ${new Date().toLocaleDateString([], { month:'short', day:'numeric' })}</span>`;
+    messagesEl.appendChild(sysMsg);
+
+    const topic = room.dataset.topic;
+    if (topic) {
+      setTimeout(() => {
+        addAiResponse(`Welcome to <strong>${name}</strong>! I'm here to help the team with: <em>${topic}</em>\n\nType <strong>@AI</strong> followed by your question to get started.`);
+      }, 400);
+    }
+
+    showPanel('aigroupChat');
+  }
+
+  // Room switching — delegate to roomList so dynamically added rooms work
+  roomList.addEventListener('click', e => {
+    const room = e.target.closest('.aigroup-room');
+    if (room) activateRoom(room);
+  });
+
+  // ── NEW ROOM MODAL ──
+  const newRoomModal = document.getElementById('newAiRoomModal');
+  const newRoomBtn = document.getElementById('aigroupNewBtn');
+  const newRoomClose = document.getElementById('newAiRoomClose');
+  const newRoomCreate = document.getElementById('nairCreateBtn');
+  const nairPeopleList = document.getElementById('nairPeopleList');
+
+  function renderInviteList() {
+    nairPeopleList.innerHTML = allPeople.map(p => `
+      <div class="nair-person" data-key="${p.key}">
+        <div class="nair-person-av" style="background:${p.color}">${p.initials}</div>
+        <div class="nair-person-info"><span>${p.name}</span><small>${p.role}</small></div>
+        <div class="nair-person-check"></div>
+      </div>
+    `).join('');
+    nairPeopleList.querySelectorAll('.nair-person').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('selected'));
+    });
+  }
+
+  newRoomBtn.addEventListener('click', () => {
+    document.getElementById('newAiRoomName').value = '';
+    document.getElementById('newAiRoomTopic').value = '';
+    renderInviteList();
+    newRoomModal.classList.remove('hidden');
+  });
+
+  newRoomClose.addEventListener('click', () => newRoomModal.classList.add('hidden'));
+  newRoomModal.addEventListener('click', e => { if (e.target === newRoomModal) newRoomModal.classList.add('hidden'); });
+
+  newRoomCreate.addEventListener('click', () => {
+    const name = document.getElementById('newAiRoomName').value.trim();
+    if (!name) {
+      document.getElementById('newAiRoomName').focus();
+      return;
+    }
+    const topic = document.getElementById('newAiRoomTopic').value.trim();
+    const selected = nairPeopleList.querySelectorAll('.nair-person.selected');
+    const memberNames = Array.from(selected).map(el => el.querySelector('.nair-person-info span').textContent.split(' ')[0]);
+    memberNames.push('You');
+    const memberStr = memberNames.join(', ');
+
+    const ci = roomCount % roomColors.length;
+    roomCount++;
+
+    const room = document.createElement('div');
+    room.className = 'aigroup-room';
+    room.dataset.room = 'custom-' + roomCount;
+    room.dataset.topic = topic;
+    room.innerHTML = `
+      <div class="aigroup-room-icon" style="background:${roomColors[ci]}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="${roomIconColors[ci]}"/></svg>
+      </div>
+      <div class="aigroup-room-body">
+        <span class="aigroup-room-name">${name}</span>
+        <span class="aigroup-room-meta">${memberStr} · 0 messages</span>
+      </div>
+    `;
+
+    roomList.prepend(room);
+    newRoomModal.classList.add('hidden');
+
+    activateRoom(room);
+
+    const toast = document.getElementById('stgToast');
+    const msg = document.getElementById('stgToastMsg');
+    if (toast && msg) {
+      msg.textContent = `"${name}" created`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2500);
+    }
+  });
+
+  // Copy / Share action chips
+  messagesEl.addEventListener('click', e => {
+    const chip = e.target.closest('.aigroup-action-chip');
+    if (!chip) return;
+    const action = chip.dataset.action;
+    const bubble = chip.closest('.aigroup-msg-content')?.querySelector('.aigroup-msg-bubble');
+    if (action === 'copy' && bubble) {
+      navigator.clipboard?.writeText(bubble.textContent);
+      chip.innerHTML = chip.innerHTML.replace('Copy', 'Copied!');
+      setTimeout(() => { chip.innerHTML = chip.innerHTML.replace('Copied!', 'Copy'); }, 1500);
+    }
+    if (action === 'share') {
+      const shareModal = document.getElementById('sharePromptModal');
+      const previewEl = document.getElementById('spmPreviewContent');
+      if (shareModal && previewEl && bubble) {
+        previewEl.textContent = bubble.textContent.slice(0, 120) + (bubble.textContent.length > 120 ? '…' : '');
+        document.getElementById('spmNote').value = '';
+        const peopleList = document.getElementById('spmPeopleList');
+        if (peopleList) {
+          peopleList.innerHTML = allPeople.slice(0, 3).map(p => `
+            <div class="spm-person" data-key="${p.key}">
+              <div class="spm-person-av" style="background:${p.color}">${p.initials}</div>
+              <div class="spm-person-info"><span>${p.name}</span><small>${p.role}</small></div>
+              <div class="spm-person-check"></div>
+            </div>
+          `).join('');
+          peopleList.querySelectorAll('.spm-person').forEach(el => {
+            el.addEventListener('click', () => el.classList.toggle('selected'));
+          });
+        }
+        shareModal.classList.remove('hidden');
+      }
+    }
   });
 })();

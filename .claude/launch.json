@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "yuzu-desktop",
-      "runtimeExecutable": "python3",
+      "runtimeExecutable": "/usr/bin/python3",
       "runtimeArgs": ["-m", "http.server", "3001", "--directory", "/Users/priyamvada/Documents/yuzu-desktop"],
       "port": 3001
     }

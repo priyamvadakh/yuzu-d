@@ -431,14 +431,26 @@
             <div class="nav-item-inner"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="nav-label">Tasks</span>
           </button>
+          <button class="nav-item" data-tab="aigroup">
+            <div class="nav-item-inner"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M19 3L20 6L23 7L20 8L19 11L18 8L15 7L18 6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" opacity="0.6"/></svg></div>
+            <span class="nav-label">AI Chat</span>
+          </button>
           <button class="nav-item" data-tab="people">
             <div class="nav-item-inner"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 20C17 18.3431 14.7614 17 12 17C9.23858 17 7 18.3431 7 20M21 17C21 15.7892 19.7659 14.7699 18 14.3453M3 17C3 15.7892 4.23413 14.7699 6 14.3453M12 14C10.067 14 8.5 12.433 8.5 10.5C8.5 8.567 10.067 7 12 7C13.933 7 15.5 8.567 15.5 10.5C15.5 12.433 13.933 14 12 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
             <span class="nav-label">People</span>
+          </button>
+          <button class="nav-item" id="navSearchBtn" title="Search (⌘K)">
+            <div class="nav-item-inner"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+            <span class="nav-label">Search</span>
           </button>
         </div>
         <div class="nav-bottom">
           <button class="nav-action-btn inactive" id="navActionBtn" title="Go to recording">
             <img src="logo.svg" alt="Yuzu" style="width:26px;height:26px;object-fit:contain" />
+          </button>
+          <button class="nav-item nav-settings-btn" id="navSettingsBtn" title="Settings">
+            <div class="nav-item-inner"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="1.5"/><path d="M19.4 15C19.2669 15.3016 19.2272 15.6362 19.286 15.9606C19.3448 16.285 19.4995 16.5843 19.73 16.82L19.79 16.88C19.976 17.0657 20.1235 17.2863 20.2241 17.5291C20.3248 17.7719 20.3766 18.0322 20.3766 18.295C20.3766 18.5578 20.3248 18.8181 20.2241 19.0609C20.1235 19.3037 19.976 19.5243 19.79 19.71C19.6043 19.896 19.3837 20.0435 19.1409 20.1441C18.8981 20.2448 18.6378 20.2966 18.375 20.2966C18.1122 20.2966 17.8519 20.2448 17.6091 20.1441C17.3663 20.0435 17.1457 19.896 16.96 19.71L16.9 19.65C16.6643 19.4195 16.365 19.2648 16.0406 19.206C15.7162 19.1472 15.3816 19.1869 15.08 19.32C14.7842 19.4468 14.532 19.6572 14.3543 19.9255C14.1766 20.1938 14.0813 20.5082 14.08 20.83V21C14.08 21.5304 13.8693 22.0391 13.4942 22.4142C13.1191 22.7893 12.6104 23 12.08 23C11.5496 23 11.0409 22.7893 10.6658 22.4142C10.2907 22.0391 10.08 21.5304 10.08 21V20.91C10.0723 20.579 9.96512 20.258 9.77251 19.9887C9.5799 19.7194 9.31074 19.5143 9 19.4C8.69838 19.2669 8.36381 19.2272 8.03941 19.286C7.71502 19.3448 7.41568 19.4995 7.18 19.73L7.12 19.79C6.93425 19.976 6.71368 20.1235 6.47088 20.2241C6.22808 20.3248 5.96783 20.3766 5.705 20.3766C5.44217 20.3766 5.18192 20.3248 4.93912 20.2241C4.69632 20.1235 4.47575 19.976 4.29 19.79C4.10405 19.6043 3.95653 19.3837 3.85588 19.1409C3.75523 18.8981 3.70343 18.6378 3.70343 18.375C3.70343 18.1122 3.75523 17.8519 3.85588 17.6091C3.95653 17.3663 4.10405 17.1457 4.29 16.96L4.35 16.9C4.58054 16.6643 4.73519 16.365 4.794 16.0406C4.85282 15.7162 4.81312 15.3816 4.68 15.08C4.55324 14.7842 4.34276 14.532 4.07447 14.3543C3.80618 14.1766 3.49179 14.0813 3.17 14.08H3C2.46957 14.08 1.96086 13.8693 1.58579 13.4942C1.21071 13.1191 1 12.6104 1 12.08C1 11.5496 1.21071 11.0409 1.58579 10.6658C1.96086 10.2907 2.46957 10.08 3 10.08H3.09C3.42099 10.0723 3.742 9.96512 4.0113 9.77251C4.28059 9.5799 4.48572 9.31074 4.6 9C4.73312 8.69838 4.77282 8.36381 4.714 8.03941C4.65519 7.71502 4.50054 7.41568 4.27 7.18L4.21 7.12C4.02405 6.93425 3.87653 6.71368 3.77588 6.47088C3.67523 6.22808 3.62343 5.96783 3.62343 5.705C3.62343 5.44217 3.67523 5.18192 3.77588 4.93912C3.87653 4.69632 4.02405 4.47575 4.21 4.29C4.39575 4.10405 4.61632 3.95653 4.85912 3.85588C5.10192 3.75523 5.36217 3.70343 5.625 3.70343C5.88783 3.70343 6.14808 3.75523 6.39088 3.85588C6.63368 3.95653 6.85425 4.10405 7.04 4.29L7.1 4.35C7.33568 4.58054 7.63502 4.73519 7.95941 4.794C8.28381 4.85282 8.61838 4.81312 8.92 4.68H9C9.29577 4.55324 9.54802 4.34276 9.72569 4.07447C9.90337 3.80618 9.99872 3.49179 10 3.17V3C10 2.46957 10.2107 1.96086 10.5858 1.58579C10.9609 1.21071 11.4696 1 12 1C12.5304 1 13.0391 1.21071 13.4142 1.58579C13.7893 1.96086 14 2.46957 14 3V3.09C14.0013 3.41179 14.0966 3.72618 14.2743 3.99447C14.452 4.26276 14.7042 4.47324 15 4.6C15.3016 4.73312 15.6362 4.77282 15.9606 4.714C16.285 4.65519 16.5843 4.50054 16.82 4.27L16.88 4.21C17.0657 4.02405 17.2863 3.87653 17.5291 3.77588C17.7719 3.67523 18.0322 3.62343 18.295 3.62343C18.5578 3.62343 18.8181 3.67523 19.0609 3.77588C19.3037 3.87653 19.5243 4.02405 19.71 4.21C19.896 4.39575 20.0435 4.61632 20.1441 4.85912C20.2448 5.10192 20.2966 5.36217 20.2966 5.625C20.2966 5.88783 20.2448 6.14808 20.1441 6.39088C20.0435 6.63368 19.896 6.85425 19.71 7.04L19.65 7.1C19.4195 7.33568 19.2648 7.63502 19.206 7.95941C19.1472 8.28381 19.1869 8.61838 19.32 8.92V9C19.4468 9.29577 19.6572 9.54802 19.9255 9.72569C20.1938 9.90337 20.5082 9.99872 20.83 10H21C21.5304 10 22.0391 10.2107 22.4142 10.5858C22.7893 10.9609 23 11.4696 23 12C23 12.5304 22.7893 13.0391 22.4142 13.4142C22.0391 13.7893 21.5304 14 21 14H20.91C20.5882 14.0013 20.2738 14.0966 20.0055 14.2743C19.7372 14.452 19.5268 14.7042 19.4 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <span class="nav-label">Settings</span>
           </button>
           <button class="nav-profile-btn" id="navProfileBtn" title="Profile">
             <div class="nav-profile-avatar" id="navProfileAvatar">
@@ -450,6 +462,186 @@
         </div>
       </div>
     </nav>
+
+    <!-- SETTINGS OVERLAY -->
+    <div class="settings-overlay hidden" id="settingsContent">
+      <div class="stg-unsaved-overlay hidden" id="stgUnsavedOverlay">
+        <div class="stg-unsaved-dialog">
+          <div class="stg-unsaved-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 9V13M12 17H12.01M10.29 3.86L1.82 18C1.64 18.32 1.55 18.68 1.55 19.05C1.55 20.14 2.44 21 3.53 21H20.47C21.56 21 22.45 20.14 22.45 19.05C22.45 18.68 22.36 18.32 22.18 18L13.71 3.86C13.32 3.19 12.19 3.19 11.8 3.86H10.29Z" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="stg-unsaved-title">Unsaved changes</div>
+          <div class="stg-unsaved-desc">You have unsaved changes. Would you like to save them before leaving?</div>
+          <div class="stg-unsaved-actions">
+            <button class="stg-unsaved-discard" id="stgDiscardBtn">Discard</button>
+            <button class="stg-unsaved-save" id="stgSaveCloseBtn">Save &amp; Close</button>
+          </div>
+          <button class="stg-unsaved-keep" id="stgKeepEditingBtn">Keep editing</button>
+        </div>
+      </div>
+      <div class="stg-toast hidden" id="stgToast">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#16a34a" stroke-width="1.6"/><path d="M6 10L9 13L14 7" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="stgToastMsg">Changes saved</span>
+      </div>
+      <div class="settings-sidebar">
+        <div class="settings-sidebar-header">
+          <span class="settings-sidebar-title">Settings</span>
+          <button class="settings-close-btn" id="settingsCloseBtn" title="Close settings">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <nav class="settings-nav">
+          <button class="sn-item active" data-section="profile">
+            <div class="sn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M4 20C4 17.2386 7.58172 15 12 15C16.4183 15 20 17.2386 20 20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            <div class="sn-body"><span class="sn-title">Profile</span><span class="sn-desc">Manage your profile and personal information</span></div>
+          </button>
+          <button class="sn-item" data-section="sounds">
+            <div class="sn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15.54 8.46C16.4774 9.39764 17.004 10.6692 17.004 11.995C17.004 13.3208 16.4774 14.5924 15.54 15.53" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M19.07 4.93C20.9447 6.80528 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            <div class="sn-body"><span class="sn-title">Sounds &amp; Devices</span><span class="sn-desc">Select a device for sound input and output</span></div>
+          </button>
+          <button class="sn-item" data-section="shortcuts">
+            <div class="sn-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M6 10H8M10 10H12M14 10H16M18 10H18.01M6 14H10M12 14H14M16 14H18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            <div class="sn-body"><span class="sn-title">Keyboard Shortcuts</span><span class="sn-desc">Work faster with keyboard shortcuts</span></div>
+          </button>
+        </nav>
+      </div>
+
+      <div class="settings-body">
+        <!-- PROFILE SECTION -->
+        <div class="settings-section" id="settingsSectionProfile">
+          <h2 class="settings-h2">Profile</h2>
+
+          <div class="stg-avatar-row">
+            <div class="stg-avatar-wrap">
+              <div class="stg-avatar" id="stgAvatar">PM</div>
+              <button class="stg-avatar-edit-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="6" r="1" fill="currentColor"/></svg>
+              </button>
+            </div>
+            <div class="stg-avatar-info">
+              <div class="stg-fullname" id="stgFullname">Priyamvada | 1001</div>
+              <div class="stg-account-name">Your account name: yuzu</div>
+            </div>
+          </div>
+          <div class="stg-avatar-hint">File types: png, jpg, jpeg. Size: 2mb</div>
+
+          <div class="stg-divider"></div>
+
+          <h3 class="stg-h3">Tell Us About Yourself</h3>
+          <div class="stg-fields-row">
+            <div class="stg-field">
+              <label class="stg-label">First Name<span class="stg-req">*</span></label>
+              <input class="stg-input" id="stgFirstName" type="text" placeholder="First name" />
+            </div>
+            <div class="stg-field">
+              <label class="stg-label">Last Name<span class="stg-req">*</span></label>
+              <input class="stg-input" id="stgLastName" type="text" placeholder="Last name" />
+            </div>
+          </div>
+          <div class="stg-fields-row">
+            <div class="stg-field">
+              <label class="stg-label">Languages <span class="stg-sub">(Spoken Languages)</span></label>
+              <div class="stg-select-wrap">
+                <select class="stg-select" id="stgLanguage">
+                  <option value="en">English</option>
+                  <option value="ar">Arabic</option>
+                  <option value="fr">Français</option>
+                  <option value="en-ar">Arabic, English</option>
+                </select>
+                <svg class="stg-select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="stg-field">
+              <label class="stg-label">Contact Number</label>
+              <div class="stg-phone-wrap">
+                <div class="stg-phone-flag">
+                  <span class="stg-flag-emoji">🇺🇸</span>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <input class="stg-input stg-phone-input" id="stgPhone" type="tel" placeholder="+1" />
+              </div>
+            </div>
+          </div>
+          <div class="stg-gender-row">
+            <span class="stg-label">Gender</span>
+            <label class="stg-radio-label"><input type="radio" name="stgGender" value="male" class="stg-radio"> <span>Male</span></label>
+            <label class="stg-radio-label"><input type="radio" name="stgGender" value="female" class="stg-radio" checked> <span>Female</span></label>
+          </div>
+
+          <div class="stg-divider"></div>
+
+          <h3 class="stg-h3">Create a Personalized Experience</h3>
+          <div class="stg-fields-row">
+            <div class="stg-field">
+              <label class="stg-label">Language <span class="stg-sub">(Displayed Language)</span></label>
+              <div class="stg-pill-group" id="stgDisplayLang">
+                <button class="stg-pill active" data-val="en">English</button>
+                <button class="stg-pill" data-val="ar">العربية</button>
+                <button class="stg-pill" data-val="fr">Français</button>
+              </div>
+            </div>
+            <div class="stg-field">
+              <label class="stg-label">Appearance</label>
+              <div class="stg-pill-group" id="stgAppearance">
+                <button class="stg-pill active" data-val="light">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2V4M12 20V22M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M2 12H4M20 12H22M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                  Light
+                </button>
+                <button class="stg-pill" data-val="dark">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                  Dark
+                </button>
+                <button class="stg-pill" data-val="auto">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                  Auto
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="stg-actions">
+            <button class="stg-btn-reset" id="stgCancelBtn">Cancel</button>
+            <button class="stg-btn-save" id="stgSaveBtn">Save Changes</button>
+          </div>
+        </div>
+
+        <!-- SOUNDS & DEVICES SECTION -->
+        <div class="settings-section hidden" id="settingsSectionSounds">
+          <h2 class="settings-h2">Sounds &amp; Devices</h2>
+          <div class="stg-divider"></div>
+          <div class="stg-fields-col" style="max-width:460px">
+            <div class="stg-field">
+              <label class="stg-label">Microphone</label>
+              <div class="stg-select-wrap"><select class="stg-select"><option>Default Microphone</option><option>Built-in Microphone</option></select><svg class="stg-select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+            <div class="stg-field">
+              <label class="stg-label">Speaker</label>
+              <div class="stg-select-wrap"><select class="stg-select"><option>Default Speaker</option><option>Built-in Speaker</option></select><svg class="stg-select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+            <div class="stg-field">
+              <label class="stg-label">Notification Sound</label>
+              <div class="stg-select-wrap"><select class="stg-select"><option>Ding</option><option>Chime</option><option>None</option></select><svg class="stg-select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KEYBOARD SHORTCUTS SECTION -->
+        <div class="settings-section hidden" id="settingsSectionShortcuts">
+          <h2 class="settings-h2">Keyboard Shortcuts</h2>
+          <div class="stg-divider"></div>
+          <div class="stg-shortcuts-list">
+            <div class="stg-shortcut-row"><span class="stg-shortcut-label">New Direct Message</span><div class="stg-keys"><kbd>⌘</kbd><kbd>N</kbd></div></div>
+            <div class="stg-shortcut-row"><span class="stg-shortcut-label">Start Recording</span><div class="stg-keys"><kbd>⌘</kbd><kbd>R</kbd></div></div>
+            <div class="stg-shortcut-row"><span class="stg-shortcut-label">Search</span><div class="stg-keys"><kbd>⌘</kbd><kbd>K</kbd></div></div>
+            <div class="stg-shortcut-row"><span class="stg-shortcut-label">Go to Home</span><div class="stg-keys"><kbd>⌘</kbd><kbd>1</kbd></div></div>
+            <div class="stg-shortcut-row"><span class="stg-shortcut-label">Go to DMs</span><div class="stg-keys"><kbd>⌘</kbd><kbd>2</kbd></div></div>
+            <div class="stg-shortcut-row"><span class="stg-shortcut-label">Go to Tasks</span><div class="stg-keys"><kbd>⌘</kbd><kbd>3</kbd></div></div>
+            <div class="stg-shortcut-row"><span class="stg-shortcut-label">Mute / Unmute</span><div class="stg-keys"><kbd>⌘</kbd><kbd>M</kbd></div></div>
+            <div class="stg-shortcut-row"><span class="stg-shortcut-label">End Call</span><div class="stg-keys"><kbd>⌘</kbd><kbd>E</kbd></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- EMOJI PICKER -->
     <div class="emoji-picker hidden" id="emojiPicker">
@@ -1042,6 +1234,11 @@
         <button class="quick-action" id="quickCallBtn" data-tooltip="Start a Call"><div class="quick-action-icon" style="background:rgba(0,173,94,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="#00ad5e" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg></div><span>Call</span></button>
         <button class="quick-action" id="scheduleBtn" data-tooltip="Schedule Call"><div class="quick-action-icon" style="background:rgba(139,92,246,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#7c3aed" stroke-width="1.5"/><path d="M16 2V6M8 2V6M3 10H21" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Schedule</span></button>
         <button class="quick-action" id="taskBtn" data-tooltip="Create Task"><div class="quick-action-icon" style="background:rgba(246,196,83,0.1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="#7a5510" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Task</span></button>
+        <div class="qa-spacer"></div>
+        <button class="empty-state-toggle" id="emptyStateToggle" title="Toggle new user view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+          New user view
+        </button>
       </div>
 
       <!-- DMs view (shown when DMs nav is active) -->
@@ -1079,7 +1276,20 @@
           <span id="dmActiveFilterLabel"></span>
           <button class="dm-af-clear" id="dmAfClear">✕</button>
         </div>
+        <div class="dm-section-label">
+          <span class="dsl-line"></span>
+          <span class="dsl-text">Internal</span>
+          <span class="dsl-line"></span>
+        </div>
         <div class="dm-list" id="dmList"></div>
+        <div class="page-empty-state hidden" id="dmEmptyState">
+          <div class="pes-icon" style="background:rgba(246,196,83,.12)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="#b07d1a" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="pes-title">No messages yet</div>
+          <div class="pes-desc">Start a conversation with a teammate or join a channel</div>
+          <button class="pes-btn" id="pesDmBtn">Start a DM</button>
+        </div>
       </div>
 
       <!-- People view (shown when People nav is active) -->
@@ -1096,6 +1306,14 @@
           </button>
         </div>
         <div class="people-list" id="peopleList"></div>
+        <div class="page-empty-state hidden" id="peopleEmptyState">
+          <div class="pes-icon" style="background:rgba(13,143,130,.1)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M17 20C17 18.3431 14.7614 17 12 17C9.23858 17 7 18.3431 7 20M21 17C21 15.7892 19.7659 14.7699 18 14.3453M3 17C3 15.7892 4.23413 14.7699 6 14.3453M12 14C10.067 14 8.5 12.433 8.5 10.5C8.5 8.567 10.067 7 12 7C13.933 7 15.5 8.567 15.5 10.5C15.5 12.433 13.933 14 12 14ZM18.5 10.5C18.5 12.433 16.933 14 15 14M5.5 10.5C5.5 12.433 7.067 14 9 14" stroke="#0d8f82" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="pes-title">No contacts yet</div>
+          <div class="pes-desc">Invite teammates to join your workspace</div>
+          <button class="pes-btn teal" id="pesPeopleBtn">Invite people</button>
+        </div>
       </div>
 
       <!-- Tasks full view (shown when Tasks nav is active) -->
@@ -1107,6 +1325,55 @@
         <div class="tasks-full-list" id="tasksFullList">
           <div class="task-item task-selected" data-task-id="task1"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">Review brand assets from Sarah</span><div class="task-meta"><span class="task-due">⏱ Today</span><span class="task-dot">•</span><span class="task-status in-progress">In Progress</span></div></div></div>
           <div class="task-item no-border" data-task-id="task2"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">Deploy staging environment</span><div class="task-meta"><span class="task-due">⏱ Today</span><span class="task-dot">•</span><span class="task-status todo">To Do</span></div></div></div>
+        </div>
+        <div class="page-empty-state hidden" id="tasksEmptyState">
+          <div class="pes-icon" style="background:rgba(124,58,237,.1)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12Z" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="pes-title">No tasks yet</div>
+          <div class="pes-desc">Create a task or ask the AI assistant to help you stay organised</div>
+          <button class="pes-btn purple" id="pesTaskBtn">Create a task</button>
+        </div>
+      </div>
+
+      <!-- AI Group Chat view -->
+      <div class="aigroup-view hidden" id="aigroupContent">
+        <div class="aigroup-header">
+          <span class="section-title">AI CHAT ROOMS</span>
+          <button class="new-dm-btn" id="aigroupNewBtn">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            New Room
+          </button>
+        </div>
+        <div class="aigroup-list" id="aigroupList">
+          <div class="aigroup-room active" data-room="brainstorm">
+            <div class="aigroup-room-icon" style="background:rgba(246,196,83,.12)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#b07d1a"/></svg>
+            </div>
+            <div class="aigroup-room-body">
+              <span class="aigroup-room-name">Product Brainstorm</span>
+              <span class="aigroup-room-meta">Sarah, Alex, You · 12 messages</span>
+            </div>
+            <div class="unread-badge">3</div>
+          </div>
+          <div class="aigroup-room" data-room="docs">
+            <div class="aigroup-room-icon" style="background:rgba(124,58,237,.1)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6C5.47 2 4.96 2.21 4.59 2.59C4.21 2.96 4 3.47 4 4V20C4 20.53 4.21 21.04 4.59 21.41C4.96 21.79 5.47 22 6 22H18C18.53 22 19.04 21.79 19.41 21.41C19.79 21.04 20 20.53 20 20V8L14 2Z" stroke="#7c3aed" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 2V8H20M16 13H8M16 17H8M10 9H8" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="aigroup-room-body">
+              <span class="aigroup-room-name">API Documentation</span>
+              <span class="aigroup-room-meta">David, Tom · 8 messages</span>
+            </div>
+          </div>
+          <div class="aigroup-room" data-room="naming">
+            <div class="aigroup-room-icon" style="background:rgba(13,143,130,.1)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="#0d8f82" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="aigroup-room-body">
+              <span class="aigroup-room-name">Feature Naming</span>
+              <span class="aigroup-room-meta">Jessica, Marcus · 5 messages</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1156,6 +1423,89 @@
           </div>
         </div>
       </div>
+
+      <!-- EMPTY STATE (first-time / new user view) -->
+      <div class="middle-content hidden" id="homeEmpty">
+        <div class="empty-welcome-banner">
+          <div class="ewb-left">
+            <div class="ewb-emoji">👋</div>
+            <div>
+              <div class="ewb-title">Welcome to Yuzu!</div>
+              <div class="ewb-sub">Here's everything you need to get going.</div>
+            </div>
+          </div>
+          <button class="ewb-dismiss" id="ewbDismiss">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="section">
+          <div class="section-header"><span class="section-title">YOUR WORKSPACE</span></div>
+          <div class="card esc-list">
+            <div class="esc-row">
+              <div class="esc-icon-sm" style="background:rgba(246,196,83,.13)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="#b07d1a" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="esc-body">
+                <div class="esc-title">No conversations yet</div>
+                <div class="esc-desc">Start a DM or join a channel</div>
+              </div>
+              <button class="esc-btn" id="esNewDmBtn">Start a DM</button>
+            </div>
+            <div class="esc-divider"></div>
+            <div class="esc-row">
+              <div class="esc-icon-sm" style="background:rgba(13,143,130,.1)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6H20M4 10H16M4 14H12" stroke="#0d8f82" stroke-width="1.7" stroke-linecap="round"/></svg>
+              </div>
+              <div class="esc-body">
+                <div class="esc-title">No channels joined</div>
+                <div class="esc-desc">Browse and join team channels</div>
+              </div>
+              <button class="esc-btn teal" id="esNewChannelBtn">Browse</button>
+            </div>
+            <div class="esc-divider"></div>
+            <div class="esc-row">
+              <div class="esc-icon-sm" style="background:rgba(124,58,237,.1)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12Z" stroke="#7c3aed" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="esc-body">
+                <div class="esc-title">No tasks yet</div>
+                <div class="esc-desc">Create or assign your first task</div>
+              </div>
+              <button class="esc-btn purple" id="esNewTaskBtn">Create task</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">GETTING STARTED</span>
+            <span class="ost-progress-label" id="ostProgressLabel">0 of 4 done</span>
+          </div>
+          <div class="card" style="padding: 0 16px;">
+            <div class="onboarding-step" id="ostep1">
+              <div class="ost-check"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#d1d5db" stroke-width="1.5"/></svg></div>
+              <div class="ost-body"><span class="ost-title">Complete your profile</span><span class="ost-sub">Add your name and photo so teammates recognise you</span></div>
+              <button class="ost-action" id="ostProfile">Set up</button>
+            </div>
+            <div class="onboarding-step" id="ostep2">
+              <div class="ost-check"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#d1d5db" stroke-width="1.5"/></svg></div>
+              <div class="ost-body"><span class="ost-title">Send your first message</span><span class="ost-sub">Reach out to a teammate or start a group chat</span></div>
+              <button class="ost-action" id="ostMessage">Go</button>
+            </div>
+            <div class="onboarding-step" id="ostep3">
+              <div class="ost-check"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#d1d5db" stroke-width="1.5"/></svg></div>
+              <div class="ost-body"><span class="ost-title">Try the AI assistant</span><span class="ost-sub">Tap the Yuzu button and speak a command</span></div>
+              <button class="ost-action" id="ostAI">Try</button>
+            </div>
+            <div class="onboarding-step no-border" id="ostep4">
+              <div class="ost-check"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#d1d5db" stroke-width="1.5"/></svg></div>
+              <div class="ost-body"><span class="ost-title">Schedule your first call</span><span class="ost-sub">Set up a meeting with your team in seconds</span></div>
+              <button class="ost-action" id="ostSchedule">Schedule</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- RIGHT PANEL -->
@@ -1175,17 +1525,32 @@
             <button class="cpp-item"><div class="cpp-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M17 12C17 12.44 16.82 12.87 16.5 13.19C16.18 13.51 15.75 13.69 15.31 13.69H5.69L2 17V4.31C2 3.87 2.18 3.44 2.5 3.12C2.82 2.8 3.25 2.62 3.69 2.62H15.31C15.75 2.62 16.18 2.8 16.5 3.12C16.82 3.44 17 3.87 17 4.31V12Z" stroke="#4c1515" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 7H14M6 10H11" stroke="#4c1515" stroke-width="1.4" stroke-linecap="round"/></svg></div><span>Canned response</span></button>
           </div>
           <div class="dm-composer-card">
-            <input type="text" id="dmInput" class="dm-input" placeholder="Message…" />
-            <div class="dm-composer-actions">
-              <button class="dm-action-btn dm-action-plus" id="dmPlusBtn" title="Attach">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#6b7280" stroke-width="1.4"/><path d="M9 5V13M5 9H13" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <div class="dm-input-row" id="dmInputRow">
+              <input type="text" id="dmInput" class="dm-input" placeholder="Message…" />
+              <div class="dm-composer-actions">
+                <button class="dm-action-btn dm-action-plus" id="dmPlusBtn" title="Attach">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#6b7280" stroke-width="1.4"/><path d="M9 5V13M5 9H13" stroke="#6b7280" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </button>
+                <button class="dm-action-btn" id="dmEmojiBtn" title="Emoji">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9ca3af" stroke-width="1.4"/><path d="M8.5 14C8.5 14 9.5 16 12 16C14.5 16 15.5 14 15.5 14" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="#9ca3af"/><circle cx="15" cy="10" r="1" fill="#9ca3af"/></svg>
+                </button>
+                <div class="dm-composer-spacer"></div>
+                <button class="dm-send-btn" id="dmSendBtn" title="Send">
+                  <svg class="icon-mic" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="dm-rec-bar hidden" id="dmRecBar">
+              <button class="dm-rec-cancel-btn" id="dmRecCancel" title="Cancel">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
               </button>
-              <button class="dm-action-btn" id="dmEmojiBtn" title="Emoji">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9ca3af" stroke-width="1.4"/><path d="M8.5 14C8.5 14 9.5 16 12 16C14.5 16 15.5 14 15.5 14" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="#9ca3af"/><circle cx="15" cy="10" r="1" fill="#9ca3af"/></svg>
-              </button>
-              <div class="dm-composer-spacer"></div>
-              <button class="dm-send-btn" id="dmSendBtn" title="Send">
-                <svg class="icon-mic" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+              <div class="dm-rec-indicator">
+                <div class="dm-rec-dot"></div>
+                <span class="dm-rec-timer" id="dmRecTimer">0:00</span>
+              </div>
+              <div class="dm-rec-wave" id="dmRecWave"></div>
+              <button class="dm-rec-send-btn" id="dmRecSend" title="Send voice note">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" fill="white"/></svg>
               </button>
             </div>
           </div>
@@ -1455,11 +1820,114 @@
           <p class="result-title">Got it! Here's what I found</p>
           <p class="result-sub">Review the details and confirm</p>
           <div class="result-fields" id="resultFields"></div>
-          <button class="result-confirm-btn" id="resultConfirmBtn">Confirm</button>
+          <div class="result-btn-row">
+            <button class="result-confirm-btn" id="resultConfirmBtn">Confirm</button>
+            <button class="result-share-btn" id="resultShareBtn" title="Share with team">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M8.59 13.51L15.42 17.49M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              Share with Team
+            </button>
+          </div>
           <p class="result-footer-row">
             <button class="try-again-link" id="tryAgainBtn">Try again</button>
             <span> · Tap any field to edit</span>
           </p>
+        </div>
+      </div>
+
+      <!-- AI GROUP CHAT VIEW -->
+      <div class="aigroup-chat hidden" id="aigroupChat">
+        <div class="aigroup-chat-header">
+          <div class="aigroup-chat-info">
+            <div class="aigroup-chat-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#f6c453"/></svg>
+            </div>
+            <div>
+              <div class="aigroup-chat-title" id="aigroupChatTitle">Product Brainstorm</div>
+              <div class="aigroup-chat-members" id="aigroupChatMembers">Sarah, Alex, You</div>
+            </div>
+          </div>
+          <div class="aigroup-chat-actions">
+            <button class="aigroup-chat-action-btn" id="aigroupInviteBtn" title="Invite people">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16 21V19C16 17.9 15.1 17 14 17H6C4.9 17 4 17.9 4 19V21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="11" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M20 11H22M21 10V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <button class="aigroup-chat-action-btn" id="aigroupShareAllBtn" title="Share conversation">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M8.59 13.51L15.42 17.49M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="aigroup-messages" id="aigroupMessages">
+          <div class="aigroup-msg aigroup-msg-system">
+            <span>Sarah Jenkins created this AI Chat room · Today</span>
+          </div>
+          <div class="aigroup-msg aigroup-msg-user">
+            <div class="aigroup-msg-avatar" style="background:#7c3aed">SJ</div>
+            <div class="aigroup-msg-content">
+              <div class="aigroup-msg-meta"><span class="aigroup-msg-name">Sarah Jenkins</span><span class="aigroup-msg-time">2:30 PM</span></div>
+              <div class="aigroup-msg-bubble">Hey team, let's brainstorm feature names for the new voice-to-task feature. @AI can you suggest 5 creative names?</div>
+            </div>
+          </div>
+          <div class="aigroup-msg aigroup-msg-ai">
+            <div class="aigroup-msg-avatar aigroup-ai-avatar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#f6c453"/></svg>
+            </div>
+            <div class="aigroup-msg-content">
+              <div class="aigroup-msg-meta"><span class="aigroup-msg-name">Yuzu AI</span><span class="aigroup-msg-time">2:30 PM</span></div>
+              <div class="aigroup-msg-bubble aigroup-ai-bubble">Here are 5 creative names for your voice-to-task feature:<br><br><strong>1. VoiceFlow</strong> — Speaks to the seamless flow from voice → action<br><strong>2. SayDo</strong> — Simple, memorable: say it, done<br><strong>3. TaskCast</strong> — "Cast" your voice into tasks<br><strong>4. VoxTask</strong> — Latin-rooted, professional feel<br><strong>5. SnapTask</strong> — Conveys speed and ease<br><br>Want me to explore any of these further?</div>
+              <div class="aigroup-msg-actions">
+                <button class="aigroup-action-chip" data-action="copy"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.6"/></svg> Copy</button>
+                <button class="aigroup-action-chip" data-action="share"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M8.59 13.51L15.42 17.49M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="1.6"/></svg> Share</button>
+                <button class="aigroup-action-chip" data-action="save"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" stroke-width="1.6"/></svg> Save</button>
+              </div>
+            </div>
+          </div>
+          <div class="aigroup-msg aigroup-msg-user">
+            <div class="aigroup-msg-avatar" style="background:#059669">AK</div>
+            <div class="aigroup-msg-content">
+              <div class="aigroup-msg-meta"><span class="aigroup-msg-name">Alex Kim</span><span class="aigroup-msg-time">2:32 PM</span></div>
+              <div class="aigroup-msg-bubble">Love "SayDo"! @AI Can you create a brief tagline for SayDo?</div>
+            </div>
+          </div>
+          <div class="aigroup-msg aigroup-msg-ai">
+            <div class="aigroup-msg-avatar aigroup-ai-avatar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#f6c453"/></svg>
+            </div>
+            <div class="aigroup-msg-content">
+              <div class="aigroup-msg-meta"><span class="aigroup-msg-name">Yuzu AI</span><span class="aigroup-msg-time">2:32 PM</span></div>
+              <div class="aigroup-msg-bubble aigroup-ai-bubble"><strong>"SayDo — Your voice, in action."</strong><br><br>Alternative options:<br>• "Speak it. Ship it."<br>• "From thought to task, instantly."<br>• "Just say the word."</div>
+              <div class="aigroup-msg-actions">
+                <button class="aigroup-action-chip" data-action="copy"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.6"/></svg> Copy</button>
+                <button class="aigroup-action-chip" data-action="share"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M8.59 13.51L15.42 17.49M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="1.6"/></svg> Share</button>
+                <button class="aigroup-action-chip" data-action="save"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" stroke-width="1.6"/></svg> Save</button>
+              </div>
+            </div>
+          </div>
+          <div class="aigroup-msg aigroup-msg-user aigroup-msg-me">
+            <div class="aigroup-msg-avatar" style="background:#4c1515">PM</div>
+            <div class="aigroup-msg-content">
+              <div class="aigroup-msg-meta"><span class="aigroup-msg-name">You</span><span class="aigroup-msg-time">2:34 PM</span></div>
+              <div class="aigroup-msg-bubble">"Just say the word" is 🔥 — let's go with SayDo + that tagline</div>
+            </div>
+          </div>
+        </div>
+        <div class="aigroup-composer">
+          <div class="aigroup-composer-card">
+            <div class="aigroup-prompt-hint">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#f6c453"/></svg>
+              Type <strong>@AI</strong> to ask the assistant
+            </div>
+            <div class="aigroup-input-row">
+              <input type="text" id="aigroupInput" class="dm-input" placeholder="Message the group or @AI…" />
+              <div class="dm-composer-actions">
+                <button class="dm-action-btn" id="aigroupEmojiBtn" title="Emoji">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9ca3af" stroke-width="1.4"/><path d="M8.5 14C8.5 14 9.5 16 12 16C14.5 16 15.5 14 15.5 14" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="#9ca3af"/><circle cx="15" cy="10" r="1" fill="#9ca3af"/></svg>
+                </button>
+                <div class="dm-composer-spacer"></div>
+                <button class="dm-send-btn" id="aigroupSendBtn" title="Send">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" fill="white"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1589,6 +2057,74 @@
     </div>
   </div>
 
+  <!-- NEW AI CHAT ROOM MODAL -->
+    <div class="ep-modal-overlay hidden" id="newAiRoomModal">
+      <div class="ep-modal cc-modal">
+        <div class="ep-modal-header">
+          <span class="ep-modal-title">New AI Chat Room</span>
+          <button class="ep-modal-close" id="newAiRoomClose">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="ep-modal-body cc-body">
+          <div class="cc-field-group">
+            <label class="cc-label">Room Name</label>
+            <div class="cc-input-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" stroke="#9ca3af" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              <input type="text" class="cc-input" id="newAiRoomName" placeholder="e.g. Marketing Copy Ideas" />
+            </div>
+          </div>
+          <div class="cc-field-group">
+            <label class="cc-label">Topic <span class="cc-optional">(optional)</span></label>
+            <textarea class="cc-textarea" id="newAiRoomTopic" placeholder="What should the AI help with?"></textarea>
+          </div>
+          <div class="cc-field-group">
+            <label class="cc-label">Invite members</label>
+            <div class="nair-people-list" id="nairPeopleList"></div>
+          </div>
+        </div>
+        <div class="cc-modal-footer">
+          <button class="cc-create-btn" id="nairCreateBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="white"/></svg>
+            Create Room
+          </button>
+        </div>
+      </div>
+    </div>
+
+  <!-- SHARE PROMPT MODAL -->
+    <div class="ep-modal-overlay hidden" id="sharePromptModal">
+      <div class="ep-modal cc-modal spm-modal">
+        <div class="ep-modal-header">
+          <span class="ep-modal-title">Share AI Prompt</span>
+          <button class="ep-modal-close" id="sharePromptClose">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="spm-preview" id="spmPreview">
+          <div class="spm-preview-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#f6c453"/></svg>
+            AI Prompt Result
+          </div>
+          <div class="spm-preview-content" id="spmPreviewContent"></div>
+        </div>
+        <div class="cc-field-group">
+          <label class="cc-label">Share with</label>
+          <div class="spm-people-list" id="spmPeopleList"></div>
+        </div>
+        <div class="cc-field-group">
+          <label class="cc-label">Add a note <span class="cc-optional">(optional)</span></label>
+          <textarea class="cc-textarea" id="spmNote" placeholder="Hey team, check out this prompt…"></textarea>
+        </div>
+        <div class="cc-modal-footer">
+          <button class="cc-create-btn" id="spmShareBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" fill="white"/></svg>
+            Share
+          </button>
+        </div>
+      </div>
+    </div>
+
   <!-- DM SORT DROPDOWN -->
   <div class="dm-sort-dd hidden" id="dmSortDd">
     <button class="dsd-opt active" data-sort="newest">Newest first</button>
@@ -1601,6 +2137,32 @@
     <button class="tsd-opt" data-status="To Do">To Do</button>
     <button class="tsd-opt" data-status="In Progress">In Progress</button>
     <button class="tsd-opt" data-status="Done">Done</button>
+  </div>
+
+  <!-- GLOBAL SEARCH COMMAND PALETTE -->
+  <div class="gs-overlay hidden" id="globalSearch">
+    <div class="gs-backdrop" id="gsBackdrop"></div>
+    <div class="gs-palette">
+      <div class="gs-input-row">
+        <svg class="gs-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#9ca3af" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" id="gsInput" class="gs-input" placeholder="Search people, channels, messages…" autocomplete="off" spellcheck="false" />
+        <kbd class="gs-esc-key">ESC</kbd>
+      </div>
+      <div class="gs-results hidden" id="gsResults"></div>
+      <div class="gs-empty hidden" id="gsEmpty">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#d1d5db" stroke-width="1.5"/><path d="M21 21L16.65 16.65" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <p>No results for "<span id="gsEmptyQuery"></span>"</p>
+      </div>
+      <div class="gs-recents hidden" id="gsRecents">
+        <div class="gs-group-label">RECENT</div>
+        <div class="gs-recents-list" id="gsRecentsList"></div>
+      </div>
+      <div class="gs-footer">
+        <span><span class="gs-key">↑</span><span class="gs-key">↓</span> navigate</span>
+        <span><span class="gs-key">↵</span> open</span>
+        <span><span class="gs-key">ESC</span> close</span>
+      </div>
+    </div>
   </div>
 
 </div>
