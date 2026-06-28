@@ -2068,6 +2068,92 @@ kbd { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 5px; paddin
   background:#f6c453; border-color:#f6c453;
 }
 
+/* ── DM DROPDOWN TABS ── */
+.qd-tab-row {
+  display: flex; border-bottom: 1px solid #f0f0f0;
+}
+.qd-tab-btn {
+  flex: 1; padding: 11px 0; border: none; background: none;
+  font-size: 13px; font-weight: 500; color: #6b7280;
+  cursor: pointer; font-family: inherit; transition: color .12s;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.qd-tab-btn.active { color: #4c1515; border-bottom-color: #f6c453; font-weight: 600; }
+.qd-tab-btn:hover:not(.active) { color: #374151; }
+
+/* Group picker checkboxes */
+.qd-grp-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; cursor: pointer; transition: background .1s;
+}
+.qd-grp-item:hover { background: #f9fafb; }
+.qd-grp-item.selected { background: #fdf8ee; }
+.qd-grp-check {
+  width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #d1d5db;
+  flex-shrink: 0; transition: all .12s; position: relative;
+}
+.qd-grp-item.selected .qd-grp-check {
+  background: #f6c453; border-color: #f6c453;
+}
+.qd-grp-item.selected .qd-grp-check::after {
+  content: '';
+  position: absolute; top: 4px; left: 3px;
+  width: 5px; height: 9px;
+  border: 2px solid #fff; border-top: none; border-left: none;
+  transform: rotate(45deg);
+}
+
+/* Selected member chips */
+.qd-grp-members-row {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 6px 14px 4px; border-top: 1px solid #f3f4f6;
+}
+.qd-grp-chip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 8px 3px 6px; border-radius: 20px;
+  background: #f3f4f6; font-size: 12px; color: #374151; font-weight: 500;
+}
+.qd-grp-chip-av {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+
+/* Stacked group avatar in DM list */
+.dm-group-av {
+  position: relative; width: 36px; height: 36px; flex-shrink: 0;
+}
+.dm-ga-circle {
+  position: absolute; width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #fff;
+  border: 1.5px solid #fff;
+}
+.dm-ga-circle:nth-child(1) { top: 0; left: 0; z-index: 3; }
+.dm-ga-circle:nth-child(2) { bottom: 0; right: 0; z-index: 2; }
+.dm-ga-circle.dm-ga-more {
+  background: #e5e7eb; color: #6b7280; font-size: 8px;
+}
+
+/* Group conversation header stacked avatars */
+.dm-group-hdr-av {
+  position: relative; width: 40px; height: 40px; flex-shrink: 0;
+}
+.dm-gha-circle {
+  position: absolute; width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff;
+  border: 1.5px solid #fff;
+}
+.dm-gha-circle:nth-child(1) { top: 0; left: 0; z-index: 3; }
+.dm-gha-circle:nth-child(2) { bottom: 0; right: 0; z-index: 2; }
+
+/* Group message sender label */
+.dm-msg-sender-grp {
+  font-size: 11px; font-weight: 600; margin-bottom: 2px;
+  padding-left: 2px;
+}
+
 /* ── GLOBAL SEARCH COMMAND PALETTE ── */
 .gs-overlay {
   position: fixed; inset: 0; z-index: 9999;

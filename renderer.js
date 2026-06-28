@@ -200,6 +200,24 @@ document.getElementById('navActionBtn').addEventListener('click', () => {
 let activeDm = 'sarah';
 
 const dmData = {
+  'group-design': {
+    name: 'Design Team',
+    isGroup: true,
+    members: [
+      { key: 'sarah',   name: 'Sarah Jenkins', color: '#7c3aed', initials: 'SJ' },
+      { key: 'alex',    name: 'Alex Kim',       color: '#059669', initials: 'AK' },
+      { key: 'jessica', name: 'Jessica Park',   color: '#d97706', initials: 'JP' },
+    ],
+    color: '#7c3aed', initials: 'DT', online: true, unread: 2,
+    messages: [
+      { from: 'sarah',   senderName: 'Sarah Jenkins', senderColor: '#7c3aed', senderInitials: 'SJ', text: 'Hey team! Just uploaded the updated design system v2 🎨', time: '10:30 AM' },
+      { from: 'alex',    senderName: 'Alex Kim',       senderColor: '#059669', senderInitials: 'AK', text: 'Looks great! The new component library is exactly what we needed', time: '10:32 AM' },
+      { from: 'me',      text: 'Amazing work Sarah. Alex — can you review the button states before we ship?', time: '10:35 AM' },
+      { from: 'jessica', senderName: 'Jessica Park',   senderColor: '#d97706', senderInitials: 'JP', text: 'The color tokens are perfect for the campaign launch 🙌', time: '10:38 AM' },
+      { from: 'sarah',   senderName: 'Sarah Jenkins', senderColor: '#7c3aed', senderInitials: 'SJ', text: "Will schedule a walkthrough call for Thursday — I'll share the invite 📅", time: '10:45 AM' },
+      { from: 'alex',    senderName: 'Alex Kim',       senderColor: '#059669', senderInitials: 'AK', text: 'Thursday works! Button review done btw — looks solid ✅', time: '10:47 AM' },
+    ]
+  },
   sarah: {
     name: 'Sarah Jenkins', color: '#7c3aed', initials: 'SJ', online: true, unread: 2,
     messages: [
@@ -305,13 +323,29 @@ function renderDmList() {
         if (last.callType === 'missed') { preview = '📞 Missed call'; previewClass = 'missed'; }
         else if (last.video) { preview = `📹 Video call${last.dur ? ' · ' + last.dur : ''}`; }
         else { preview = `📞 ${last.callType === 'inbound' ? 'Incoming' : 'Outgoing'} call${last.dur ? ' · ' + last.dur : ''}`; }
-      } else { preview = last.text; }
+      } else {
+        const senderPrefix = dm.isGroup && last.from !== 'me' && last.senderName
+          ? last.senderName.split(' ')[0] + ': ' : '';
+        preview = senderPrefix + (last.text || '');
+      }
     }
-    return `<div class="dm-item${k === activeDm ? ' selected' : ''}" data-dm="${k}">
-      <div class="dm-avatar-wrap">
+
+    let avatarHTML;
+    if (dm.isGroup) {
+      const [m1, m2] = dm.members;
+      avatarHTML = `<div class="dm-avatar-wrap"><div class="dm-group-av">
+        <div class="dm-ga-circle" style="background:${m1.color}">${m1.initials.charAt(0)}</div>
+        <div class="dm-ga-circle" style="background:${m2.color}">${m2.initials.charAt(0)}</div>
+      </div></div>`;
+    } else {
+      avatarHTML = `<div class="dm-avatar-wrap">
         <div class="dm-letter-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}</div>
         ${dm.online ? '<div class="online-dot"></div>' : ''}
-      </div>
+      </div>`;
+    }
+
+    return `<div class="dm-item${k === activeDm ? ' selected' : ''}" data-dm="${k}">
+      ${avatarHTML}
       <div class="dm-body">
         <div class="dm-row"><span class="dm-name">${dm.name}</span><span class="dm-time">${last?.time || ''}</span></div>
         <span class="dm-preview${previewClass ? ' ' + previewClass : ''}">${preview}</span>
@@ -438,6 +472,11 @@ function makeBubble(msg, dm, showAvatar) {
   const isMe = msg.from === 'me';
   const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <span class="dm-tick">✓✓</span>' : ''}</div>`;
 
+  // For group DMs, use per-message sender info; fall back to dm-level for 1:1
+  const senderColor    = msg.senderColor    || dm.color;
+  const senderInitials = msg.senderInitials || dm.initials.charAt(0);
+  const senderName     = msg.senderName     || dm.name;
+
   if (msg.type === 'call') return makeCallBubble(msg);
 
   if (msg.type === 'voice') {
@@ -446,12 +485,13 @@ function makeBubble(msg, dm, showAvatar) {
       return `<div class="dm-msg-row me"><div class="dm-msg-col-me">${voiceHTML}</div></div>`;
     } else {
       const avatarHTML = showAvatar
-        ? `<div class="dm-msg-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}</div>`
+        ? `<div class="dm-msg-avatar" style="background:${senderColor}">${senderInitials}</div>`
         : `<div class="dm-msg-avatar-spacer"></div>`;
-      const senderHTML = showAvatar ? `<div class="dm-msg-sender">${dm.name}</div>` : '';
+      const nameHTML = showAvatar && dm.isGroup ? `<div class="dm-msg-sender-grp" style="color:${senderColor}">${senderName}</div>` : '';
+      const legacySender = showAvatar && !dm.isGroup ? `<div class="dm-msg-sender">${senderName}</div>` : '';
       return `<div class="dm-msg-row them ${showAvatar ? 'group-start' : ''}">
         ${avatarHTML}
-        <div class="dm-msg-col">${senderHTML}${voiceHTML}</div>
+        <div class="dm-msg-col">${nameHTML}${legacySender}${voiceHTML}</div>
       </div>`;
     }
   }
@@ -465,12 +505,13 @@ function makeBubble(msg, dm, showAvatar) {
     </div>`;
   } else {
     const avatarHTML = showAvatar
-      ? `<div class="dm-msg-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}</div>`
+      ? `<div class="dm-msg-avatar" style="background:${senderColor}">${senderInitials}</div>`
       : `<div class="dm-msg-avatar-spacer"></div>`;
-    const senderHTML = showAvatar ? `<div class="dm-msg-sender">${dm.name}</div>` : '';
+    const nameHTML = showAvatar && dm.isGroup ? `<div class="dm-msg-sender-grp" style="color:${senderColor}">${senderName}</div>` : '';
+    const legacySender = showAvatar && !dm.isGroup ? `<div class="dm-msg-sender">${senderName}</div>` : '';
     return `<div class="dm-msg-row them ${showAvatar ? 'group-start' : ''}">
       ${avatarHTML}
-      <div class="dm-msg-col">${senderHTML}<div class="dm-bubble">${msg.text}</div>${timeHTML}</div>
+      <div class="dm-msg-col">${nameHTML}${legacySender}<div class="dm-bubble">${msg.text}</div>${timeHTML}</div>
     </div>`;
   }
 }
@@ -482,11 +523,23 @@ function loadDmConversation(dmKey) {
   if (dm.unread) { dm.unread = 0; renderDmList(); }
 
   // Header
+  let hdrAvatarHTML, hdrStatusHTML;
+  if (dm.isGroup) {
+    const [m1, m2] = dm.members;
+    hdrAvatarHTML = `<div class="dm-group-hdr-av">
+      <div class="dm-gha-circle" style="background:${m1.color}">${m1.initials.charAt(0)}</div>
+      <div class="dm-gha-circle" style="background:${m2.color}">${m2.initials.charAt(0)}</div>
+    </div>`;
+    hdrStatusHTML = dm.members.map(m => m.name.split(' ')[0]).join(', ');
+  } else {
+    hdrAvatarHTML = `<div class="dm-convo-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}${dm.online ? '<div class="online-dot"></div>' : ''}</div>`;
+    hdrStatusHTML = dm.online ? 'Online' : 'Offline';
+  }
   document.getElementById('dmConvoHeader').innerHTML = `
-    <div class="dm-convo-avatar" style="background:${dm.color}">${dm.initials.charAt(0)}${dm.online ? '<div class="online-dot"></div>' : ''}</div>
+    ${hdrAvatarHTML}
     <div class="dm-convo-info">
       <div class="dm-convo-name">${dm.name}</div>
-      <div class="dm-convo-status ${dm.online ? '' : 'offline'}">${dm.online ? 'Online' : 'Offline'}</div>
+      <div class="dm-convo-status ${(!dm.isGroup && !dm.online) ? 'offline' : ''}">${hdrStatusHTML}</div>
     </div>
     <div class="dm-header-actions">
       <button class="dm-header-btn" title="Call">
@@ -506,12 +559,14 @@ function loadDmConversation(dmKey) {
   msgs.innerHTML = '<div class="dm-date-sep">Today</div>';
   dm.messages.forEach((msg, i) => {
     const prevMsg = dm.messages[i - 1];
-    const showAvatar = msg.from === 'them' && msg.type !== 'call' && (!prevMsg || prevMsg.from !== 'them' || prevMsg.type === 'call');
+    const isIncoming = msg.from !== 'me';
+    const senderChanged = !prevMsg || prevMsg.from !== msg.from || prevMsg.type === 'call';
+    const showAvatar = isIncoming && msg.type !== 'call' && senderChanged;
     msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, showAvatar));
   });
   msgs.scrollTop = msgs.scrollHeight;
 
-  document.getElementById('dmInput').placeholder = `Message ${dm.name.split(' ')[0]}…`;
+  document.getElementById('dmInput').placeholder = dm.isGroup ? `Message ${dm.name}…` : `Message ${dm.name.split(' ')[0]}…`;
   document.querySelectorAll('.dm-item').forEach(el => {
     el.classList.toggle('selected', el.dataset.dm === dmKey);
   });
@@ -2519,23 +2574,50 @@ document.addEventListener('click', e => {
 
 // ── DM DROPDOWN ──
 (function() {
-  const btn = document.getElementById('quickNewDmBtn');
-  const dd  = document.getElementById('dmDropdown');
+  const btn    = document.getElementById('quickNewDmBtn');
+  const dd     = document.getElementById('dmDropdown');
   const search = document.getElementById('ddmSearch');
+  const tabDirect  = document.getElementById('ddmTabDirect');
+  const tabGroup   = document.getElementById('ddmTabGroup');
+  const directSec  = document.getElementById('ddmDirectSection');
+  const groupSec   = document.getElementById('ddmGroupSection');
+  const groupNameIn = document.getElementById('ddmGroupName');
+  const createBtn  = document.getElementById('ddmGroupCreate');
+  const chipsRow   = document.getElementById('ddmSelectedChips');
+
+  let selectedKeys = new Set();
+
+  function switchTab(tab) {
+    const isDirect = tab === 'direct';
+    tabDirect.classList.toggle('active', isDirect);
+    tabGroup.classList.toggle('active', !isDirect);
+    directSec.classList.toggle('hidden', !isDirect);
+    groupSec.classList.toggle('hidden', isDirect);
+    if (!isDirect) {
+      selectedKeys.clear();
+      updateGroupUI();
+      groupNameIn.value = '';
+    } else {
+      search.focus();
+    }
+  }
+
+  tabDirect.addEventListener('click', e => { e.stopPropagation(); switchTab('direct'); });
+  tabGroup.addEventListener('click',  e => { e.stopPropagation(); switchTab('group'); });
 
   btn.addEventListener('click', e => {
     e.stopPropagation();
     dd.classList.contains('hidden')
-      ? openQuickDd(dd, btn, () => { search.value = ''; filterDdm(''); search.focus(); })
+      ? openQuickDd(dd, btn, () => { switchTab('direct'); search.value = ''; filterDdm(''); search.focus(); })
       : closeAllQuickDds();
   });
 
+  // Direct tab — search filter
   function filterDdm(q) {
     document.querySelectorAll('.qd-dm-item').forEach(item => {
       item.style.display = item.querySelector('span').textContent.toLowerCase().includes(q) ? '' : 'none';
     });
   }
-
   search.addEventListener('input', function() { filterDdm(this.value.toLowerCase()); });
 
   document.querySelectorAll('.qd-dm-item').forEach(item => {
@@ -2546,6 +2628,70 @@ document.addEventListener('click', e => {
       loadDmConversation(item.dataset.dm);
       if (isMobile()) mobOpenDetail();
     });
+  });
+
+  // Group tab — multi-select
+  function updateGroupUI() {
+    // checkmarks
+    document.querySelectorAll('.qd-grp-item').forEach(item => {
+      item.classList.toggle('selected', selectedKeys.has(item.dataset.key));
+    });
+    // chips
+    if (selectedKeys.size > 0) {
+      chipsRow.classList.remove('hidden');
+      chipsRow.innerHTML = [...selectedKeys].map(k => {
+        const el = document.querySelector(`.qd-grp-item[data-key="${k}"]`);
+        const color = el?.dataset.color || '#999';
+        const initials = el?.dataset.initials || k[0].toUpperCase();
+        const name = el?.dataset.name || k;
+        return `<div class="qd-grp-chip">
+          <div class="qd-grp-chip-av" style="background:${color}">${initials.charAt(0)}</div>
+          ${name.split(' ')[0]}
+        </div>`;
+      }).join('');
+    } else {
+      chipsRow.classList.add('hidden');
+    }
+    createBtn.disabled = selectedKeys.size < 2;
+  }
+
+  document.querySelectorAll('.qd-grp-item').forEach(item => {
+    item.addEventListener('click', e => {
+      e.stopPropagation();
+      const key = item.dataset.key;
+      selectedKeys.has(key) ? selectedKeys.delete(key) : selectedKeys.add(key);
+      updateGroupUI();
+    });
+  });
+
+  createBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (selectedKeys.size < 2) return;
+
+    const members = [...selectedKeys].map(k => {
+      const el = document.querySelector(`.qd-grp-item[data-key="${k}"]`);
+      return { key: k, name: el.dataset.name, color: el.dataset.color, initials: el.dataset.initials };
+    });
+
+    const autoName = members.map(m => m.name.split(' ')[0]).join(', ');
+    const groupName = groupNameIn.value.trim() || autoName;
+    const groupKey  = 'group-' + Date.now();
+
+    dmData[groupKey] = {
+      name: groupName,
+      isGroup: true,
+      members,
+      color: members[0].color,
+      initials: groupName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+      online: false, unread: 0,
+      messages: []
+    };
+
+    closeAllQuickDds();
+    switchMiddleView('dms');
+    renderDmList();
+    loadDmConversation(groupKey);
+    if (isMobile()) mobOpenDetail();
   });
 })();
 
