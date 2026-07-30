@@ -148,7 +148,7 @@ let _emptyStateOn = false;
 
 // ── MIDDLE PANEL NAV ──
 function switchMiddleView(tab) {
-  ['homeContent','homeEmpty','tasksFullView','dmContent','peopleContent','aigroupContent'].forEach(id => {
+  ['homeContent','homeEmpty','tasksFullView','dmContent','peopleContent','aigroupContent','meetingsContent'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
   });
@@ -157,9 +157,10 @@ function switchMiddleView(tab) {
     const hasTasks = document.querySelectorAll('#tasksFullList .task-item').length > 0;
     document.getElementById('tasksEmptyState').classList.toggle('hidden', hasTasks);
   }
-  else if (tab === 'dms')     document.getElementById('dmContent').classList.remove('hidden');
-  else if (tab === 'people')  document.getElementById('peopleContent').classList.remove('hidden');
-  else if (tab === 'aigroup') document.getElementById('aigroupContent').classList.remove('hidden');
+  else if (tab === 'dms')      document.getElementById('dmContent').classList.remove('hidden');
+  else if (tab === 'people')   document.getElementById('peopleContent').classList.remove('hidden');
+  else if (tab === 'aigroup')  document.getElementById('aigroupContent').classList.remove('hidden');
+  else if (tab === 'meetings') { document.getElementById('meetingsContent').classList.remove('hidden'); renderMeetings(); }
   else {
     if (_emptyStateOn) document.getElementById('homeEmpty').classList.remove('hidden');
     else               document.getElementById('homeContent').classList.remove('hidden');
@@ -177,6 +178,8 @@ function switchMiddleView(tab) {
     showIdle();
   } else if (tab === 'aigroup') {
     showPanel('aigroupChat');
+  } else if (tab === 'meetings') {
+    showIdle();
   } else {
     showIdle();
   }
@@ -695,6 +698,88 @@ const peopleData = [
   { key: 'priya',   name: 'Priya Nair',     role: 'UX Researcher',     initials: 'PN', color: '#be185d', online: true,  email: 'priya.n@yuzu.team',   dept: 'Design' },
   { key: 'tom',     name: 'Tom Eriksson',   role: 'Backend Engineer',  initials: 'TE', color: '#64748b', online: false, email: 'tom.e@yuzu.team',     dept: 'Engineering' },
 ];
+
+// ── MEETINGS DATA ──
+const meetingsData = [
+  { id: 'm1', title: 'Design Review',           date: '2026-07-11', time: '10:00', dur: 60,  type: 'video', participants: ['sarah','alex','priya'],            status: 'upcoming' },
+  { id: 'm2', title: 'Sprint Planning',          date: '2026-07-11', time: '14:00', dur: 90,  type: 'video', participants: ['david','tom','marcus'],             status: 'upcoming' },
+  { id: 'm3', title: 'Client Call – Acme Corp',  date: '2026-07-12', time: '09:00', dur: 30,  type: 'voice', participants: ['jessica','marcus'],                status: 'upcoming' },
+  { id: 'm4', title: 'Product Roadmap Review',   date: '2026-07-14', time: '15:00', dur: 60,  type: 'video', participants: ['sarah','alex','david','marcus','jessica'], status: 'upcoming' },
+  { id: 'm5', title: '1:1 with Sarah',           date: '2026-07-10', time: '11:00', dur: 30,  type: 'video', participants: ['sarah'],                           status: 'past' },
+  { id: 'm6', title: 'Brand Assets Handoff',     date: '2026-07-09', time: '14:00', dur: 45,  type: 'video', participants: ['sarah','alex','jessica'],           status: 'past' },
+  { id: 'm7', title: 'Engineering Sync',         date: '2026-07-08', time: '10:00', dur: 45,  type: 'voice', participants: ['david','tom'],                     status: 'past' },
+  { id: 'm8', title: 'Q3 Goals Alignment',       date: '2026-07-07', time: '16:00', dur: 60,  type: 'video', participants: ['marcus','priya','jessica'],         status: 'past' },
+];
+
+function renderMeetings() {
+  const upcomingEl = document.getElementById('mvUpcoming');
+  const pastEl     = document.getElementById('mvPast');
+  if (!upcomingEl || !pastEl) return;
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function buildCard(m) {
+    const d = new Date(m.date + 'T' + m.time);
+    const day   = d.getDate();
+    const month = MONTHS[d.getMonth()];
+    const hh    = d.getHours();
+    const mm    = String(d.getMinutes()).padStart(2,'0');
+    const ampm  = hh >= 12 ? 'PM' : 'AM';
+    const h12   = hh % 12 || 12;
+    const timeStr = `${h12}:${mm} ${ampm}`;
+    const durStr  = m.dur >= 60 ? `${m.dur/60}h` : `${m.dur}m`;
+
+    const ps = m.participants.map(k => peopleData.find(p => p.key === k)).filter(Boolean);
+    const shown = ps.slice(0, 4);
+    const extra = ps.length - shown.length;
+    const avatarsHTML = shown.map(p =>
+      `<div class="mv-av" style="background:${p.color}">${p.initials.charAt(0)}</div>`
+    ).join('') + (extra > 0 ? `<div class="mv-av mv-av-more">+${extra}</div>` : '');
+
+    const typeLabel = m.type === 'video' ? '📹 Video' : '🎙️ Voice';
+    const isPast = m.status === 'past';
+    const btnClass = isPast ? '' : (m.type === 'voice' ? 'voice' : '');
+    const btnLabel = isPast ? 'View Recording' : 'Join Now';
+
+    return `<div class="mv-card${isPast ? ' past' : ''}" data-meeting="${m.id}">
+      <div class="mv-date-col">
+        <div class="mv-day-num">${day}</div>
+        <div class="mv-month">${month}</div>
+      </div>
+      <div class="mv-divider"></div>
+      <div class="mv-info">
+        <div class="mv-name">${m.title}</div>
+        <div class="mv-meta">
+          <span class="mv-type-badge">${typeLabel}</span>
+          <span>${durStr}</span>
+        </div>
+        <div class="mv-avatars">${avatarsHTML}</div>
+      </div>
+      <div class="mv-actions">
+        <div class="mv-time">${timeStr}</div>
+        ${isPast ? '' : `<button class="mv-join-btn ${btnClass}" onclick="joinMeeting('${m.id}')">${btnLabel}</button>`}
+      </div>
+    </div>`;
+  }
+
+  const upcoming = meetingsData.filter(m => m.status === 'upcoming');
+  const past     = meetingsData.filter(m => m.status === 'past');
+  upcomingEl.innerHTML = upcoming.length ? upcoming.map(buildCard).join('') : '<div class="mv-empty">No upcoming meetings</div>';
+  pastEl.innerHTML     = past.length     ? past.map(buildCard).join('')     : '<div class="mv-empty">No past meetings</div>';
+}
+
+window.joinMeeting = function(id) {
+  const m = meetingsData.find(x => x.id === id);
+  if (!m) return;
+  const firstKey = m.participants[0];
+  const p = peopleData.find(x => x.key === firstKey);
+  if (p) startCallWith(p.name, p.role, p.color, p.initials, m.type === 'video');
+};
+
+document.getElementById('mvNewBtn')?.addEventListener('click', () => {
+  openQuickDd(document.getElementById('scheduleDropdown'), document.getElementById('mvNewBtn'),
+    () => { document.getElementById('scTitle')?.focus(); });
+});
 
 function renderPeopleList(filter) {
   const list = document.getElementById('peopleList');
@@ -1557,6 +1642,12 @@ function switchSettingsSection(section) {
 
 document.getElementById('navSettingsBtn').addEventListener('click', () => openSettings('profile'));
 document.getElementById('navSearchBtn').addEventListener('click', () => openGlobalSearch());
+
+// "New" button inside DM list header → opens the same DM dropdown as the quick action
+document.getElementById('dmListNewBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  window.openDmDropdown(e.currentTarget);
+});
 document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
 
 document.getElementById('editProfileBtn').removeEventListener('click', openEditProfile);
@@ -2566,7 +2657,7 @@ function closeAllQuickDds() {
 
 document.addEventListener('click', e => {
   const dds = ['dmDropdown','channelDropdown','scheduleDropdown','taskDropdown','callDropdown'];
-  const btns = ['quickNewDmBtn','quickChannelBtn','scheduleBtn','taskBtn','quickCallBtn','esNewDmBtn','esNewChannelBtn','esNewTaskBtn','pesDmBtn','pesTaskBtn'];
+  const btns = ['quickNewDmBtn','quickChannelBtn','scheduleBtn','taskBtn','quickCallBtn','esNewDmBtn','esNewChannelBtn','esNewTaskBtn','pesDmBtn','pesTaskBtn','dmListNewBtn'];
   const clickedOutside = dds.every(id => !document.getElementById(id).contains(e.target));
   const clickedTrigger = btns.some(id => { const el = document.getElementById(id); return el && el.contains(e.target); });
   if (clickedOutside && !clickedTrigger) closeAllQuickDds();
@@ -2605,11 +2696,14 @@ document.addEventListener('click', e => {
   tabDirect.addEventListener('click', e => { e.stopPropagation(); switchTab('direct'); });
   tabGroup.addEventListener('click',  e => { e.stopPropagation(); switchTab('group'); });
 
+  window.openDmDropdown = function(triggerEl) {
+    if (!dd.classList.contains('hidden')) { closeAllQuickDds(); return; }
+    openQuickDd(dd, triggerEl || btn, () => { switchTab('direct'); search.value = ''; filterDdm(''); search.focus(); });
+  };
+
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    dd.classList.contains('hidden')
-      ? openQuickDd(dd, btn, () => { switchTab('direct'); search.value = ''; filterDdm(''); search.focus(); })
-      : closeAllQuickDds();
+    window.openDmDropdown(btn);
   });
 
   // Direct tab — search filter
@@ -2817,6 +2911,13 @@ function hexToRgb(hex) {
 }
 
 function startCallWith(name, role, color, initials, video = false) {
+  _resetCallParticipants();
+  // Find person key for participant tracking
+  const pd = peopleData.find(p => p.name === name);
+  callParticipants = [{ key: pd ? pd.key : name, name, color, initials }];
+  const nameBar = document.getElementById('csTileNameBar');
+  if (nameBar) nameBar.textContent = name;
+
   // Set dynamic accent colour (gradient + avatar glow)
   const screen = document.getElementById('callScreen');
   try { screen.style.setProperty('--call-rgb', hexToRgb(color)); } catch (_) {}
@@ -2825,12 +2926,15 @@ function startCallWith(name, role, color, initials, video = false) {
   av.textContent = initials;
   av.style.background = color;
   document.getElementById('csName').textContent = name;
+  document.getElementById('csCallerName').textContent = name;
+  document.getElementById('csCallerSub').textContent = 'Ringing…';
   document.getElementById('csStatus').textContent = 'Ringing…';
   document.getElementById('csStatus').classList.remove('hidden');
   document.getElementById('csTimer').classList.add('hidden');
   clearInterval(csTimerInterval);
   let secs = 0;
   setTimeout(() => {
+    document.getElementById('csCallerSub').textContent = '';
     document.getElementById('csStatus').classList.add('hidden');
     const timerEl = document.getElementById('csTimer');
     timerEl.textContent = '00:00';
@@ -2849,11 +2953,11 @@ function startCallWith(name, role, color, initials, video = false) {
 function setVideoMode(on, color, initials, name) {
   const screen = document.getElementById('callScreen');
   const grid   = document.getElementById('csVideoGrid');
-  const camIcon = document.getElementById('csCameraBtn').querySelector('.cs-btn-icon');
+  const camIcon = document.getElementById('csCameraBtn').querySelector('.cs-ctl-icon');
 
   screen.classList.toggle('video-mode', on);
   grid.classList.toggle('hidden', !on);
-  camIcon.classList.toggle('cs-btn-icon-blue', on);
+  camIcon.classList.toggle('cs-ctl-icon-blue', on);
 
   if (on) {
     // Populate avatar overlay (shown while WebRTC connects)
@@ -2869,24 +2973,119 @@ function setVideoMode(on, color, initials, name) {
   }
 }
 
+// ── MULTI-PARTICIPANT VIDEO ──
+let callParticipants = [];
+
+function refreshAddPanel(filter) {
+  const q = (filter || '').toLowerCase();
+  const list = document.getElementById('csApList');
+  list.innerHTML = '';
+  peopleData
+    .filter(p => !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q))
+    .forEach(p => {
+      const inCall = callParticipants.some(c => c.key === p.key);
+      const row = document.createElement('div');
+      row.className = 'cs-ap-item' + (inCall ? ' in-call' : '');
+      row.innerHTML = `
+        <div class="cs-ap-av" style="background:${p.color}">${p.initials}</div>
+        <div class="cs-ap-info">
+          <div class="cs-ap-name">${p.name}</div>
+          <div class="cs-ap-role">${p.role}</div>
+        </div>
+        <span class="cs-ap-add-icon">${inCall ? '✓' : '+'}</span>`;
+      if (!inCall) {
+        row.addEventListener('click', () => addCallParticipant(p));
+      }
+      list.appendChild(row);
+    });
+}
+
+function addCallParticipant(person) {
+  if (callParticipants.some(p => p.key === person.key)) return;
+  callParticipants.push(person);
+
+  // Stack PiP tiles right side, below the top bar, above self-PiP
+  const extraIndex = callParticipants.length - 2; // 0-based among extra tiles
+  const TILE_H = 118, GAP = 8, TOP_START = 60;
+  const topOffset = TOP_START + extraIndex * (TILE_H + GAP);
+
+  const tile = document.createElement('div');
+  tile.className = 'cs-remote-tile cs-extra-tile';
+  tile.style.top = topOffset + 'px';
+  tile.dataset.personKey = person.key;
+  tile.innerHTML = `
+    <div style="position:absolute;inset:0;background:${person.color};opacity:0.18;border-radius:12px"></div>
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+      <div style="width:48px;height:48px;border-radius:50%;background:${person.color};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.4)">${person.initials}</div>
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:18px 6px 6px;background:linear-gradient(transparent,rgba(0,0,0,0.7));text-align:center">
+      <span style="font-size:10px;font-weight:600;color:#fff">${person.name.split(' ')[0]}</span>
+    </div>`;
+  document.getElementById('csRemoteTiles').appendChild(tile);
+
+  document.getElementById('csAddPanel').classList.add('hidden');
+  refreshAddPanel();
+}
+
+function toggleAddPanel(e) {
+  e.stopPropagation();
+  const panel = document.getElementById('csAddPanel');
+  const isHidden = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !isHidden);
+  if (isHidden) {
+    refreshAddPanel();
+    document.getElementById('csApSearch').value = '';
+    document.getElementById('csApSearch').focus();
+  }
+}
+document.getElementById('csAddBtn').addEventListener('click', toggleAddPanel);
+document.getElementById('csAddCallerBtn').addEventListener('click', toggleAddPanel);
+
+document.getElementById('csApSearch').addEventListener('input', function() {
+  refreshAddPanel(this.value);
+});
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('csAddPanel');
+  if (!panel.contains(e.target) &&
+      !document.getElementById('csAddBtn').contains(e.target) &&
+      !document.getElementById('csAddCallerBtn').contains(e.target)) {
+    panel.classList.add('hidden');
+  }
+});
+
+function _resetCallParticipants() {
+  callParticipants = [];
+  document.querySelectorAll('.cs-extra-tile').forEach(el => el.remove());
+  document.getElementById('csAddPanel').classList.add('hidden');
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 // Stored state so expand can restore the full-screen call
 let csCallState = null;
 let cmMuted = false;
+let callIsFullscreen = false;
+const ICON_EXPAND   = `<path d="M3 8V4H7M17 4H21V8M21 16V20H17M7 20H3V16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+const ICON_CONTRACT = `<path d="M9 4V8H5M15 4V8H19M19 20V16H15M5 20V16H9" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
 
 function _hideCallScreen() {
   const screen = document.getElementById('callScreen');
   screen.classList.add('hidden');
   screen.classList.remove('video-mode');
+  screen.classList.remove('fullscreen');
+  callIsFullscreen = false;
+  document.getElementById('csFullscreenIcon').innerHTML = ICON_EXPAND;
   document.getElementById('csVideoGrid').classList.add('hidden');
-  document.getElementById('csCameraBtn').querySelector('.cs-btn-icon').classList.remove('cs-btn-icon-blue');
-  document.getElementById('csMuteBtn').querySelector('.cs-btn-icon').classList.remove('cs-btn-icon-white');
-  document.getElementById('csSpeakerBtn').querySelector('.cs-btn-icon').classList.remove('cs-btn-icon-white');
+  document.getElementById('csCameraBtn').querySelector('.cs-ctl-icon').classList.remove('cs-ctl-icon-blue');
+  document.getElementById('csMuteBtn').querySelector('.cs-ctl-icon').classList.remove('cs-ctl-icon-active');
+  document.getElementById('csSpeakerBtn').querySelector('.cs-ctl-icon').classList.remove('cs-ctl-icon-active');
 }
 
 function endCallScreen() {
   clearInterval(csTimerInterval);
   stopVideoStream();
   csCallState = null;
+  _resetCallParticipants();
   _hideCallScreen();
   document.getElementById('callMini').classList.add('hidden');
   if (typeof hideDialPad === 'function') hideDialPad();
@@ -2940,6 +3139,8 @@ function expandMiniCall() {
   avEl.textContent = csCallState.initials;
   avEl.style.background = csCallState.color;
   document.getElementById('csName').textContent = csCallState.name;
+  document.getElementById('csCallerName').textContent = csCallState.name;
+  document.getElementById('csCallerSub').textContent = '';
   document.getElementById('csStatus').classList.add('hidden');
 
   const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
@@ -3001,6 +3202,27 @@ document.getElementById('csHangup').addEventListener('click', endCallScreen);
 document.getElementById('csMinimize').addEventListener('click', minimizeCallScreen);
 document.getElementById('cwExpandBtn').addEventListener('click', expandMiniCall);
 
+// ── AUTO-HIDE CONTROLS IN VIDEO MODE ──
+let _csHideTimer = null;
+function _showCallControls() {
+  const screen = document.getElementById('callScreen');
+  screen.classList.remove('controls-hidden');
+  clearTimeout(_csHideTimer);
+  if (screen.classList.contains('video-mode')) {
+    _csHideTimer = setTimeout(() => screen.classList.add('controls-hidden'), 3500);
+  }
+}
+document.getElementById('callScreen').addEventListener('mousemove', _showCallControls);
+document.getElementById('callScreen').addEventListener('click', _showCallControls);
+
+// ── FULLSCREEN CALL TOGGLE ──
+document.getElementById('csFullscreenBtn').addEventListener('click', () => {
+  const screen = document.getElementById('callScreen');
+  callIsFullscreen = !callIsFullscreen;
+  screen.classList.toggle('fullscreen', callIsFullscreen);
+  document.getElementById('csFullscreenIcon').innerHTML = callIsFullscreen ? ICON_CONTRACT : ICON_EXPAND;
+});
+
 // Camera toggle — enable/disable video track on the fly
 document.getElementById('csCameraBtn').addEventListener('click', function() {
   const screen = document.getElementById('callScreen');
@@ -3021,7 +3243,7 @@ document.getElementById('csCameraBtn').addEventListener('click', function() {
       vcCameraOn = vTrack.enabled;
       const fallback = document.getElementById('csSelfFallback');
       fallback.classList.toggle('hidden', vcCameraOn);
-      this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-blue', vcCameraOn);
+      this.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-blue', vcCameraOn);
     }
   }
 });
@@ -3032,12 +3254,12 @@ document.getElementById('csMuteBtn').addEventListener('click', function() {
   if (vcStream) {
     vcStream.getAudioTracks().forEach(t => { t.enabled = !vcMuted; });
   }
-  this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-white', vcMuted);
+  this.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active', vcMuted);
 });
 
 // Speaker button — visual toggle only (actual output device API requires Electron permissions)
 document.getElementById('csSpeakerBtn').addEventListener('click', function() {
-  this.querySelector('.cs-btn-icon').classList.toggle('cs-btn-icon-white');
+  this.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active');
 });
 
 // ── FLOATING DIALPAD ──
@@ -3262,12 +3484,12 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
   dd.querySelectorAll('.cd-item').forEach(item => {
     item.querySelector('.cd-voice').addEventListener('click', e => {
       e.stopPropagation();
-      closeDropdown();
+      closeAllQuickDds();
       startCallWith(item.dataset.name, item.dataset.role, item.dataset.color, item.dataset.initials, false);
     });
     item.querySelector('.cd-video').addEventListener('click', e => {
       e.stopPropagation();
-      closeDropdown();
+      closeAllQuickDds();
       startCallWith(item.dataset.name, item.dataset.role, item.dataset.color, item.dataset.initials, true);
     });
   });
