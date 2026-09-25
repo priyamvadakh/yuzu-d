@@ -339,7 +339,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .cs-caller {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  z-index: 2; padding-bottom: 60px;
+  z-index: 2; padding-top: 60px;
 }
 .cs-avatar {
   width: 112px; height: 112px; border-radius: 50%;
@@ -647,7 +647,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .cs-share-stage.hidden { display: none; }
 .cs-share-video { width: 100%; height: 100%; object-fit: contain; background: var(--call-deep); }
 .cs-share-label {
-  position: absolute; left: 16px; bottom: 118px;
+  position: absolute; left: 16px; bottom: 24px;
   padding: 3px 8px; border-radius: 6px;
   background: rgba(0,0,0,0.55); color: #fff;
   font-size: 12px; font-weight: 500;
@@ -682,7 +682,8 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .cs-gtile-share .cs-gtile-av { display: none; }
 
 /* ── GROUP CALL GRID ── */
-.cs-group-grid { position: absolute; top: 84px; bottom: 112px; left: 24px; right: 24px; z-index: 1; display: grid; gap: 12px; align-content: center; justify-content: center; }
+.cs-group-grid { position: absolute; top: 84px; bottom: 24px; left: 24px; right: 24px; z-index: 1; display: flex; flex-wrap: wrap; gap: 12px; align-content: center; justify-content: center; }
+.cs-group-grid > .cs-gtile { width: var(--tile-w, 320px); flex-shrink: 0; }
 .cs-group-grid.hidden { display: none; }
 .call-screen.group-call .cs-caller,
 .call-screen.group-call .cs-video-grid { display: none; }
@@ -734,7 +735,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .cs-gtile.self:not(.cam-off) .cs-gtile-av { display: none; }
 
 /* Add-to-call picker panel */
-.cs-add-panel { position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); width: 240px; background: var(--call-raised); border-radius: 14px; z-index: 950; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08); animation: gsIn .18s ease; }
+.cs-add-panel { position: absolute; width: 240px; background: var(--call-raised); border-radius: 14px; z-index: 950; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08); animation: gsIn .18s ease; }
 .cs-add-panel.hidden { display: none; }
 .cs-ap-header { padding: 12px 14px 6px; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: rgba(255,255,255,0.4); text-transform: uppercase; }
 .cs-ap-search-row { display: flex; align-items: center; gap: 7px; padding: 0 10px 8px; color: rgba(255,255,255,0.45); }
@@ -770,10 +771,10 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .mv-cal { flex-shrink: 0; padding: 10px 10px 8px; background: #fff; border-bottom: 1px solid var(--border); }
 .mv-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px 0; }
 .mv-dow { text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .04em; color: #808284; padding: 2px 0 6px; }
-.mv-day { position: relative; height: 38px; border: none; background: transparent; border-radius: 50%; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #3e3f40; font-family: inherit; display: flex; align-items: center; justify-content: center; padding: 0; }
+.mv-day { position: relative; width: 36px; height: 36px; justify-self: center; flex-shrink: 0; border: none; background: transparent; border-radius: 50%; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #3e3f40; font-family: inherit; display: flex; align-items: center; justify-content: center; padding: 0; }
 .mv-day.out { color: #c5c6c8; font-weight: 500; }
 .mv-day.today:not(.selected) { box-shadow: inset 0 0 0 1.5px #f6c453; color: var(--maroon); }
-.mv-day.selected { background: var(--maroon); color: #fff; }
+.mv-day.selected { background: var(--maroon, #4c1515); color: #fff; }
 .mv-day.selected.today { box-shadow: inset 0 0 0 2px #f6c453; }
 .mv-day:hover:not(.selected) { background: rgba(246,196,83,.28); }
 .mv-dot { position: absolute; bottom: 4px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #f6c453; pointer-events: none; }
@@ -817,6 +818,69 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 #csZoomBtn.is-zoomed .cs-zoom-out { display: block; }
 .call-screen.fullscreen .cs-header { padding-left: 20px; }
 
+/* ── Teams-style top toolbar ── */
+.cs-header { display: flex; align-items: center; gap: 12px; padding-top: 10px; padding-bottom: 10px; min-height: 68px; }
+.cs-header-left { flex: 0 1 auto; }
+.cs-header-right { order: 1; }
+.cs-shield { color: rgba(255,255,255,0.45); flex-shrink: 0; }
+.cs-controls {
+  position: static; transform: none; order: 2; margin-left: auto;
+  display: flex; align-items: center; gap: 2px;
+  background: none; border: none; box-shadow: none; padding: 0;
+}
+.cs-ctl { position: relative; gap: 3px; padding: 5px 7px 4px; min-width: 54px; border-radius: 8px; transition: background .12s; }
+.cs-ctl:hover { background: rgba(255,255,255,0.06); }
+.cs-ctl span { font-size: 11px; color: rgba(255,255,255,0.72); }
+.cs-ctl-icon { position: relative; width: 34px; height: 26px; border-radius: 6px; background: transparent; }
+.cs-ctl:hover .cs-ctl-icon { background: transparent; }
+.cs-ctl-badge { position: absolute; top: 1px; right: -9px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.85); }
+.cs-ctl-badge:empty { display: none; }
+.cs-ctl.cs-view-btn.hidden { display: none; }
+.cs-ctl-divider { height: 34px; margin: 0 6px; }
+.cs-ctl-split { display: flex; align-items: center; border-radius: 8px; }
+.cs-ctl-split:hover { background: rgba(255,255,255,0.04); }
+.cs-ctl-caret { width: 16px; height: 44px; margin-left: -6px; border: none; background: none; color: rgba(255,255,255,0.55); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.cs-ctl-caret:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.cs-ctl-end { flex-direction: row; gap: 6px; height: 36px; margin-left: 8px; padding: 0 14px 0 10px; background: #d92d20; border-radius: 8px; }
+.cs-ctl-end:hover { background: #b42318; }
+.cs-ctl-end .cs-ctl-icon, .cs-ctl-end .cs-ctl-icon-red { width: 22px; height: 22px; background: transparent !important; }
+.cs-ctl-end span { font-size: 13px; font-weight: 600; color: #fff; }
+
+/* Toast */
+.cs-toast { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 14px; padding: 10px 10px 10px 16px; border-radius: 8px; background: #faf8f6; color: #242424; font-size: 13.5px; box-shadow: 0 10px 30px rgba(0,0,0,.35); width: max-content; max-width: calc(100% - 32px); }
+.cs-toast.hidden { display: none; }
+.cs-toast.show { animation: toastIn .2s ease-out; }
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.cs-toast button { width: 26px; height: 26px; border: none; background: none; border-radius: 6px; font-size: 20px; line-height: 1; color: #616161; cursor: pointer; }
+.cs-toast button:hover { background: #eee; }
+
+/* Device menu */
+.cs-device-menu { position: absolute; z-index: 40; min-width: 240px; }
+.cs-dm-title { padding: 6px 10px 4px; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+.cs-dm-sep { height: 1px; margin: 6px 4px; background: var(--call-line); }
+.cs-dm-item { gap: 8px; font-weight: 500; }
+.cs-dm-item.active { background: rgba(246,196,83,0.12); color: #fff; }
+.cs-dm-check { width: 14px; color: var(--amber); font-weight: 700; }
+
+/* Tiles: soft per-person tint, avatar scales with the tile */
+.cs-gtile { container-type: size; background: linear-gradient(140deg, rgba(var(--tile-rgb), 0.14), rgba(var(--tile-rgb), 0.03) 55%, transparent), var(--call-tile); }
+.cs-gtile .cs-gtile-av { width: clamp(44px, 42cqh, 150px); height: clamp(44px, 42cqh, 150px); font-size: clamp(15px, 14cqh, 50px); }
+.cs-gtile-name { gap: 6px; }
+.cs-gtile-signal { display: none; align-items: flex-end; gap: 1.5px; height: 11px; }
+.cs-gtile.self .cs-gtile-signal { display: inline-flex; }
+.cs-gtile-signal i { width: 2.5px; border-radius: 1px; background: currentColor; }
+.cs-gtile-signal i:nth-child(1) { height: 4px; } .cs-gtile-signal i:nth-child(2) { height: 7px; } .cs-gtile-signal i:nth-child(3) { height: 11px; }
+.cs-gtile .cs-gtile-mic { color: rgba(255,255,255,0.8); }
+
+/* Stage showing a shared screen */
+.cs-stage.is-share { background: var(--call-deep); }
+.cs-stage.is-share video { transform: none; object-fit: contain; }
+.cs-stage.is-share .cs-share-tag { top: 12px; left: 12px; }
+
+/* Bottom banners (presenting, raised hand) */
+.cs-banners { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 12; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.cs-banners .cs-present-bar, .cs-banners .cs-hand-chip { position: static; transform: none; }
+
 /* Header view toggle */
 .cs-hdr-btn.cs-view-btn { width: auto; padding: 0 10px; gap: 6px; font-size: 12px; font-weight: 500; font-family: inherit; }
 .cs-hdr-btn.hidden { display: none; }
@@ -840,7 +904,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 .cs-gtile[data-key] { cursor: pointer; }
 .cs-gtile[data-key]:hover { border-color: rgba(255,255,255,0.16); }
 .cs-stage {
-  position: absolute; top: 84px; bottom: 112px; left: 24px; right: 244px; z-index: 1;
+  position: absolute; top: 84px; bottom: 24px; left: 24px; right: 244px; z-index: 1;
   border-radius: 12px; overflow: hidden; background: var(--call-tile); border: 1px solid var(--call-line);
   display: flex; align-items: center; justify-content: center;
   transition: border-color .25s;
@@ -869,7 +933,7 @@ body { font-family: -apple-system, 'Inter', BlinkMacSystemFont, sans-serif; min-
 
 /* Floating reactions */
 .cs-react-layer { position: absolute; inset: 0; pointer-events: none; z-index: 11; overflow: hidden; }
-.cs-react-float { position: absolute; bottom: 110px; display: flex; flex-direction: column; align-items: center; gap: 4px; animation: reactRise 3.2s cubic-bezier(.2,.7,.3,1) forwards; }
+.cs-react-float { position: absolute; bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 4px; animation: reactRise 3.2s cubic-bezier(.2,.7,.3,1) forwards; }
 .cs-react-emoji { font-size: 40px; line-height: 1; filter: drop-shadow(0 4px 10px rgba(0,0,0,.35)); }
 .cs-react-who { font-size: 11px; font-weight: 600; color: #fff; background: rgba(0,0,0,.55); padding: 2px 8px; border-radius: 6px; }
 @keyframes reactRise {
@@ -2154,16 +2218,25 @@ kbd { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 5px; paddin
   .call-screen { position: fixed; }
   .cs-header { padding: 12px 12px 36px; gap: 8px; }
   .cs-hdr-btn { width: 40px; height: 40px; }
+  .cs-header { flex-wrap: wrap; }
+  .cs-header-right { order: 0; }
+  .cs-ctl-caret { display: none; }
+  .cs-ctl-end { margin-left: 0; }
   .cs-controls {
+    position: fixed; margin: 0; background: var(--call-raised); border: 1px solid var(--call-line);
     left: 8px; right: 8px; transform: none; width: auto;
     max-width: calc(100vw - 16px);
     bottom: 12px; padding: 8px 6px;
-    flex-wrap: wrap; justify-content: center;
-    border-radius: 28px;
+    flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none;
+    border-radius: 16px;
   }
+  .cs-controls::-webkit-scrollbar { display: none; }
+  .cs-ctl, .cs-ctl-split { flex-shrink: 0; }
+  .cs-banners { bottom: 96px; }
+  .cs-react-float { bottom: 110px; }
   .cs-ctl { padding: 2px 4px; }
   .cs-ctl-icon { width: 40px; height: 40px; }
-  .cs-group-grid { left: 12px; right: 12px; top: 68px; bottom: 128px; }
+  .cs-group-grid { left: 12px; right: 12px; top: 68px; bottom: 96px; overflow-y: auto; align-content: flex-start; }
   .cs-add-panel { left: 12px; right: 12px; width: auto; transform: none; bottom: 108px; }
   .cs-caller-name { max-width: calc(100vw - 48px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .call-mini { width: min(220px, calc(100vw - 24px)); }

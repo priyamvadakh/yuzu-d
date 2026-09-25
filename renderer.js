@@ -3287,7 +3287,6 @@ function _syncCallChrome() {
   document.getElementById('csShareLabel').textContent = sharing ? 'Stop' : 'Share';
   document.getElementById('csShareBtn').title = sharing ? 'Stop sharing' : 'Share screen';
   const addOpen = !document.getElementById('csAddPanel').classList.contains('hidden');
-  document.getElementById('csAddBtn').classList.toggle('is-open', addOpen);
   document.getElementById('csAddCallerBtn').classList.toggle('is-open', addOpen);
   const moreOpen = !!_moreSurface && !document.getElementById('callMoreMenu').classList.contains('hidden');
   document.getElementById('csMoreBtn').classList.toggle('is-open', moreOpen && _moreSurface === 'screen');
@@ -3350,6 +3349,7 @@ function toggleHold() {
 }
 function toggleRecord() {
   callRecording = !callRecording;
+  callToast(callRecording ? 'Recording started' : 'Recording stopped');
   _syncCallChrome();
   _closeMore();
 }
@@ -3413,7 +3413,7 @@ function openCallMore(e, surface) {
   const r = e.currentTarget.getBoundingClientRect();
   menu.classList.remove('hidden');
   menu.style.left = Math.max(8, r.left + r.width / 2 - 84) + 'px';
-  menu.style.top = Math.max(8, r.top - menu.offsetHeight - 8) + 'px';
+  menu.style.top = (r.top < innerHeight / 2 ? r.bottom + 8 : Math.max(8, r.top - menu.offsetHeight - 8)) + 'px';
   document.getElementById('csMoreBtn').classList.toggle('is-open', surface === 'screen');
 }
 document.getElementById('callMoreMenu').addEventListener('click', e => {
@@ -3841,6 +3841,7 @@ function _syncShareTile() {
     if (!tile) {
       tile = document.createElement('div');
       tile.id = 'csShareTile';
+      tile.dataset.key = 'share';
       tile.className = 'cs-gtile cs-gtile-share';
       tile.innerHTML = '<video id="csShareTileVideo" autoplay playsinline></video><span class="cs-share-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Presenting</span><div class="cs-gtile-name">Your screen</div>';
       grid.appendChild(tile);
@@ -3855,8 +3856,14 @@ function _syncShareTile() {
   _paintPresenting();
 }
 
+let _viewBeforeShare = null;
+const SHARE_TAG_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>';
 function _paintPresenting() {
   const on = !!screenShareStream;
+  const group = document.getElementById('callScreen').classList.contains('group-call');
+  if (on && group && _viewBeforeShare === null) { _viewBeforeShare = callView; callPinnedKey = null; setCallView('speaker'); }
+  else if (!on && _viewBeforeShare !== null) { const v = _viewBeforeShare; _viewBeforeShare = null; setCallView(v); }
+  else if (group) { document.getElementById('csStage').dataset.key = ''; _renderStage(); }
   document.getElementById('csPresentBar').classList.toggle('hidden', !on);
   document.getElementById('cmPresentTag').classList.toggle('hidden', !on);
   document.getElementById('callMini').classList.toggle('presenting', on);
@@ -4012,10 +4019,24 @@ function startGroupCall(people, video = false, title = null) {
   }
   startCallWith(list[0].name, '', list[0].color, list[0].initials, video);
   callTitle = title;
-  callParticipants = list.map(p => ({ ...p, joined: false }));
+  callParticipants = list.map((p, i) => ({ ...p, joined: false, muted: i % 2 === 1 }));
   callParticipants.forEach((p, i) => _joinAfter(p, 1400 + i * 700));
   renderCallLayout();
 }
+
+let _toastTimer = null;
+function callToast(text) {
+  const toast = document.getElementById('csToast');
+  document.getElementById('csToastText').textContent = text;
+  toast.classList.remove('hidden');
+  toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => toast.classList.add('hidden'), 4500);
+}
+document.getElementById('csToastClose').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('csToast').classList.add('hidden');
+});
 
 function _joinAfter(person, ms) {
   setTimeout(() => {
@@ -4023,6 +4044,7 @@ function _joinAfter(person, ms) {
     person.joined = true;
     const tile = document.querySelector(`.cs-gtile[data-key="${person.key}"]`);
     if (tile) tile.classList.remove('ringing');
+    if (document.getElementById('callScreen').classList.contains('group-call')) callToast(`${person.name} joined`);
     if (!callHeld) _startCallTimer();
     _paintCallStatus();
   }, ms);
@@ -4053,6 +4075,7 @@ function renderCallLayout() {
   document.getElementById('csName').textContent = _callLabel();
   countEl.classList.toggle('hidden', !isGroup);
   countEl.textContent = `· ${callParticipants.length + 1} people`;
+  document.getElementById('csPeopleCount').textContent = callParticipants.length + 1;
   document.getElementById('csViewBtn').classList.toggle('hidden', !isGroup);
 
   if (!isGroup) {
@@ -4074,10 +4097,10 @@ function renderCallLayout() {
   const myInitials = userEmail ? myName.slice(0, 2).toUpperCase() : 'ME';
   const isVideo = screen.classList.contains('video-mode');
   grid.innerHTML = callParticipants.map(p => `
-    <div class="cs-gtile${p.joined ? '' : ' ringing'}" data-key="${p.key}" title="Pin to main screen" style="--tile-rgb:${hexToRgb(p.color)}">
+    <div class="cs-gtile${p.joined ? '' : ' ringing'}${p.muted ? ' muted' : ''}" data-key="${p.key}" title="Pin to main screen" style="--tile-rgb:${hexToRgb(p.color)}">
       <div class="cs-gtile-av" style="background:${p.color}">${p.initials}</div>
       <span class="cs-gtile-status">Ringing…</span>
-      <div class="cs-gtile-name">${p.name}</div>
+      <div class="cs-gtile-name">${p.name}<span class="cs-gtile-mic">${MIC_OFF_ICON}</span></div>
       <button class="cs-gtile-remove" title="Remove from call" data-remove="${p.key}">
         <svg width="10" height="10" viewBox="0 0 8 8" fill="none"><path d="M1 1L7 7M7 1L1 7" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
       </button>
@@ -4086,7 +4109,7 @@ function renderCallLayout() {
       <span class="cs-gtile-hand">✋</span>
       <video id="csGroupSelfVideo" autoplay muted playsinline></video>
       <div class="cs-gtile-av cs-gtile-av-self">${myInitials}</div>
-      <div class="cs-gtile-name"><span class="cs-gtile-mic">${MIC_OFF_ICON}</span><span class="cs-gtile-presenting" title="Presenting"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg></span>You</div>
+      <div class="cs-gtile-name"><span class="cs-gtile-signal" aria-hidden="true"><i></i><i></i><i></i></span><span class="cs-gtile-presenting" title="Presenting"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg></span>You<span class="cs-gtile-mic">${MIC_OFF_ICON}</span></div>
     </div>`;
   _attachGroupSelfVideo();
   _syncShareTile();
@@ -4113,6 +4136,7 @@ function renderCallLayout() {
 
 // ── SPEAKER VIEW ──
 function _stagePerson() {
+  if (screenShareStream && !callPinnedKey) return { key: 'share', share: true, name: 'Your screen' };
   const key = callPinnedKey || callStageKey || (callParticipants.find(p => p.joined) || callParticipants[0])?.key;
   if (key === 'self') return { key: 'self', self: true, name: 'You', initials: (userEmail ? userEmail.split('@')[0].slice(0, 2).toUpperCase() : 'ME') };
   return callParticipants.find(p => p.key === key) || callParticipants[0];
@@ -4129,7 +4153,7 @@ function _applyCallView() {
   btn.title = speaker ? 'Switch to gallery view' : 'Switch to speaker view';
   btn.querySelector('.cs-view-label').textContent = speaker ? 'Gallery' : 'Speaker';
   const grid = document.getElementById('csGroupGrid');
-  if (speaker) grid.style.gridTemplateColumns = '';
+  if (speaker) grid.style.paddingInline = '';
   _renderStage();
   if (!speaker) _sizeCallGrid();
 }
@@ -4150,6 +4174,16 @@ function _renderStage() {
     stage.dataset.key = p.key;
     stage.dataset.pinned = String(!!callPinnedKey);
     const showVideo = p.self && document.getElementById('callScreen').classList.contains('video-mode') && vcCameraOn && vcStream;
+    stage.classList.toggle('is-share', !!p.share);
+    if (p.share) {
+      stage.innerHTML = `<video id="csStageVideo" autoplay muted playsinline></video>
+        <span class="cs-share-tag">${SHARE_TAG_ICON}Presenting</span>
+        <div class="cs-gtile-name">You · Your screen</div>`;
+      document.getElementById('csStageVideo').srcObject = screenShareStream;
+      stage.classList.remove('speaking', 'ringing', 'hand');
+      stage.classList.add('has-video');
+      return;
+    }
     stage.innerHTML = `
       ${showVideo ? '<video id="csStageVideo" autoplay muted playsinline></video>' : ''}
       <div class="cs-stage-av" style="${p.self ? 'background:var(--amber);color:var(--maroon-dark)' : `background:${p.color}`}">${p.initials}</div>
@@ -4170,6 +4204,37 @@ function setCallView(view) {
   document.getElementById('csStage').dataset.key = '';
   _applyCallView();
 }
+const CALL_DEVICES = {
+  mic:    { title: 'Microphone', list: ['MacBook Pro Microphone', 'AirPods Pro', 'Black Diamond'], pick: 0, toast: n => `Microphone switched to ${n}` },
+  speaker:{ title: 'Speaker',    list: ['MacBook Pro Speakers', 'AirPods Pro', 'Black Diamond'],   pick: 0, toast: n => `Audio device switched to ${n}` },
+  camera: { title: 'Camera',     list: ['FaceTime HD Camera', 'iPhone Continuity Camera'],          pick: 0, toast: n => `Camera switched to ${n}` },
+};
+function _openDeviceMenu(btn, kinds) {
+  const menu = document.getElementById('csDeviceMenu');
+  if (!menu.classList.contains('hidden') && menu.dataset.for === btn.dataset.device) { menu.classList.add('hidden'); return; }
+  menu.dataset.for = btn.dataset.device;
+  menu.innerHTML = kinds.map(k => `<div class="cs-dm-title">${CALL_DEVICES[k].title}</div>` + CALL_DEVICES[k].list.map((n, i) =>
+    `<button type="button" class="call-more-item cs-dm-item${i === CALL_DEVICES[k].pick ? ' active' : ''}" data-kind="${k}" data-i="${i}"><span class="cs-dm-check">${i === CALL_DEVICES[k].pick ? '✓' : ''}</span>${n}</button>`).join('')).join('<div class="cs-dm-sep"></div>');
+  menu.classList.remove('hidden');
+  _placeCallPopover(menu, btn.closest('.cs-ctl-split'));
+}
+document.querySelectorAll('.cs-ctl-caret').forEach(btn => btn.addEventListener('click', e => {
+  e.stopPropagation();
+  _openDeviceMenu(btn, btn.dataset.device === 'mic' ? ['mic', 'speaker'] : ['camera']);
+}));
+document.getElementById('csDeviceMenu').addEventListener('click', e => {
+  e.stopPropagation();
+  const item = e.target.closest('[data-kind]');
+  if (!item) return;
+  const d = CALL_DEVICES[item.dataset.kind];
+  d.pick = Number(item.dataset.i);
+  document.getElementById('csDeviceMenu').classList.add('hidden');
+  callToast(d.toast(d.list[d.pick]));
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#csDeviceMenu, .cs-ctl-caret')) document.getElementById('csDeviceMenu').classList.add('hidden');
+});
+
 document.getElementById('csViewBtn').addEventListener('click', e => {
   e.stopPropagation();
   setCallView(callView === 'speaker' ? 'gallery' : 'speaker');
@@ -4215,8 +4280,16 @@ function _paintHand() {
   document.getElementById('csHandChip').classList.toggle('hidden', !myHandRaised);
   document.getElementById('csRaiseHand').classList.toggle('active', myHandRaised);
   document.getElementById('csRaiseHandLabel').textContent = myHandRaised ? 'Lower hand' : 'Raise hand';
+  const raise = document.getElementById('csRaiseBtn');
+  raise.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active', myHandRaised);
+  raise.querySelector('span').textContent = myHandRaised ? 'Lower' : 'Raise';
   _renderStage();
 }
+document.getElementById('csRaiseBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  myHandRaised = !myHandRaised;
+  _paintHand();
+});
 
 document.getElementById('csReactBtn').addEventListener('click', e => {
   e.stopPropagation();
@@ -4225,10 +4298,7 @@ document.getElementById('csReactBtn').addEventListener('click', e => {
   panel.classList.toggle('hidden', !opening);
   document.getElementById('csReactBtn').classList.toggle('is-open', opening);
   if (!opening) return;
-  const screenR = document.getElementById('callScreen').getBoundingClientRect();
-  const r = e.currentTarget.getBoundingClientRect();
-  panel.style.left = Math.max(8, Math.min(screenR.width - panel.offsetWidth - 8, r.left - screenR.left + r.width / 2 - panel.offsetWidth / 2)) + 'px';
-  panel.style.bottom = (screenR.bottom - r.top + 18) + 'px';
+  _placeCallPopover(panel, e.currentTarget);
 });
 document.getElementById('csReactPanel').addEventListener('click', e => {
   e.stopPropagation();
@@ -4313,7 +4383,10 @@ function _sizeCallGrid() {
     const w = Math.min((W - GAP * (cols - 1)) / cols, ((H - GAP * (rows - 1)) / rows) * RATIO);
     if (w > best.w) best = { w, cols };
   }
-  grid.style.gridTemplateColumns = `repeat(${best.cols}, ${Math.floor(best.w)}px)`;
+  // Flex-wrap with side padding so exactly best.cols fit per row and a short last row stays centered.
+  const tw = Math.floor(best.w);
+  grid.style.setProperty('--tile-w', tw + 'px');
+  grid.style.paddingInline = Math.max(0, (W - best.cols * tw - (best.cols - 1) * GAP) / 2 - 1) + 'px';
 }
 new ResizeObserver(_sizeCallGrid).observe(document.getElementById('csGroupGrid'));
 
@@ -4370,19 +4443,29 @@ document.getElementById('csGroupGrid').addEventListener('click', e => {
   _applyCallView();
 });
 
+// Place a call popover next to its toolbar button, flipping above when the bar is at the bottom.
+function _placeCallPopover(panel, btn) {
+  const host = document.getElementById('callScreen').getBoundingClientRect();
+  const r = btn.getBoundingClientRect();
+  panel.style.transform = 'none';
+  panel.style.left = Math.max(8, Math.min(host.width - panel.offsetWidth - 8, r.left - host.left + r.width / 2 - panel.offsetWidth / 2)) + 'px';
+  if (r.top - host.top < host.height / 2) { panel.style.top = (r.bottom - host.top + 8) + 'px'; panel.style.bottom = 'auto'; }
+  else { panel.style.bottom = (host.bottom - r.top + 8) + 'px'; panel.style.top = 'auto'; }
+}
+
 function toggleAddPanel(e) {
   e.stopPropagation();
   const panel = document.getElementById('csAddPanel');
   const isHidden = panel.classList.contains('hidden');
   panel.classList.toggle('hidden', !isHidden);
   if (isHidden) {
+    _placeCallPopover(panel, document.getElementById('csAddCallerBtn'));
     refreshAddPanel();
     document.getElementById('csApSearch').value = '';
     document.getElementById('csApSearch').focus();
   }
   _syncCallChrome();
 }
-document.getElementById('csAddBtn').addEventListener('click', toggleAddPanel);
 document.getElementById('csAddCallerBtn').addEventListener('click', toggleAddPanel);
 
 document.getElementById('csApSearch').addEventListener('input', function() {
@@ -4392,7 +4475,6 @@ document.getElementById('csApSearch').addEventListener('input', function() {
 document.addEventListener('click', e => {
   const panel = document.getElementById('csAddPanel');
   if (!panel.contains(e.target) &&
-      !document.getElementById('csAddBtn').contains(e.target) &&
       !document.getElementById('csAddCallerBtn').contains(e.target)) {
     if (!panel.classList.contains('hidden')) {
       panel.classList.add('hidden');
@@ -4406,6 +4488,7 @@ function _resetCallParticipants() {
   callTitle = null;
   clearInterval(_speakerInterval);
   callView = 'gallery';
+  _viewBeforeShare = null;
   callPinnedKey = null;
   callStageKey = null;
   myHandRaised = false;
