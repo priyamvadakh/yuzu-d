@@ -433,7 +433,7 @@
           </button>
           <button class="nav-item" data-tab="aigroup">
             <div class="nav-item-inner"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M19 3L20 6L23 7L20 8L19 11L18 8L15 7L18 6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" opacity="0.6"/></svg></div>
-            <span class="nav-label">AI Chat</span>
+            <span class="nav-label">Ask Yuzu</span>
           </button>
           <button class="nav-item" data-tab="people">
             <div class="nav-item-inner"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 20C17 18.3431 14.7614 17 12 17C9.23858 17 7 18.3431 7 20M21 17C21 15.7892 19.7659 14.7699 18 14.3453M3 17C3 15.7892 4.23413 14.7699 6 14.3453M12 14C10.067 14 8.5 12.433 8.5 10.5C8.5 8.567 10.067 7 12 7C13.933 7 15.5 8.567 15.5 10.5C15.5 12.433 13.933 14 12 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
@@ -660,62 +660,6 @@
       <div class="ep-grid" id="epGrid"></div>
     </div>
 
-    <!-- CALL WIDGET -->
-    <div class="call-widget hidden" id="callWidget">
-      <div class="cw-top">
-        <div class="cw-top-left">
-          <span class="cw-amber-dot"></span>
-          <span class="cw-call-label">Call</span>
-          <span class="cw-timer" id="cwTimer">0:00</span>
-        </div>
-        <div class="cw-top-right">
-          <svg width="18" height="13" viewBox="0 0 22 16" fill="none"><rect x="0" y="10" width="4" height="6" rx="1" fill="rgba(255,255,255,.5)"/><rect x="6" y="7" width="4" height="9" rx="1" fill="rgba(255,255,255,.6)"/><rect x="12" y="4" width="4" height="12" rx="1" fill="rgba(255,255,255,.75)"/><rect x="18" y="0" width="4" height="16" rx="1" fill="white"/></svg>
-          <button class="cw-icon-sm" id="cwExpandBtn" title="Expand to full screen">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 14H10M10 14V20M10 14L3 21M20 10H14M14 10V4M14 10L21 3" stroke="rgba(255,255,255,.7)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <button class="cw-icon-sm" title="Add caller">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M13 10C13 11.66 11.66 13 10 13C8.34 13 7 11.66 7 10C7 8.34 8.34 7 10 7C11.66 7 13 8.34 13 10Z" stroke="rgba(255,255,255,.7)" stroke-width="1.3"/><path d="M3 17C3 14.24 6.13 12 10 12" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linecap="round"/><path d="M16 13V17M14 15H18" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="cw-participants">
-        <div class="cw-p-row">
-          <div class="cw-p-av" id="cwPersonAv">SJ</div>
-          <div class="cw-p-body">
-            <span class="cw-p-name" id="cwPersonName">Sarah Jenkins</span>
-            <span class="cw-p-status" id="cwPersonStatus">Calling…</span>
-          </div>
-        </div>
-        <div class="cw-p-row">
-          <div class="cw-p-av cw-you-av" id="cwYouAv">PM</div>
-          <div class="cw-p-body">
-            <span class="cw-p-name" id="cwYouName">You</span>
-            <span class="cw-you-badge">You</span>
-          </div>
-        </div>
-      </div>
-      <div class="cw-controls">
-        <button class="cw-btn cw-btn-green cw-muted" id="cwMuteBtn" title="Mute">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 10C5 14.42 8.686 18 12 18C15.314 18 19 14.42 19 10" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M12 18V21M9 21H15" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </button>
-        <button class="cw-btn" title="Record">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="rgba(255,255,255,.8)"/><circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/></svg>
-        </button>
-        <button class="cw-btn" id="cwKeypadBtn" title="Keypad">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="1.5" fill="white"/><circle cx="12" cy="6" r="1.5" fill="white"/><circle cx="18" cy="6" r="1.5" fill="white"/><circle cx="6" cy="12" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="18" cy="12" r="1.5" fill="white"/><circle cx="6" cy="18" r="1.5" fill="white"/><circle cx="12" cy="18" r="1.5" fill="white"/><circle cx="18" cy="18" r="1.5" fill="white"/></svg>
-        </button>
-        <button class="cw-btn" title="Hold">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="white"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="white"/></svg>
-        </button>
-        <button class="cw-btn" title="More">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="19" cy="12" r="1.5" fill="white"/></svg>
-        </button>
-        <button class="cw-btn cw-btn-red" id="cwEndBtn" title="End call">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="rotate(135 12 12)"/></svg>
-        </button>
-      </div>
-    </div>
-
     <!-- PROFILE POPUP -->
     <div class="profile-popup hidden" id="profilePopup">
       <div class="profile-popup-header">
@@ -864,13 +808,13 @@
         <div class="ep-modal-header">
           <span class="ep-modal-title">Start a Call</span>
           <button class="ep-modal-close" id="callPeopleClose">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
         <!-- Selected chips -->
         <div class="cpm-chips hidden" id="cpmChips"></div>
         <div class="cpm-search-wrap">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M11 11L14 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input type="text" class="cpm-search" id="callPeopleSearch" placeholder="Search contacts…" />
         </div>
         <div class="cpm-list" id="cpmList">
@@ -903,11 +847,11 @@
         <div class="cpm-footer">
           <div class="cpm-call-btns">
             <button class="cpm-voice-btn" id="cpmVoiceBtn" disabled>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="translate(1,1) scale(0.91)"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               Voice
             </button>
             <button class="cpm-video-btn" id="cpmVideoBtn" disabled>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C20.7054 6.63 20.8748 6.57755 21.0493 6.57202C21.2239 6.5665 21.3962 6.60809 21.5542 6.69277C21.7122 6.77744 21.8505 6.9022 21.9561 7.05508C22.0617 7.20796 22.1312 7.38423 22.158 7.569L22.166 7.764V16.236C22.166 16.4392 22.1131 16.6387 22.0127 16.8143C21.9122 16.9899 21.7677 17.1353 21.5938 17.2356C21.4199 17.3359 21.2226 17.3876 21.0224 17.3854C20.8222 17.3832 20.6261 17.3272 20.454 17.223L15 14V10Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/><rect x="2" y="6" width="13" height="12" rx="2" stroke="white" stroke-width="1.8"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
               Video
             </button>
           </div>
@@ -965,11 +909,32 @@
         </div>
       </div>
 
+      <!-- Group call grid (2+ remote participants) -->
+      <div class="cs-group-grid hidden" id="csGroupGrid"></div>
+      <div class="cs-stage hidden" id="csStage"></div>
+      <div class="cs-react-layer" id="csReactLayer"></div>
+      <div class="cs-present-bar hidden" id="csPresentBar">
+        <span class="cs-present-dot"></span>You're presenting
+        <button type="button" id="csStopPresent">Stop presenting</button>
+      </div>
+      <div class="cs-hand-chip hidden" id="csHandChip">✋ Your hand is raised</div>
+      <div class="cs-react-panel hidden" id="csReactPanel">
+        <div class="cs-react-row">
+          <button type="button" data-react="👍" title="Like">👍</button>
+          <button type="button" data-react="❤️" title="Love">❤️</button>
+          <button type="button" data-react="👏" title="Applause">👏</button>
+          <button type="button" data-react="😂" title="Laugh">😂</button>
+          <button type="button" data-react="😮" title="Surprised">😮</button>
+          <button type="button" data-react="🎉" title="Celebrate">🎉</button>
+        </div>
+        <button type="button" class="cs-react-hand" id="csRaiseHand">✋ <span id="csRaiseHandLabel">Raise hand</span></button>
+      </div>
+
       <!-- Add-to-call panel -->
       <div class="cs-add-panel hidden" id="csAddPanel">
         <div class="cs-ap-header">Add to call</div>
         <div class="cs-ap-search-row">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.4)" stroke-width="1.3"/><path d="M11 11L14 14" stroke="rgba(255,255,255,0.4)" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input type="text" class="cs-ap-search" id="csApSearch" placeholder="Search people…" />
         </div>
         <div class="cs-ap-list" id="csApList"></div>
@@ -982,19 +947,30 @@
           <div class="cs-header-meta">
             <span class="cs-status" id="csStatus">Ringing…</span>
             <span class="cs-timer hidden" id="csTimer">00:00</span>
+            <span class="cs-rec hidden" id="csRec"><span class="cs-rec-dot"></span>Recording</span>
+            <span class="cs-count hidden" id="csCount"></span>
           </div>
         </div>
         <div class="cs-header-right">
+          <button class="cs-hdr-btn cs-view-btn hidden" id="csViewBtn" title="Switch to speaker view">
+            <svg class="cs-view-gallery" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+            <svg class="cs-view-speaker" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="14" height="16" rx="2"/><rect x="18" y="4" width="4" height="4.5" rx="1"/><rect x="18" y="9.75" width="4" height="4.5" rx="1"/><rect x="18" y="15.5" width="4" height="4.5" rx="1"/></svg>
+            <span class="cs-view-label">Speaker</span>
+          </button>
+          <button class="cs-hdr-btn" id="csZoomBtn" title="Full screen (F)">
+            <svg class="cs-zoom-in" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            <svg class="cs-zoom-out" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+          </button>
           <button class="cs-hdr-btn" id="csAddBtn" title="Add people">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16 11C17.66 11 19 9.66 19 8C19 6.34 17.66 5 16 5" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M19 15C20.77 15.43 22 16.27 22 17.5V19H16" stroke="white" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="8" r="3" stroke="white" stroke-width="1.8"/><path d="M3 19V17.5C3 15.57 5.69 14 9 14C12.31 14 15 15.57 15 17.5V19" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </button>
-          <button class="cs-hdr-btn" id="csFullscreenBtn" title="Full screen">
-            <svg id="csFullscreenIcon" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 8V4H7M17 4H21V8M21 16V20H17M7 20H3V16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <button class="cs-hdr-btn" id="csMinimize" title="Minimise">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 14H10M10 14V20M10 14L3 21M20 10H14M14 10V4M14 10L21 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
           </button>
         </div>
+      </div>
+
+      <div class="cs-share-stage hidden" id="csShareStage">
+        <video id="csShareVideo" class="cs-share-video" autoplay playsinline></video>
+        <span class="cs-share-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Presenting</span>
+        <span class="cs-share-label">Your screen</span>
       </div>
 
       <!-- Voice call: centered avatar card -->
@@ -1007,28 +983,36 @@
       <!-- Floating controls pill -->
       <div class="cs-controls" id="csControls">
         <button class="cs-ctl" id="csMuteBtn" title="Mute">
-          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" stroke="white" stroke-width="1.8"/><path d="M5 10C5 14.42 8.686 18 12 18C15.314 18 19 14.42 19 10" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M12 18V21M9 21H15" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></div>
           <span>Mute</span>
         </button>
         <button class="cs-ctl" id="csCameraBtn" title="Video">
-          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/><rect x="2" y="6" width="13" height="12" rx="2" stroke="white" stroke-width="1.8"/></svg></div>
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg></div>
           <span>Video</span>
         </button>
         <button class="cs-ctl" id="csSpeakerBtn" title="Audio">
-          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19" stroke="white" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M15.54 8.46a5 5 0 010 7.07" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-          <span>Audio</span>
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg></div>
+          <span id="csSpeakerLabel">Audio</span>
         </button>
         <div class="cs-ctl-divider"></div>
+        <button class="cs-ctl" id="csReactBtn" title="React">
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 14.5s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9.5" y2="9.5"/><line x1="15" x2="15.01" y1="9.5" y2="9.5"/></svg></div>
+          <span>React</span>
+        </button>
         <button class="cs-ctl" id="csAddCallerBtn" title="Add people">
-          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="white" stroke-width="1.8"/><path d="M3 19V17.5C3 15.57 5.69 14 9 14C12.31 14 15 15.57 15 17.5V19" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M19 8V14M16 11H22" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg></div>
           <span>Add</span>
         </button>
-        <button class="cs-ctl" title="More">
-          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="19" cy="12" r="1.5" fill="white"/></svg></div>
+        <button class="cs-ctl" id="csMoreBtn" title="More">
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg></div>
           <span>More</span>
         </button>
+        <button class="cs-ctl" id="csShareBtn" title="Share screen">
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg></div>
+          <span id="csShareLabel">Share</span>
+        </button>
         <button class="cs-ctl cs-ctl-end" id="csHangup" title="Leave">
-          <div class="cs-ctl-icon cs-ctl-icon-red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0122 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L6.09 7.91" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div class="cs-ctl-icon cs-ctl-icon-red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) rotate(135) scale(0.7) translate(-12 -12)"><path stroke-width="2.7" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg></div>
           <span>Leave</span>
         </button>
       </div>
@@ -1037,39 +1021,20 @@
     <!-- CALL DROPDOWN -->
     <div class="call-dropdown hidden" id="callDropdown">
       <div class="cd-search-row">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#9ca3af" stroke-width="1.3"/><path d="M11 11L14 14" stroke="#9ca3af" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input type="text" class="cd-search" id="cdSearch" placeholder="Search people…" />
       </div>
-      <div class="cd-list" id="cdList">
-        <div class="cd-item" data-key="sarah" data-name="Sarah Jenkins" data-role="Mobile Dev" data-color="#7c3aed" data-initials="SJ">
-          <div class="cd-av" style="background:#7c3aed">SJ<span class="cd-online"></span></div>
-          <div class="cd-info"><span>Sarah Jenkins</span><small>Mobile Dev</small></div>
-          <button class="cd-act cd-voice" title="Voice call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="currentColor"/></svg></button>
-          <button class="cd-act cd-video" title="Video call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" fill="currentColor"/><rect x="2" y="6" width="13" height="12" rx="2" fill="currentColor"/></svg></button>
+      <div class="cd-hint">Select people for a group call</div>
+      <div class="cd-list" id="cdList"></div>
+      <div class="cd-footer hidden" id="cdFooter">
+        <div class="cd-footer-top">
+          <div class="cd-stack" id="cdStack"></div>
+          <span class="cd-count" id="cdCount"></span>
+          <button class="cd-clear" id="cdClear" type="button">Clear</button>
         </div>
-        <div class="cd-item" data-key="david" data-name="David Chen" data-role="Backend Engineer" data-color="#2563eb" data-initials="DC">
-          <div class="cd-av" style="background:#2563eb">DC</div>
-          <div class="cd-info"><span>David Chen</span><small>Backend Engineer</small></div>
-          <button class="cd-act cd-voice" title="Voice call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="currentColor"/></svg></button>
-          <button class="cd-act cd-video" title="Video call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" fill="currentColor"/><rect x="2" y="6" width="13" height="12" rx="2" fill="currentColor"/></svg></button>
-        </div>
-        <div class="cd-item" data-key="jessica" data-name="Jessica Park" data-role="Product Manager" data-color="#d97706" data-initials="JP">
-          <div class="cd-av" style="background:#d97706">JP<span class="cd-online"></span></div>
-          <div class="cd-info"><span>Jessica Park</span><small>Product Manager</small></div>
-          <button class="cd-act cd-voice" title="Voice call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="currentColor"/></svg></button>
-          <button class="cd-act cd-video" title="Video call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" fill="currentColor"/><rect x="2" y="6" width="13" height="12" rx="2" fill="currentColor"/></svg></button>
-        </div>
-        <div class="cd-item" data-key="alex" data-name="Alex Kim" data-role="Designer" data-color="#059669" data-initials="AK">
-          <div class="cd-av" style="background:#059669">AK</div>
-          <div class="cd-info"><span>Alex Kim</span><small>Designer</small></div>
-          <button class="cd-act cd-voice" title="Voice call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="currentColor"/></svg></button>
-          <button class="cd-act cd-video" title="Video call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" fill="currentColor"/><rect x="2" y="6" width="13" height="12" rx="2" fill="currentColor"/></svg></button>
-        </div>
-        <div class="cd-item" data-key="noor" data-name="Noor Al-Rashid" data-role="QA Lead" data-color="#be185d" data-initials="NA">
-          <div class="cd-av" style="background:#be185d">NA<span class="cd-online"></span></div>
-          <div class="cd-info"><span>Noor Al-Rashid</span><small>QA Lead</small></div>
-          <button class="cd-act cd-voice" title="Voice call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="currentColor"/></svg></button>
-          <button class="cd-act cd-video" title="Video call"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" fill="currentColor"/><rect x="2" y="6" width="13" height="12" rx="2" fill="currentColor"/></svg></button>
+        <div class="cd-footer-actions">
+          <button class="cd-start cd-start-voice" id="cdStartVoice" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Voice</button>
+          <button class="cd-start cd-start-video" id="cdStartVideo" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>Video</button>
         </div>
       </div>
     </div>
@@ -1220,32 +1185,39 @@
     <div class="call-mini hidden" id="callMini">
       <div class="cm-drag" id="cmHandle">
         <div class="cm-top-row">
-          <button class="cm-icon-btn" id="cmExpand" title="Expand">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 14H10M10 14V20M10 14L3 21M20 10H14M14 10V4M14 10L21 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <button class="cm-icon-btn" id="cmAddBtn" title="Add people">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+          </button>
+          <button class="cm-icon-btn" id="cmExpand" title="Return to call">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg>
           </button>
           <div class="cm-live">
             <span class="cm-amber-dot"></span>
+            <span class="cm-title" id="cmTitle"></span>
+            <span class="cm-present-tag hidden" id="cmPresentTag">Presenting</span>
             <span class="cm-timer" id="cmTimer">0:00</span>
           </div>
         </div>
       </div>
-      <div class="cm-body">
+      <div class="cm-body" id="cmBody" title="Return to call">
         <div class="cm-avatar" id="cmAvatar"></div>
         <div class="cm-name" id="cmName"></div>
-        <div class="cm-status">Connected</div>
+        <div class="cm-status" id="cmStatus">Connected</div>
       </div>
       <div class="cm-controls">
         <button class="cm-ctrl-btn" id="cmMuteBtn" title="Mute">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" stroke="white" stroke-width="1.8"/><path d="M5 10C5 14.42 8.686 18 12 18C15.314 18 19 14.42 19 10" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M12 18V21M9 21H15" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
         </button>
         <button class="cm-ctrl-btn cm-ctrl-end" id="cmEndBtn" title="End">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" fill="white" transform="rotate(135 12 12)"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) rotate(135) scale(0.7) translate(-12 -12)"><path stroke-width="2.7" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg>
         </button>
         <button class="cm-ctrl-btn" id="cmVideoBtn" title="Video">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/><rect x="2" y="6" width="13" height="12" rx="2" stroke="white" stroke-width="1.8"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg>
         </button>
       </div>
     </div>
+
+    <div class="call-more hidden" id="callMoreMenu"></div>
 
     <!-- FLOATING DIALPAD -->
     <div class="dial-pad hidden" id="dialPad">
@@ -1387,7 +1359,7 @@
       <!-- AI Group Chat view -->
       <div class="aigroup-view hidden" id="aigroupContent">
         <div class="aigroup-header">
-          <span class="section-title">AI CHAT ROOMS</span>
+          <span class="section-title">ASK YUZU</span>
           <button class="new-dm-btn" id="aigroupNewBtn">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             New Room
@@ -1428,20 +1400,29 @@
       <!-- MEETINGS PANEL -->
       <div class="meetings-view hidden" id="meetingsContent">
         <div class="mv-header">
-          <span class="mv-title">Meetings</span>
-          <button class="mv-new-btn" id="mvNewBtn">
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            Schedule
-          </button>
-        </div>
-        <div class="mv-body">
-          <div class="mv-section">
-            <div class="mv-section-label">Upcoming</div>
-            <div class="mv-cards" id="mvUpcoming"></div>
+          <div class="mv-header-top">
+            <span class="mv-title">Meetings</span>
+            <button class="mv-new-btn" id="mvNewBtn">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Schedule
+            </button>
           </div>
-          <div class="mv-section">
-            <div class="mv-section-label">Past</div>
-            <div class="mv-cards" id="mvPast"></div>
+          <div class="mv-nav">
+            <button class="mv-nav-btn" id="mvPrev" type="button" aria-label="Previous month">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <span class="mv-month-label" id="mvMonthLabel"></span>
+            <button class="mv-nav-btn" id="mvNext" type="button" aria-label="Next month">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2L10 7L5 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="mv-today-btn" id="mvToday" type="button">Today</button>
+          </div>
+        </div>
+        <div class="mv-workspace">
+          <div class="mv-cal" id="mvCal"></div>
+          <div class="mv-agenda">
+            <div class="mv-agenda-head" id="mvAgendaHead"></div>
+            <div class="mv-agenda-list" id="mvAgenda"></div>
           </div>
         </div>
       </div>
@@ -1652,6 +1633,91 @@
               <button class="dm-send-btn" id="channelSendBtn" title="Send">
                 <svg class="icon-mic" width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="white"/><path d="M5 11C5 15.42 8.686 19 12 19C15.314 19 19 15.42 19 11" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 19V22M9 22H15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEETINGS WEEK CALENDAR (right panel) -->
+      <div class="mv-week hidden" id="meetingsCal">
+        <div class="mv-week-header">
+          <div class="mv-week-brand">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 8h15M6.5 2v3M13.5 2v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>Calendar</span>
+          </div>
+          <div class="mv-week-header-actions">
+            <button class="mv-meet-now" id="mvMeetNow" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="9" height="8" rx="1.4" stroke="currentColor" stroke-width="1.4"/><path d="M10 7l4-2v6l-4-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              Meet now
+            </button>
+            <button class="mv-new-meeting" id="mvWeekNew" type="button">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              New meeting
+            </button>
+          </div>
+        </div>
+        <div class="mv-week-toolbar">
+          <button class="mv-today-btn" id="mvWeekToday" type="button">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 8h15" stroke="currentColor" stroke-width="1.6"/></svg>
+            Today
+          </button>
+          <button class="mv-arrow-btn" id="mvWeekPrev" type="button" aria-label="Previous">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="mv-arrow-btn" id="mvWeekNext" type="button" aria-label="Next">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2L10 7L5 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="mv-week-label" id="mvWeekLabel"></span>
+          <div class="mv-view-switch" id="mvViewSwitch" role="tablist">
+            <button type="button" data-view="day">Day</button>
+            <button type="button" data-view="workweek" class="active">Work week</button>
+            <button type="button" data-view="week">Week</button>
+          </div>
+        </div>
+        <div class="mv-week-scroll" id="mvWeekScroll">
+          <div class="mv-week-days" id="mvWeekDays"></div>
+          <div class="mv-week-grid" id="mvWeekGrid"></div>
+        </div>
+        <div class="mv-pop hidden" id="mvPop"></div>
+        <div class="mv-form hidden" id="mvForm">
+          <div class="mv-form-top">
+            <span class="mv-form-heading" id="mvFormHeading">New meeting</span>
+            <div class="mv-form-top-actions">
+              <button type="button" class="mv-pop-btn" id="mvFormClose">Close</button>
+              <button type="button" class="mv-pop-join" id="mvFormSave">Save</button>
+            </div>
+          </div>
+          <div class="mv-form-body">
+            <div class="mvf-row"><svg class="mvf-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h10M3 12h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <input class="mvf-title" id="mvfTitle" type="text" placeholder="Add a title" autocomplete="off" />
+            </div>
+            <div class="mvf-row"><svg class="mvf-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 13.5c.5-2.3 2.3-3.5 4.5-3.5s4 1.2 4.5 3.5M11 3.5a2.3 2.3 0 010 4.4M12.5 10.3c1 .5 1.7 1.6 2 3.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <div class="mvf-field"><div id="mvfPeople" class="mv-qc-picker"></div><div class="mv-avail" id="mvfAvail"></div></div>
+            </div>
+            <div class="mvf-row"><svg class="mvf-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V8l2.3 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <div class="mvf-field">
+                <div class="mvf-when">
+                  <input type="date" id="mvfDate" />
+                  <input type="time" step="900" id="mvfStart" />
+                  <span class="mvf-arrow">→</span>
+                  <input type="time" step="900" id="mvfEnd" />
+                  <span class="mvf-dur" id="mvfDur"></span>
+                </div>
+                <div class="mv-qc-warn hidden" id="mvfWarn"></div>
+              </div>
+            </div>
+            <div class="mvf-row" id="mvFormRepeatRow"><svg class="mvf-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 7a5 5 0 019-2.5M13.5 9a5 5 0 01-9 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M11.5 1.8v2.9H8.6M4.5 14.2v-2.9h2.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <select id="mvfRepeat" class="mvf-select">
+                <option value="none">Does not repeat</option>
+                <option value="daily">Every weekday</option>
+                <option value="weekly">Weekly</option>
+              </select>
+            </div>
+            <div class="mvf-row"><svg class="mvf-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="9" height="8" rx="1.4" stroke="currentColor" stroke-width="1.3"/><path d="M10 7l4-2v6l-4-2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              <div class="mv-seg" id="mvfType"><button type="button" data-type="video" class="active">Video call</button><button type="button" data-type="voice">Voice call</button></div>
+            </div>
+            <div class="mvf-row mvf-row-top"><svg class="mvf-ic" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3.5h10M3 6.5h10M3 9.5h10M3 12.5h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <textarea id="mvfNotes" class="mvf-notes" placeholder="Add an agenda or details for this meeting"></textarea>
             </div>
           </div>
         </div>
@@ -1926,13 +1992,13 @@
         </div>
         <div class="aigroup-messages" id="aigroupMessages">
           <div class="aigroup-msg aigroup-msg-system">
-            <span>Sarah Jenkins created this AI Chat room · Today</span>
+            <span>Sarah Jenkins created this Ask Yuzu room · Today</span>
           </div>
           <div class="aigroup-msg aigroup-msg-user">
             <div class="aigroup-msg-avatar" style="background:#7c3aed">SJ</div>
             <div class="aigroup-msg-content">
               <div class="aigroup-msg-meta"><span class="aigroup-msg-name">Sarah Jenkins</span><span class="aigroup-msg-time">2:30 PM</span></div>
-              <div class="aigroup-msg-bubble">Hey team, let's brainstorm feature names for the new voice-to-task feature. @AI can you suggest 5 creative names?</div>
+              <div class="aigroup-msg-bubble">Hey team, let's brainstorm feature names for the new voice-to-task feature. @yuzuai can you suggest 5 creative names?</div>
             </div>
           </div>
           <div class="aigroup-msg aigroup-msg-ai">
@@ -1953,7 +2019,7 @@
             <div class="aigroup-msg-avatar" style="background:#059669">AK</div>
             <div class="aigroup-msg-content">
               <div class="aigroup-msg-meta"><span class="aigroup-msg-name">Alex Kim</span><span class="aigroup-msg-time">2:32 PM</span></div>
-              <div class="aigroup-msg-bubble">Love "SayDo"! @AI Can you create a brief tagline for SayDo?</div>
+              <div class="aigroup-msg-bubble">Love "SayDo"! @yuzuai can you create a brief tagline for SayDo?</div>
             </div>
           </div>
           <div class="aigroup-msg aigroup-msg-ai">
@@ -1982,10 +2048,10 @@
           <div class="aigroup-composer-card">
             <div class="aigroup-prompt-hint">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5Z" fill="#f6c453"/></svg>
-              Type <strong>@AI</strong> to ask the assistant
+              Type <strong>@yuzuai</strong> to ask Yuzu
             </div>
             <div class="aigroup-input-row">
-              <input type="text" id="aigroupInput" class="dm-input" placeholder="Message the group or @AI…" />
+              <input type="text" id="aigroupInput" class="dm-input" placeholder="Ask anything…" />
               <div class="dm-composer-actions">
                 <button class="dm-action-btn" id="aigroupEmojiBtn" title="Emoji">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9ca3af" stroke-width="1.4"/><path d="M8.5 14C8.5 14 9.5 16 12 16C14.5 16 15.5 14 15.5 14" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="#9ca3af"/><circle cx="15" cy="10" r="1" fill="#9ca3af"/></svg>
@@ -2126,11 +2192,11 @@
     </div>
   </div>
 
-  <!-- NEW AI CHAT ROOM MODAL -->
+  <!-- NEW ASK YUZU ROOM MODAL -->
     <div class="ep-modal-overlay hidden" id="newAiRoomModal">
       <div class="ep-modal cc-modal">
         <div class="ep-modal-header">
-          <span class="ep-modal-title">New AI Chat Room</span>
+          <span class="ep-modal-title">New Ask Yuzu Room</span>
           <button class="ep-modal-close" id="newAiRoomClose">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </button>

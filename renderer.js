@@ -175,11 +175,18 @@ function switchMiddleView(tab) {
     loadTaskDetail(activeTaskId);
   } else if (tab === 'people') {
     renderPeopleList();
-    showIdle();
+    showContactDetail(activePersonKey || peopleData[0].key);
   } else if (tab === 'aigroup') {
+    const activeRoom = document.querySelector('.aigroup-room.active') || document.querySelector('.aigroup-room');
+    const roomName = activeRoom?.querySelector('.aigroup-room-name')?.textContent;
+    const roomMeta = activeRoom?.querySelector('.aigroup-room-meta')?.textContent || '';
+    if (roomName) document.getElementById('aigroupChatTitle').textContent = roomName;
+    const membersEl = document.getElementById('aigroupChatMembers');
+    if (membersEl && roomMeta) membersEl.textContent = roomMeta.split('·')[0].trim();
     showPanel('aigroupChat');
   } else if (tab === 'meetings') {
-    showIdle();
+    showPanel('meetingsCal');
+    renderMeetings();
   } else {
     showIdle();
   }
@@ -542,9 +549,12 @@ function loadDmConversation(dmKey) {
     ${hdrAvatarHTML}
     <div class="dm-convo-info">
       <div class="dm-convo-name">${dm.name}</div>
-      <div class="dm-convo-status ${(!dm.isGroup && !dm.online) ? 'offline' : ''}">${hdrStatusHTML}</div>
+      <div class="dm-convo-status ${dm.isGroup ? 'members' : (dm.online ? '' : 'offline')}">${hdrStatusHTML}</div>
     </div>
     <div class="dm-header-actions">
+      <button class="dm-header-btn" title="Video call">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="2" y="6" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
       <button class="dm-header-btn" title="Call">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg>
       </button>
@@ -709,76 +719,725 @@ const meetingsData = [
   { id: 'm6', title: 'Brand Assets Handoff',     date: '2026-07-09', time: '14:00', dur: 45,  type: 'video', participants: ['sarah','alex','jessica'],           status: 'past' },
   { id: 'm7', title: 'Engineering Sync',         date: '2026-07-08', time: '10:00', dur: 45,  type: 'voice', participants: ['david','tom'],                     status: 'past' },
   { id: 'm8', title: 'Q3 Goals Alignment',       date: '2026-07-07', time: '16:00', dur: 60,  type: 'video', participants: ['marcus','priya','jessica'],         status: 'past' },
+  { id: 'm9', title: 'Marketing Review',         date: '2026-09-23', time: '15:00', dur: 60,  type: 'voice', participants: ['jessica','priya'],                  status: 'past' },
+  { id: 'm10', title: 'Design Critique',         date: '2026-09-24', time: '10:00', dur: 45,  type: 'video', participants: ['sarah','alex','priya'],             status: 'past' },
+  { id: 'm11', title: 'Product Sync',            date: '2026-09-24', time: '20:00', dur: 30,  type: 'video', participants: ['marcus','jessica','sarah'],         status: 'upcoming' },
+  { id: 'm12', title: '1:1 with Alex',           date: '2026-09-25', time: '11:00', dur: 30,  type: 'video', participants: ['alex'],                             status: 'upcoming' },
 ];
 
+const MV_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MV_DOW = ['S','M','T','W','T','F','S'];
+
+function mvPad(n) { return String(n).padStart(2, '0'); }
+function mvYmd(y, m, d) { return `${y}-${mvPad(m + 1)}-${mvPad(d)}`; }
+function mvToday() {
+  const n = new Date();
+  return { y: n.getFullYear(), m: n.getMonth(), d: n.getDate(), ymd: mvYmd(n.getFullYear(), n.getMonth(), n.getDate()) };
+}
+function mvClock(hhmm) {
+  const [h, min] = hhmm.split(':').map(Number);
+  const ap = h >= 12 ? 'PM' : 'AM';
+  return `${h % 12 || 12}:${mvPad(min)} ${ap}`;
+}
+function mvRange(m) {
+  const [h, min] = m.time.split(':').map(Number);
+  const end = new Date(2000, 0, 1, h, min + m.dur);
+  return `${mvClock(m.time)} – ${mvClock(mvPad(end.getHours()) + ':' + mvPad(end.getMinutes()))}`;
+}
+
+const _mvOpen = mvToday();
+let mvYear = _mvOpen.y;
+let mvMonth = _mvOpen.m;
+let mvSelected = _mvOpen.ymd;
+let activeMeetingId = (meetingsData.find(m => m.date === mvSelected && m.status !== 'past')
+  || meetingsData.find(m => m.date === mvSelected)
+  || meetingsData[0]).id;
+
 function renderMeetings() {
-  const upcomingEl = document.getElementById('mvUpcoming');
-  const pastEl     = document.getElementById('mvPast');
-  if (!upcomingEl || !pastEl) return;
+  const calEl = document.getElementById('mvCal');
+  const agendaEl = document.getElementById('mvAgenda');
+  const headEl = document.getElementById('mvAgendaHead');
+  const labelEl = document.getElementById('mvMonthLabel');
+  if (!calEl || !agendaEl) return;
 
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (labelEl) labelEl.textContent = `${MV_MONTHS[mvMonth]} ${mvYear}`;
 
-  function buildCard(m) {
-    const d = new Date(m.date + 'T' + m.time);
-    const day   = d.getDate();
-    const month = MONTHS[d.getMonth()];
-    const hh    = d.getHours();
-    const mm    = String(d.getMinutes()).padStart(2,'0');
-    const ampm  = hh >= 12 ? 'PM' : 'AM';
-    const h12   = hh % 12 || 12;
-    const timeStr = `${h12}:${mm} ${ampm}`;
-    const durStr  = m.dur >= 60 ? `${m.dur/60}h` : `${m.dur}m`;
+  const today = mvToday().ymd;
+  const firstDow = new Date(mvYear, mvMonth, 1).getDay();
+  const daysInMonth = new Date(mvYear, mvMonth + 1, 0).getDate();
+  const prevDays = new Date(mvYear, mvMonth, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < firstDow; i++) {
+    const day = prevDays - firstDow + 1 + i;
+    const dt = new Date(mvYear, mvMonth - 1, day);
+    cells.push({ ymd: mvYmd(dt.getFullYear(), dt.getMonth(), dt.getDate()), day, out: true });
+  }
+  for (let day = 1; day <= daysInMonth; day++) cells.push({ ymd: mvYmd(mvYear, mvMonth, day), day, out: false });
+  while (cells.length % 7) {
+    const day = cells.length - (firstDow + daysInMonth) + 1;
+    const dt = new Date(mvYear, mvMonth + 1, day);
+    cells.push({ ymd: mvYmd(dt.getFullYear(), dt.getMonth(), dt.getDate()), day, out: true });
+  }
+  const hasMeet = ymd => meetingsData.some(m => m.date === ymd);
+  calEl.innerHTML = `<div class="mv-cal-grid">${MV_DOW.map(d => `<div class="mv-dow">${d}</div>`).join('')}${cells.map(c => {
+    const cls = ['mv-day', c.out ? 'out' : '', c.ymd === today ? 'today' : '', c.ymd === mvSelected ? 'selected' : ''].filter(Boolean).join(' ');
+    const dot = hasMeet(c.ymd) ? '<span class="mv-dot"></span>' : '';
+    return `<button type="button" class="${cls}" data-date="${c.ymd}" aria-label="${c.ymd}">${c.day}${dot}</button>`;
+  }).join('')}</div>`;
+  calEl.querySelectorAll('.mv-day').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mvSelected = btn.dataset.date;
+      const [y, m] = mvSelected.split('-').map(Number);
+      mvYear = y;
+      mvMonth = m - 1;
+      const onDay = meetingsData.filter(x => x.date === mvSelected).sort((a, b) => a.time.localeCompare(b.time));
+      const pick = onDay.find(x => x.id === activeMeetingId) || onDay.find(x => x.status !== 'past') || onDay[0];
+      renderMeetings();
+      if (pick) showMeetingDetail(pick.id, false);
+    });
+  });
 
+  const sel = new Date(mvSelected + 'T12:00:00');
+  if (headEl) {
+    headEl.textContent = sel.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  }
+  const dayMeetings = meetingsData.filter(m => m.date === mvSelected).sort((a, b) => a.time.localeCompare(b.time));
+  if (!dayMeetings.length) {
+    agendaEl.innerHTML = '<div class="mv-empty">No meetings</div><button type="button" class="mv-join-btn mv-empty-schedule" id="mvEmptySchedule">Schedule</button>';
+    document.getElementById('mvEmptySchedule').onclick = () => document.getElementById('mvNewBtn').click();
+    renderWeekCalendar();
+    return;
+  }
+  const videoIcon = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="9" height="8" rx="1.4" stroke="currentColor" stroke-width="1.3"/><path d="M10 7l4-2v6l-4-2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+  const voiceIcon = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 3.5A1.5 1.5 0 014.5 2h.2c.4 0 .8.2 1 .6l1 1.6c.2.3.2.7 0 1L6 6.2a7 7 0 003.8 3.8l1-1c.3-.2.7-.2 1 0l1.6 1c.4.2.6.6.6 1v.2A1.5 1.5 0 0112.5 13 8.5 8.5 0 013 3.5z" stroke="currentColor" stroke-width="1.2"/></svg>';
+  agendaEl.innerHTML = dayMeetings.map(m => {
+    const isPast = meetingIsPast(m);
     const ps = m.participants.map(k => peopleData.find(p => p.key === k)).filter(Boolean);
     const shown = ps.slice(0, 4);
     const extra = ps.length - shown.length;
-    const avatarsHTML = shown.map(p =>
-      `<div class="mv-av" style="background:${p.color}">${p.initials.charAt(0)}</div>`
-    ).join('') + (extra > 0 ? `<div class="mv-av mv-av-more">+${extra}</div>` : '');
-
-    const typeLabel = m.type === 'video' ? '📹 Video' : '🎙️ Voice';
-    const isPast = m.status === 'past';
-    const btnClass = isPast ? '' : (m.type === 'voice' ? 'voice' : '');
-    const btnLabel = isPast ? 'View Recording' : 'Join Now';
-
-    return `<div class="mv-card${isPast ? ' past' : ''}" data-meeting="${m.id}">
-      <div class="mv-date-col">
-        <div class="mv-day-num">${day}</div>
-        <div class="mv-month">${month}</div>
-      </div>
-      <div class="mv-divider"></div>
-      <div class="mv-info">
+    const avatars = shown.map(p => `<div class="mv-av" style="background:${p.color}">${p.initials.charAt(0)}</div>`).join('')
+      + (extra > 0 ? `<div class="mv-av mv-av-more">+${extra}</div>` : '');
+    const typeLabel = m.type === 'video' ? 'Video' : 'Voice';
+    const icon = m.type === 'video' ? videoIcon : voiceIcon;
+    const action = isPast
+      ? '<span class="mv-ended">Ended</span>'
+      : `<button class="mv-join-btn" type="button" onclick="joinMeeting('${m.id}')">Join</button>`;
+    return `<div class="mv-card${isPast ? ' past' : ''}${m.id === activeMeetingId ? ' selected' : ''}" data-meeting="${m.id}">
+      <div class="mv-card-main">
+        <div class="mv-time">${mvRange(m)}</div>
         <div class="mv-name">${m.title}</div>
-        <div class="mv-meta">
-          <span class="mv-type-badge">${typeLabel}</span>
-          <span>${durStr}</span>
-        </div>
-        <div class="mv-avatars">${avatarsHTML}</div>
+        <div class="mv-meta"><span class="mv-type-badge">${icon}${typeLabel}</span><div class="mv-avatars">${avatars}</div></div>
       </div>
-      <div class="mv-actions">
-        <div class="mv-time">${timeStr}</div>
-        ${isPast ? '' : `<button class="mv-join-btn ${btnClass}" onclick="joinMeeting('${m.id}')">${btnLabel}</button>`}
-      </div>
+      <div class="mv-actions">${action}</div>
     </div>`;
+  }).join('');
+  agendaEl.querySelectorAll('.mv-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.mv-join-btn')) return;
+      showMeetingDetail(card.dataset.meeting);
+    });
+  });
+  renderWeekCalendar();
+}
+
+const MV_START_H = 0;
+const MV_END_H = 24;
+const MV_HOUR_H = 52;
+const MV_DOW_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+let mvView = 'workweek';
+let mvScrolledOnce = false;
+
+function mvVisibleDays(ymd) {
+  const d = new Date(ymd + 'T12:00:00');
+  if (mvView === 'day') return [ymd];
+  const start = new Date(d);
+  start.setDate(d.getDate() - d.getDay() + (mvView === 'workweek' ? 1 : 0));
+  return Array.from({ length: mvView === 'workweek' ? 5 : 7 }, (_, i) => {
+    const dt = new Date(start);
+    dt.setDate(start.getDate() + i);
+    return mvYmd(dt.getFullYear(), dt.getMonth(), dt.getDate());
+  });
+}
+
+function mvMinutes(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+// Greedy column packing so overlapping meetings sit side by side, as in Teams.
+function mvLayoutDay(events) {
+  const sorted = events.slice().sort((a, b) => a.start - b.start || b.end - a.end);
+  const out = [];
+  let cluster = [], clusterEnd = -1;
+  const flush = () => {
+    const cols = [];
+    cluster.forEach(e => {
+      let c = cols.findIndex(end => end <= e.start);
+      if (c === -1) { c = cols.length; cols.push(0); }
+      cols[c] = e.end;
+      e.col = c;
+    });
+    cluster.forEach(e => { e.cols = cols.length; out.push(e); });
+    cluster = [];
+  };
+  sorted.forEach(e => {
+    if (e.start >= clusterEnd && cluster.length) flush();
+    cluster.push(e);
+    clusterEnd = Math.max(clusterEnd, e.end);
+  });
+  if (cluster.length) flush();
+  return out;
+}
+
+function mvIsLive(m) {
+  const start = new Date(`${m.date}T${m.time}:00`).getTime();
+  return !meetingIsPast(m) && start - Date.now() <= 5 * 60 * 1000;
+}
+
+function renderWeekCalendar() {
+  const daysEl = document.getElementById('mvWeekDays');
+  const gridEl = document.getElementById('mvWeekGrid');
+  const labelEl = document.getElementById('mvWeekLabel');
+  if (!daysEl || !gridEl) return;
+  mvClosePop();
+  const days = mvVisibleDays(mvSelected);
+  const today = mvToday().ymd;
+  const first = new Date(days[0] + 'T12:00:00');
+  const last = new Date(days[days.length - 1] + 'T12:00:00');
+  if (labelEl) {
+    if (mvView === 'day') {
+      labelEl.textContent = first.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    } else {
+      labelEl.textContent = first.getMonth() === last.getMonth()
+        ? `${MV_MONTHS[first.getMonth()]} ${first.getDate()} – ${last.getDate()}, ${last.getFullYear()}`
+        : `${MV_MONTHS[first.getMonth()].slice(0, 3)} ${first.getDate()} – ${MV_MONTHS[last.getMonth()].slice(0, 3)} ${last.getDate()}, ${last.getFullYear()}`;
+    }
+  }
+  document.querySelectorAll('#mvViewSwitch button').forEach(b => b.classList.toggle('active', b.dataset.view === mvView));
+
+  const colTpl = `56px repeat(${days.length}, minmax(${mvView === 'day' ? 200 : 96}px, 1fr))`;
+  daysEl.style.gridTemplateColumns = colTpl;
+  gridEl.style.gridTemplateColumns = colTpl;
+
+  daysEl.innerHTML = `<div class="mv-week-corner"></div>` + days.map(ymd => {
+    const d = new Date(ymd + 'T12:00:00');
+    const cls = ['mv-week-day', ymd === today ? 'today' : '', ymd === mvSelected ? 'selected' : ''].filter(Boolean).join(' ');
+    return `<div role="button" tabindex="0" class="${cls}" data-date="${ymd}"><span class="num">${d.getDate()}</span><span class="dow">${d.toLocaleDateString('en-US', { weekday: 'long' })}</span><button type="button" class="mv-day-add" data-add="${ymd}" aria-label="New meeting on ${ymd}"><svg width="10" height="10" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>`;
+  }).join('');
+  daysEl.querySelectorAll('.mv-day-add').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    mvOpenNewMeeting({ date: btn.dataset.add, time: mvNextSlot(btn.dataset.add), dur: 30 });
+  }));
+  daysEl.querySelectorAll('.mv-week-day').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mvSelected = btn.dataset.date;
+      const [y, m] = mvSelected.split('-').map(Number);
+      mvYear = y;
+      mvMonth = m - 1;
+      const onDay = meetingsData.filter(x => x.date === mvSelected).sort((a, b) => a.time.localeCompare(b.time));
+      activeMeetingId = (onDay.find(x => !meetingIsPast(x)) || onDay[0] || { id: activeMeetingId }).id;
+      renderMeetings();
+    });
+  });
+
+  const hours = [];
+  for (let h = MV_START_H; h < MV_END_H; h++) {
+    hours.push(`<div class="mv-hour" style="height:${MV_HOUR_H}px">${h === MV_START_H ? '' : `${h % 12 || 12} ${h >= 12 ? 'PM' : 'AM'}`}</div>`);
+  }
+  const span = (MV_END_H - MV_START_H) * MV_HOUR_H;
+  const now = new Date();
+  const nowTop = ((now.getHours() - MV_START_H) * 60 + now.getMinutes()) / 60 * MV_HOUR_H;
+  const workTop = (9 - MV_START_H) * MV_HOUR_H;
+  const workBottom = (17 - MV_START_H) * MV_HOUR_H;
+
+  const cols = days.map(ymd => {
+    const d = new Date(ymd + 'T12:00:00');
+    const weekend = d.getDay() === 0 || d.getDay() === 6;
+    const laid = mvLayoutDay(meetingsData.filter(m => m.date === ymd).map(m => {
+      const start = mvMinutes(m.time);
+      return { m, start, end: start + Math.max(15, m.dur) };
+    }));
+    const blocks = laid.map(({ m, start, end, col, cols }) => {
+      const top = (start - MV_START_H * 60) / 60 * MV_HOUR_H;
+      const height = Math.max(22, (end - start) / 60 * MV_HOUR_H - 2);
+      const past = meetingIsPast(m);
+      const live = mvIsLive(m);
+      const ps = m.participants.map(k => peopleData.find(p => p.key === k)).filter(Boolean);
+      const organizer = ps.length ? ps.map(p => p.name.split(' ')[0]).join(', ') : 'Just you';
+      const compact = height < 40;
+      const cls = ['mv-week-event', past ? 'past' : '', live ? 'live' : '', m.id === activeMeetingId ? 'selected' : '', compact ? 'compact' : ''].filter(Boolean).join(' ');
+      const width = 100 / cols;
+      return `<div class="${cls}" data-meeting="${m.id}" style="top:${top}px;height:${height}px;left:calc(${col * width}% + 2px);width:calc(${width}% - 6px)">
+        <div class="ev-body">
+          <div class="ev-name">${m.title}</div>
+          ${compact ? '' : `<div class="ev-sub">${mvRange(m)}</div>`}
+          ${height > 64 ? `<div class="ev-sub">${organizer}</div>` : ''}
+        </div>
+        ${live ? `<button type="button" class="ev-join" data-join="${m.id}">Join</button>` : ''}
+      </div>`;
+    }).join('');
+    const nowLine = ymd === today && nowTop >= 0 && nowTop <= span ? `<div class="mv-now" style="top:${nowTop}px"></div>` : '';
+    return `<div class="mv-week-col${ymd === mvSelected ? ' selected' : ''}${weekend ? ' weekend' : ''}" data-date="${ymd}" style="height:${span}px;--hour:${MV_HOUR_H}px">
+      <div class="mv-work-hours" style="top:${workTop}px;height:${workBottom - workTop}px"></div>${blocks}${nowLine}</div>`;
+  }).join('');
+  gridEl.innerHTML = `<div class="mv-week-hours" style="height:${span}px">${hours.join('')}</div>${cols}`;
+
+  gridEl.querySelectorAll('.mv-week-event').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      const join = e.target.closest('[data-join]');
+      if (join) { joinMeeting(join.dataset.join); return; }
+      showMeetingDetail(el.dataset.meeting);
+    });
+  });
+  gridEl.querySelectorAll('.mv-week-col').forEach(col => {
+    col.addEventListener('pointerdown', e => mvStartDraft(e, col));
+  });
+
+  const scroller = document.getElementById('mvWeekScroll');
+  if (scroller && !mvScrolledOnce && scroller.clientHeight) {
+    mvScrolledOnce = true;
+    const focusH = days.includes(today) ? Math.max(MV_START_H, now.getHours() - 1) : 8;
+    scroller.scrollTop = (focusH - MV_START_H) * MV_HOUR_H;
+  }
+}
+
+const MV_SNAP = 30;
+let mvDraft = null;
+
+function mvNextSlot(ymd) {
+  const now = new Date();
+  if (ymd !== mvToday().ymd) return '09:00';
+  const mins = Math.min(23 * 60 + 30, Math.ceil((now.getHours() * 60 + now.getMinutes() + 1) / MV_SNAP) * MV_SNAP);
+  return mvHHMM(mins);
+}
+function mvHHMM(mins) { return `${mvPad(Math.floor(mins / 60) % 24)}:${mvPad(mins % 60)}`; }
+
+function mvYToMin(col, clientY) {
+  const y = clientY - col.getBoundingClientRect().top;
+  return Math.max(0, Math.min(24 * 60, y / MV_HOUR_H * 60 + MV_START_H * 60));
+}
+
+function mvPaintDraft() {
+  if (!mvDraft) return;
+  const { el, start, end, date } = mvDraft;
+  el.style.top = ((start - MV_START_H * 60) / 60 * MV_HOUR_H) + 'px';
+  el.style.height = Math.max(20, (end - start) / 60 * MV_HOUR_H - 2) + 'px';
+  el.innerHTML = `<div class="ev-body"><div class="ev-name">${mvDraft.title || 'New meeting'}</div><div class="ev-sub">${mvRange({ date, time: mvHHMM(start), dur: end - start })}</div></div>`;
+}
+
+function mvClearDraft() {
+  mvDraft?.el.remove();
+  mvDraft = null;
+}
+
+function mvStartDraft(e, col) {
+  if (e.button !== 0 || e.target.closest('.mv-week-event')) return;
+  e.preventDefault();
+  mvClosePop();
+  const anchor = Math.floor(mvYToMin(col, e.clientY) / MV_SNAP) * MV_SNAP;
+  const el = document.createElement('div');
+  el.className = 'mv-week-event mv-draft';
+  col.appendChild(el);
+  mvDraft = { el, col, date: col.dataset.date, start: anchor, end: anchor + MV_SNAP, title: '' };
+  mvPaintDraft();
+  col.setPointerCapture(e.pointerId);
+  const move = ev => {
+    const m = mvYToMin(col, ev.clientY);
+    if (m >= anchor) { mvDraft.start = anchor; mvDraft.end = Math.max(anchor + MV_SNAP, Math.ceil(m / MV_SNAP) * MV_SNAP); }
+    else { mvDraft.start = Math.floor(m / MV_SNAP) * MV_SNAP; mvDraft.end = anchor + MV_SNAP; }
+    mvDraft.end = Math.min(24 * 60, mvDraft.end);
+    mvPaintDraft();
+  };
+  const up = () => {
+    col.removeEventListener('pointermove', move);
+    col.removeEventListener('pointerup', up);
+    col.removeEventListener('pointercancel', up);
+    mvOpenQuickCreate();
+  };
+  col.addEventListener('pointermove', move);
+  col.addEventListener('pointerup', up);
+  col.addEventListener('pointercancel', up);
+}
+
+function mvPeople(keys) { return keys.map(k => peopleData.find(p => p.key === k)).filter(Boolean); }
+
+// Chips + type-ahead list; mutates `selected` in place.
+function mvAttendeePicker(root, selected, onChange) {
+  const paint = () => {
+    root.innerHTML = `<div class="mv-att">${mvPeople(selected).map(p =>
+      `<span class="mv-att-chip"><span class="mv-att-av" style="background:${p.color}">${p.initials}</span>${p.name.split(' ')[0]}<button type="button" data-rm="${p.key}" aria-label="Remove ${p.name}">×</button></span>`).join('')}
+      <input class="mv-att-input" type="text" placeholder="${selected.length ? 'Add more' : 'Invite people'}" autocomplete="off" /></div>
+      <div class="mv-att-list hidden"></div>`;
+    const input = root.querySelector('.mv-att-input');
+    const list = root.querySelector('.mv-att-list');
+    const show = () => {
+      const q = input.value.trim().toLowerCase();
+      const hits = peopleData.filter(p => !selected.includes(p.key) && (!q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q)));
+      list.innerHTML = hits.map((p, i) => `<button type="button" class="mv-att-opt${i === 0 ? ' active' : ''}" data-add="${p.key}"><span class="mv-att-av" style="background:${p.color}">${p.initials}</span><span>${p.name}<small>${p.role}</small></span><i class="${p.online ? 'on' : ''}"></i></button>`).join('') || '<div class="mv-att-none">No matches</div>';
+      list.classList.remove('hidden');
+    };
+    input.addEventListener('focus', show);
+    input.addEventListener('input', show);
+    input.addEventListener('blur', () => setTimeout(() => list.classList.add('hidden'), 150));
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const first = list.querySelector('[data-add]');
+        if (first) first.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      } else if (e.key === 'Backspace' && !input.value && selected.length) {
+        selected.pop(); paint(); onChange?.(); root.querySelector('.mv-att-input').focus();
+      }
+    });
+    list.addEventListener('mousedown', e => {
+      const opt = e.target.closest('[data-add]');
+      if (!opt) return;
+      e.preventDefault();
+      selected.push(opt.dataset.add);
+      paint(); onChange?.();
+      root.querySelector('.mv-att-input').focus();
+    });
+    root.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+      selected.splice(selected.indexOf(b.dataset.rm), 1);
+      paint(); onChange?.();
+    }));
+  };
+  paint();
+}
+
+function mvConflicts(date, start, end, ignoreId) {
+  return meetingsData.filter(m => m.id !== ignoreId && m.date === date && mvMinutes(m.time) < end && mvMinutes(m.time) + m.dur > start);
+}
+
+function mvPlacePop(pop, anchorRect) {
+  const host = document.getElementById('meetingsCal');
+  const hr = host.getBoundingClientRect();
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = anchorRect.right - hr.left + 8;
+  if (left + pw > hr.width - 8) left = anchorRect.left - hr.left - pw - 8;
+  if (left < 8) left = Math.max(8, Math.min(hr.width - pw - 8, anchorRect.left - hr.left));
+  pop.style.left = left + 'px';
+  pop.style.top = Math.max(8, Math.min(hr.height - ph - 8, anchorRect.top - hr.top)) + 'px';
+}
+
+function mvOpenQuickCreate() {
+  const pop = document.getElementById('mvPop');
+  if (!pop || !mvDraft) return;
+  const d = mvDraft;
+  const people = [];
+  const type = { v: 'video' };
+  const dateLabel = new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  pop.dataset.kind = 'create';
+  pop.innerHTML = `
+    <div class="mv-pop-head">
+      <input class="mv-qc-title" id="mvQcTitle" type="text" placeholder="Add a title" autocomplete="off" />
+      <button type="button" class="mv-pop-x" id="mvPopClose" aria-label="Close"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="mv-qc-row">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V8l2.3 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span>${dateLabel}</span>
+      <input type="time" step="900" id="mvQcStart" value="${mvHHMM(d.start)}" /><span>–</span><input type="time" step="900" id="mvQcEnd" value="${mvHHMM(d.end % (24 * 60))}" />
+    </div>
+    <div class="mv-qc-row mv-qc-att">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 13.5c.5-2.3 2.3-3.5 4.5-3.5s4 1.2 4.5 3.5M11 3.5a2.3 2.3 0 010 4.4M12.5 10.3c1 .5 1.7 1.6 2 3.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <div id="mvQcPeople" class="mv-qc-picker"></div>
+    </div>
+    <div class="mv-qc-row">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="9" height="8" rx="1.4" stroke="currentColor" stroke-width="1.3"/><path d="M10 7l4-2v6l-4-2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      <div class="mv-seg" id="mvQcType"><button type="button" data-type="video" class="active">Video</button><button type="button" data-type="voice">Voice</button></div>
+    </div>
+    <div class="mv-qc-warn hidden" id="mvQcWarn"></div>
+    <div class="mv-qc-foot">
+      <button type="button" class="mv-pop-btn" id="mvQcMore">More options</button>
+      <button type="button" class="mv-pop-join" id="mvQcSave">Save</button>
+    </div>`;
+  pop.classList.remove('hidden');
+  mvPlacePop(pop, d.el.getBoundingClientRect());
+
+  const titleEl = document.getElementById('mvQcTitle');
+  const startEl = document.getElementById('mvQcStart');
+  const endEl = document.getElementById('mvQcEnd');
+  const warn = () => {
+    const c = mvConflicts(d.date, d.start, d.end);
+    const w = document.getElementById('mvQcWarn');
+    w.classList.toggle('hidden', !c.length);
+    w.textContent = c.length ? `Overlaps with ${c.map(x => x.title).join(', ')}` : '';
+  };
+  const syncTimes = () => {
+    const s0 = mvMinutes(startEl.value || mvHHMM(d.start));
+    let e0 = mvMinutes(endEl.value || mvHHMM(d.end));
+    if (e0 <= s0) e0 = s0 + (d.end - d.start);
+    d.start = s0; d.end = Math.min(24 * 60, e0);
+    endEl.value = mvHHMM(d.end % (24 * 60));
+    mvPaintDraft(); warn();
+  };
+  titleEl.addEventListener('input', () => { d.title = titleEl.value.trim(); mvPaintDraft(); });
+  startEl.addEventListener('change', () => {
+    const len = d.end - d.start;
+    endEl.value = mvHHMM(Math.min(24 * 60 - 1, mvMinutes(startEl.value) + len));
+    syncTimes();
+  });
+  endEl.addEventListener('change', syncTimes);
+  mvAttendeePicker(document.getElementById('mvQcPeople'), people);
+  document.querySelectorAll('#mvQcType button').forEach(b => b.addEventListener('click', () => {
+    type.v = b.dataset.type;
+    document.querySelectorAll('#mvQcType button').forEach(x => x.classList.toggle('active', x === b));
+  }));
+  const save = () => {
+    const title = titleEl.value.trim() || 'New meeting';
+    const fields = { title, date: d.date, time: mvHHMM(d.start), dur: d.end - d.start, type: type.v, participants: people.slice() };
+    mvClearDraft();
+    mvClosePop();
+    const m = placeMeeting(fields);
+    renderMeetings();
+    mvOpenPop(m.id);
+  };
+  titleEl.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+  document.getElementById('mvQcSave').onclick = save;
+  document.getElementById('mvQcMore').onclick = () => {
+    const seed = { date: d.date, time: mvHHMM(d.start), dur: d.end - d.start, title: titleEl.value.trim(), type: type.v, participants: people.slice() };
+    mvClosePop();
+    mvOpenNewMeeting(seed);
+  };
+  document.getElementById('mvPopClose').onclick = mvClosePop;
+  warn();
+  titleEl.focus();
+}
+
+// Full "New meeting" form, laid over the calendar like Teams' scheduling page.
+function mvOpenNewMeeting(seed = {}) {
+  const form = document.getElementById('mvForm');
+  if (!form) return;
+  mvClosePop();
+  const editing = seed.id ? meetingsData.find(x => x.id === seed.id) : null;
+  const st = {
+    title: seed.title || '',
+    date: seed.date || mvSelected,
+    start: mvMinutes(seed.time || mvNextSlot(seed.date || mvSelected)),
+    dur: seed.dur || 30,
+    type: seed.type || 'video',
+    repeat: 'none',
+    notes: seed.notes || '',
+    people: (seed.participants || []).slice(),
+  };
+  document.getElementById('mvFormHeading').textContent = editing ? 'Edit meeting' : 'New meeting';
+  document.getElementById('mvFormSave').textContent = editing ? 'Save changes' : 'Save';
+  document.getElementById('mvFormRepeatRow').classList.toggle('hidden', !!editing);
+  const $ = id => document.getElementById(id);
+  $('mvfTitle').value = st.title;
+  $('mvfDate').value = st.date;
+  $('mvfStart').value = mvHHMM(st.start);
+  $('mvfEnd').value = mvHHMM(Math.min(24 * 60 - 1, st.start + st.dur));
+  $('mvfRepeat').value = 'none';
+  $('mvfNotes').value = st.notes;
+  document.querySelectorAll('#mvfType button').forEach(b => b.classList.toggle('active', b.dataset.type === st.type));
+
+  const refresh = () => {
+    const s0 = mvMinutes($('mvfStart').value || '09:00');
+    let e0 = mvMinutes($('mvfEnd').value || '09:30');
+    if (e0 <= s0) { e0 = Math.min(24 * 60 - 1, s0 + st.dur); $('mvfEnd').value = mvHHMM(e0); }
+    st.start = s0; st.dur = e0 - s0; st.date = $('mvfDate').value || st.date;
+    const h = Math.floor(st.dur / 60), mm = st.dur % 60;
+    $('mvfDur').textContent = [h ? `${h}h` : '', mm ? `${mm}m` : ''].filter(Boolean).join(' ');
+    const c = mvConflicts(st.date, st.start, st.start + st.dur, editing?.id);
+    $('mvfWarn').classList.toggle('hidden', !c.length);
+    $('mvfWarn').textContent = c.length ? `Overlaps with ${c.map(x => `${x.title} (${mvRange(x)})`).join(', ')}` : '';
+    const busy = new Set(c.flatMap(x => x.participants));
+    $('mvfAvail').innerHTML = st.people.length
+      ? mvPeople(st.people).map(p => `<span class="mv-avail-item"><i class="${busy.has(p.key) ? 'busy' : 'free'}"></i>${p.name.split(' ')[0]} · ${busy.has(p.key) ? 'Busy' : 'Free'}</span>`).join('')
+      : '';
+  };
+  $('mvfStart').onchange = () => {
+    $('mvfEnd').value = mvHHMM(Math.min(24 * 60 - 1, mvMinutes($('mvfStart').value) + st.dur));
+    refresh();
+  };
+  $('mvfEnd').onchange = refresh;
+  $('mvfDate').onchange = refresh;
+  document.querySelectorAll('#mvfType button').forEach(b => b.onclick = () => {
+    st.type = b.dataset.type;
+    document.querySelectorAll('#mvfType button').forEach(x => x.classList.toggle('active', x === b));
+  });
+  mvAttendeePicker($('mvfPeople'), st.people, refresh);
+
+  const close = () => { form.classList.add('hidden'); mvClearDraft(); };
+  $('mvFormClose').onclick = close;
+  $('mvFormSave').onclick = () => {
+    refresh();
+    const title = $('mvfTitle').value.trim();
+    if (!title) { $('mvfTitle').focus(); $('mvfTitle').classList.add('invalid'); return; }
+    const base = { title, time: mvHHMM(st.start), dur: st.dur, type: st.type, participants: st.people.slice(), notes: $('mvfNotes').value.trim() };
+    const repeat = $('mvfRepeat').value;
+    const dates = [st.date];
+    if (!editing && repeat !== 'none') {
+      const d0 = new Date(st.date + 'T12:00:00');
+      for (let i = 1; dates.length < (repeat === 'daily' ? 5 : 4); i++) {
+        const dt = new Date(d0);
+        dt.setDate(d0.getDate() + (repeat === 'weekly' ? i * 7 : i));
+        if (repeat === 'daily' && (dt.getDay() === 0 || dt.getDay() === 6)) continue;
+        dates.push(mvYmd(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+      }
+    }
+    form.classList.add('hidden');
+    mvClearDraft();
+    dates.slice(1).reverse().forEach(date => placeMeeting({ ...base, date, repeat }));
+    const m = placeMeeting({ ...base, id: editing?.id, date: st.date, repeat: dates.length > 1 ? repeat : undefined });
+    renderMeetings();
+    mvOpenPop(m.id);
+  };
+  $('mvfTitle').oninput = () => $('mvfTitle').classList.remove('invalid');
+  form.classList.remove('hidden');
+  refresh();
+  setTimeout(() => $('mvfTitle').focus(), 30);
+}
+
+function mvClosePop() {
+  const pop = document.getElementById('mvPop');
+  if (pop && pop.dataset.kind === 'create') mvClearDraft();
+  pop?.classList.add('hidden');
+  if (pop) pop.dataset.kind = '';
+}
+
+function mvOpenPop(id) {
+  const pop = document.getElementById('mvPop');
+  const host = document.getElementById('meetingsCal');
+  const ev = document.querySelector(`#mvWeekGrid .mv-week-event[data-meeting="${id}"]`);
+  const m = meetingsData.find(x => x.id === id);
+  if (!pop || !host || !ev || !m) return;
+  pop.dataset.kind = 'detail';
+  const scroller = document.getElementById('mvWeekScroll');
+  const sr = scroller.getBoundingClientRect();
+  let er = ev.getBoundingClientRect();
+  if (er.top < sr.top + 60 || er.bottom > sr.bottom) {
+    scroller.scrollTop += er.top - sr.top - 120;
+    er = ev.getBoundingClientRect();
   }
 
-  const upcoming = meetingsData.filter(m => m.status === 'upcoming');
-  const past     = meetingsData.filter(m => m.status === 'past');
-  upcomingEl.innerHTML = upcoming.length ? upcoming.map(buildCard).join('') : '<div class="mv-empty">No upcoming meetings</div>';
-  pastEl.innerHTML     = past.length     ? past.map(buildCard).join('')     : '<div class="mv-empty">No past meetings</div>';
+  const past = meetingIsPast(m);
+  const live = mvIsLive(m);
+  const ps = m.participants.map(k => peopleData.find(p => p.key === k)).filter(Boolean);
+  const dateLabel = new Date(m.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const people = ps.map(p => `<div class="mv-pop-person"><div class="mv-pop-av" style="background:${p.color}">${p.initials}</div><div class="mv-pop-pname">${p.name}<span>${p.role}</span></div></div>`).join('');
+  pop.innerHTML = `
+    <div class="mv-pop-head">
+      <div class="mv-pop-title">${m.title}</div>
+      <button type="button" class="mv-pop-x" id="mvPopClose" aria-label="Close"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="mv-pop-when">${dateLabel} · ${mvRange(m)}</div>
+    <div class="mv-pop-row">
+      ${past ? '<span class="mv-ended">Ended</span>' : `<button type="button" class="mv-pop-join${live ? ' live' : ''}" id="mvPopJoin">${m.type === 'video' ? 'Join' : 'Call'}</button>`}
+      <button type="button" class="mv-pop-btn" id="mvPopChat">Chat</button>
+      <button type="button" class="mv-pop-btn" id="mvPopEdit">Edit</button>
+      <button type="button" class="mv-pop-btn danger" id="mvPopCancel">Cancel</button>
+    </div>
+    ${m.notes ? `<div class="mv-pop-notes">${m.notes.replace(/</g, '&lt;')}</div>` : ''}
+    ${m.repeat && m.repeat !== 'none' ? `<div class="mv-pop-when">Repeats ${m.repeat}</div>` : ''}
+    <div class="mv-pop-section">${ps.length} participant${ps.length === 1 ? '' : 's'}</div>
+    <div class="mv-pop-people">${people || '<div class="mv-pop-empty">Just you</div>'}</div>`;
+
+  pop.classList.remove('hidden');
+  mvPlacePop(pop, er);
+
+  document.getElementById('mvPopClose').onclick = mvClosePop;
+  document.getElementById('mvPopJoin')?.addEventListener('click', () => { mvClosePop(); joinMeeting(m.id); });
+  document.getElementById('mvPopChat').onclick = () => {
+    mvClosePop();
+    if (ps.length === 1 && dmData[ps[0].key]) activeDm = ps[0].key;
+    navigateTo('dms');
+  };
+  document.getElementById('mvPopEdit').onclick = () => mvOpenNewMeeting(m);
+  document.getElementById('mvPopCancel').onclick = () => {
+    const idx = meetingsData.findIndex(x => x.id === m.id);
+    if (idx >= 0) meetingsData.splice(idx, 1);
+    const next = meetingsData.find(x => x.date === mvSelected);
+    activeMeetingId = next ? next.id : null;
+    renderMeetings();
+  };
+}
+
+document.addEventListener('mousedown', e => {
+  const pop = document.getElementById('mvPop');
+  if (!pop || pop.classList.contains('hidden')) return;
+  if (!e.target.isConnected || pop.contains(e.target) || e.target.closest('.mv-week-event, .mv-card, .mv-week-col')) return;
+  mvClosePop();
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const form = document.getElementById('mvForm');
+  if (form && !form.classList.contains('hidden')) { form.classList.add('hidden'); mvClearDraft(); }
+  else mvClosePop();
+});
+document.getElementById('mvWeekScroll')?.addEventListener('scroll', () => {
+  if (document.getElementById('mvPop')?.dataset.kind === 'detail') mvClosePop();
+});
+
+function showMeetingDetail(id, pop = true) {
+  const m = meetingsData.find(x => x.id === id);
+  if (!m) return;
+  activeMeetingId = id;
+  const [y, mo, d] = m.date.split('-').map(Number);
+  mvYear = y;
+  mvMonth = mo - 1;
+  mvSelected = m.date;
+  showPanel('meetingsCal');
+  renderMeetings();
+  if (pop) mvOpenPop(id);
 }
 
 window.joinMeeting = function(id) {
   const m = meetingsData.find(x => x.id === id);
   if (!m) return;
-  const firstKey = m.participants[0];
-  const p = peopleData.find(x => x.key === firstKey);
-  if (p) startCallWith(p.name, p.role, p.color, p.initials, m.type === 'video');
+  startGroupCall(m.participants, m.type === 'video', m.participants.length > 1 ? m.title : null);
 };
 
+function mvShiftWeek(delta) {
+  const d = new Date(mvSelected + 'T12:00:00');
+  d.setDate(d.getDate() + delta * (mvView === 'day' ? 1 : 7));
+  mvYear = d.getFullYear();
+  mvMonth = d.getMonth();
+  mvSelected = mvYmd(mvYear, mvMonth, d.getDate());
+  const onDay = meetingsData.filter(x => x.date === mvSelected);
+  if (!onDay.some(x => x.id === activeMeetingId)) {
+    activeMeetingId = (onDay.find(x => !meetingIsPast(x)) || onDay[0] || { id: null }).id;
+  }
+  renderMeetings();
+}
+document.getElementById('mvWeekPrev')?.addEventListener('click', () => mvShiftWeek(-1));
+document.getElementById('mvWeekNext')?.addEventListener('click', () => mvShiftWeek(1));
+document.getElementById('mvWeekToday')?.addEventListener('click', () => {
+  mvScrolledOnce = false;
+  document.getElementById('mvToday').click();
+});
+document.querySelectorAll('#mvViewSwitch button').forEach(b => b.addEventListener('click', () => {
+  mvView = b.dataset.view;
+  renderWeekCalendar();
+}));
+document.getElementById('mvWeekNew')?.addEventListener('click', () => mvOpenNewMeeting({ date: mvSelected }));
+document.getElementById('mvMeetNow')?.addEventListener('click', () => openCallPicker());
+
+function mvShiftMonth(delta) {
+  const dt = new Date(mvYear, mvMonth + delta, 1);
+  mvYear = dt.getFullYear();
+  mvMonth = dt.getMonth();
+  const dim = new Date(mvYear, mvMonth + 1, 0).getDate();
+  const day = Math.min(Number(mvSelected.slice(8)), dim);
+  mvSelected = mvYmd(mvYear, mvMonth, day);
+  renderMeetings();
+}
+document.getElementById('mvPrev')?.addEventListener('click', () => mvShiftMonth(-1));
+document.getElementById('mvNext')?.addEventListener('click', () => mvShiftMonth(1));
+document.getElementById('mvToday')?.addEventListener('click', () => {
+  const t = mvToday();
+  mvYear = t.y;
+  mvMonth = t.m;
+  mvSelected = t.ymd;
+  renderMeetings();
+  const onDay = meetingsData.filter(x => x.date === mvSelected).sort((a, b) => a.time.localeCompare(b.time));
+  const pick = onDay.find(x => x.status !== 'past') || onDay[0];
+  if (pick) showMeetingDetail(pick.id, false);
+});
 document.getElementById('mvNewBtn')?.addEventListener('click', () => {
-  openQuickDd(document.getElementById('scheduleDropdown'), document.getElementById('mvNewBtn'),
-    () => { document.getElementById('scTitle')?.focus(); });
+  showPanel('meetingsCal');
+  mvOpenNewMeeting({ date: mvSelected });
 });
 
 function renderPeopleList(filter) {
@@ -823,9 +1482,12 @@ function renderPeopleList(filter) {
   });
 }
 
+let activePersonKey = 'sarah';
+
 function showContactDetail(personKey) {
   const p = peopleData.find(x => x.key === personKey);
   if (!p) return;
+  activePersonKey = personKey;
 
   document.querySelectorAll('.people-item').forEach(el =>
     el.classList.toggle('people-item-selected', el.dataset.personKey === personKey)
@@ -930,6 +1592,12 @@ document.getElementById('peopleSpeakBtn')?.addEventListener('click', () => {
 });
 
 // ── CHANNEL DATA ──
+const channelMembers = {
+  'product-launch-q3': ['sarah', 'alex', 'jessica', 'marcus'],
+  'engineering-team': ['david', 'tom', 'marcus'],
+  'design-system': ['sarah', 'alex', 'priya'],
+};
+
 const channelData = {
   'product-launch-q3': {
     name: 'product-launch-q3', displayName: 'Product Launch Q3', members: 12,
@@ -976,6 +1644,12 @@ function loadChannelConversation(channelKey) {
       <div class="dm-convo-status" style="color:var(--text-muted)">${ch.members} members</div>
     </div>
     <div class="dm-header-actions">
+      <button class="dm-header-btn" title="Video call">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="2" y="6" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+      <button class="dm-header-btn" title="Call">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" transform="translate(1,1) scale(0.91)"/></svg>
+      </button>
       <button class="dm-header-btn" title="Search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button>
@@ -1145,7 +1819,7 @@ function applyTaskStatus(t, newStatus) {
 }
 
 // ── RIGHT PANEL STATES ──
-const allPanels = ['scheduleDetail','taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult','kbView','contactView','aigroupChat'];
+const allPanels = ['meetingsCal','scheduleDetail','taskDetail','channelView','dmView','recIdle','recView','recIntent','recResult','kbView','contactView','aigroupChat'];
 function showPanel(id) {
   allPanels.forEach(p => {
     const el = document.getElementById(p);
@@ -2245,8 +2919,9 @@ function createAndShowDraft(recipientName, messageText) {
 function renderSchedulePeople(containerId, preselectedKey) {
   const container = document.getElementById(containerId);
   if (!container) return;
+  const keys = new Set(Array.isArray(preselectedKey) ? preselectedKey : (preselectedKey ? [preselectedKey] : []));
   container.innerHTML = peopleData.map(p => `
-    <div class="sd-person${p.key === preselectedKey ? ' selected' : ''}" data-person-key="${p.key}">
+    <div class="sd-person${keys.has(p.key) ? ' selected' : ''}" data-person-key="${p.key}">
       <div class="sd-person-av-wrap">
         <div class="sd-person-av" style="background:${p.color}">${p.initials.charAt(0)}</div>
         <div class="sd-person-check">✓</div>
@@ -2259,13 +2934,56 @@ function renderSchedulePeople(containerId, preselectedKey) {
   });
 }
 
+function getSelectedPeopleKeys(containerId) {
+  return [...document.querySelectorAll(`#${containerId} .sd-person.selected`)]
+    .map(el => el.dataset.personKey)
+    .filter(k => peopleData.some(p => p.key === k));
+}
+
 function getSelectedPeopleNames(containerId) {
-  const names = [];
-  document.querySelectorAll(`#${containerId} .sd-person.selected`).forEach(el => {
-    const p = peopleData.find(x => x.key === el.dataset.personKey);
-    if (p) names.push(p.name);
-  });
+  const names = getSelectedPeopleKeys(containerId).map(k => peopleData.find(p => p.key === k).name);
   return names.join(', ') || null;
+}
+
+function meetingIsPast(m) {
+  const [h, min] = (m.time || '00:00').split(':').map(Number);
+  const end = new Date(`${m.date}T00:00:00`);
+  end.setHours(h || 0, (min || 0) + (Number(m.dur) || 30), 0, 0);
+  return end.getTime() < Date.now();
+}
+
+function parseDurMinutes(dur) {
+  const n = parseInt(String(dur).replace(/[^0-9]/g, ''), 10);
+  if (!n) return 30;
+  if (String(dur).includes('hour')) return n * 60;
+  return n;
+}
+
+function placeMeeting(fields) {
+  let m = fields.id ? meetingsData.find(x => x.id === fields.id) : null;
+  if (!m) {
+    m = { id: 'm' + Date.now() + Math.random().toString(36).slice(2, 6) };
+    meetingsData.push(m);
+  }
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(fields.date) ? fields.date : mvSelected;
+  const time = /^\d{2}:\d{2}/.test(fields.time || '') ? fields.time.slice(0, 5) : '10:00';
+  Object.assign(m, {
+    title: fields.title,
+    date,
+    time,
+    dur: Number(fields.dur) || 30,
+    type: fields.type || 'video',
+    participants: fields.participants || [],
+    notes: fields.notes || m.notes || '',
+    repeat: fields.repeat || m.repeat,
+  });
+  m.status = meetingIsPast(m) ? 'past' : 'upcoming';
+  mvYear = Number(date.slice(0, 4));
+  mvMonth = Number(date.slice(5, 7)) - 1;
+  mvSelected = date;
+  activeMeetingId = m.id;
+  navigateTo('meetings');
+  return m;
 }
 
 // ── SCHEDULE EVENT → Home Upcoming ──
@@ -2304,6 +3022,8 @@ function showScheduleDetail(s) {
   window._currentSchedule = s;
 
   document.getElementById('scheduleDetailTitle').textContent = s.title;
+  const badge = document.getElementById('scheduleDetailBadge');
+  if (badge) badge.textContent = s.status || 'Scheduled';
   document.getElementById('scheduleDetailDateText').textContent = `${s.date} at ${s.time}`;
   document.getElementById('scheduleDetailDuration').textContent = s.duration || '30 minutes';
 
@@ -2472,73 +3192,261 @@ document.addEventListener('click', e => {
 let callTimerInterval = null;
 let callSeconds = 0;
 let callMuted = false;
+let callHeld = false;
+let callRecording = false;
+let callSpeakerOn = true;
+let _moreSurface = null;
 
-function startCall(personKey) {
-  const p = peopleData.find(x => x.key === personKey);
-  const name = p ? p.name : (dmData[personKey] ? dmData[personKey].name : personKey);
-  const initials = p ? p.initials : (dmData[personKey] ? dmData[personKey].initials : '??');
-  const color = p ? p.color : (dmData[personKey] ? dmData[personKey].color : '#7c3aed');
-
-  // Populate widget
-  const avEl = document.getElementById('cwPersonAv');
-  avEl.textContent = initials;
-  avEl.style.background = color;
-  document.getElementById('cwPersonName').textContent = name;
-  document.getElementById('cwPersonStatus').textContent = 'Calling…';
-  document.getElementById('cwPersonStatus').style.color = 'rgba(255,255,255,.5)';
-
-  // Set "You" info from logged-in user
-  const myName = userEmail ? userEmail.split('@')[0] : 'You';
-  const myInitials = myName.slice(0,2).toUpperCase();
-  document.getElementById('cwYouAv').textContent = myInitials;
-  document.getElementById('cwYouName').textContent = myName.charAt(0).toUpperCase() + myName.slice(1);
-
-  document.getElementById('cwTimer').textContent = '0:00';
-  callSeconds = 0;
-  callMuted = false;
-  document.getElementById('cwMuteBtn').classList.add('cw-muted');
-
-  // Show widget
-  document.getElementById('callWidget').classList.remove('hidden');
-
-  // Simulate answer after 2.5s
+function _fmtClock(n, padMin) {
+  const m = Math.floor(n / 60);
+  const s = String(n % 60).padStart(2, '0');
+  return padMin ? String(m).padStart(2, '0') + ':' + s : m + ':' + s;
+}
+function _paintTimers() {
+  const c = document.getElementById('csTimer');
+  const m = document.getElementById('cmTimer');
+  if (c) c.textContent = _fmtClock(callSeconds, true);
+  if (m) m.textContent = _fmtClock(callSeconds, false);
+}
+function _stopCallTimer() {
   clearInterval(callTimerInterval);
-  setTimeout(() => {
-    const statusEl = document.getElementById('cwPersonStatus');
-    if (statusEl) { statusEl.textContent = 'Connected'; statusEl.style.color = '#4ade80'; }
-    callTimerInterval = setInterval(() => {
-      callSeconds++;
-      const m = Math.floor(callSeconds / 60);
-      const s = String(callSeconds % 60).padStart(2, '0');
-      const el = document.getElementById('cwTimer');
-      if (el) el.textContent = `${m}:${s}`;
-    }, 1000);
-  }, 2500);
+  callTimerInterval = null;
+  clearInterval(csTimerInterval);
+  csTimerInterval = null;
+}
+function _startCallTimer() {
+  if (callHeld || callTimerInterval) return;
+  _stopCallTimer();
+  callTimerInterval = setInterval(() => {
+    callSeconds++;
+    _paintTimers();
+  }, 1000);
+  _paintTimers();
+}
+function _resetCallFlags() {
+  callMuted = false;
+  vcMuted = false;
+  callHeld = false;
+  callRecording = false;
+  callSpeakerOn = true;
+  callSeconds = 0;
+  _stopCallTimer();
+}
+function _paintCallStatus() {
+  const ringing = callParticipants.length > 0 && callParticipants.some(p => !p.joined);
+  const live = callParticipants.some(p => p.joined);
+  const label = _shareNotice || (callHeld ? 'On hold' : (ringing ? 'Ringing…' : ''));
+  const statusEl = document.getElementById('csStatus');
+  const timerEl = document.getElementById('csTimer');
+  const sub = document.getElementById('csCallerSub');
+  if (statusEl) {
+    statusEl.textContent = label;
+    statusEl.classList.toggle('hidden', !label);
+  }
+  if (timerEl) timerEl.classList.toggle('hidden', !live && !callHeld && ringing);
+  if (sub) sub.textContent = label;
+  const cm = document.getElementById('cmStatus');
+  if (cm) {
+    cm.textContent = callHeld ? 'On hold' : (ringing ? 'Ringing…' : 'Connected');
+    cm.style.color = callHeld ? '#f6c453' : (ringing ? 'rgba(255,255,255,.55)' : '#4ade80');
+  }
+  document.getElementById('callScreen').classList.toggle('on-hold', callHeld);
+  document.getElementById('callMini').classList.toggle('on-hold', callHeld);
+  document.getElementById('csRec').classList.toggle('hidden', !callRecording);
+}
+const CALL_SVG = {
+  mic: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`,
+  micOff: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="2" y2="22"/><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`,
+  video: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>`,
+  videoOff: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg>`,
+  speaker: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>`,
+  speakerOff: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 9a5 5 0 0 1 .95 2.293"/><path d="M19.364 5.636a9 9 0 0 1 1.889 9.96"/><path d="m2 2 20 20"/><path d="m7 7-.587.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298V11"/><path d="M9.828 4.172A.686.686 0 0 1 11 4.657v.686"/></svg>`
+};
+function _putCallIcon(el, svg) {
+  const old = el && el.querySelector('svg');
+  if (old) old.outerHTML = svg;
+}
+function _syncCallChrome() {
+  vcMuted = callMuted;
+  document.getElementById('csMuteBtn').querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active', callMuted);
+  document.getElementById('cmMuteBtn').classList.toggle('muted', callMuted);
+  _putCallIcon(document.getElementById('csMuteBtn'), callMuted ? CALL_SVG.micOff : CALL_SVG.mic);
+  _putCallIcon(document.getElementById('cmMuteBtn'), callMuted ? CALL_SVG.micOff : CALL_SVG.mic);
+  const camOn = !!vcCameraOn;
+  document.getElementById('csCameraBtn').querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-blue', camOn);
+  document.getElementById('cmVideoBtn').classList.toggle('cam-on', camOn);
+  _putCallIcon(document.getElementById('csCameraBtn'), camOn ? CALL_SVG.video : CALL_SVG.videoOff);
+  _putCallIcon(document.getElementById('cmVideoBtn'), camOn ? CALL_SVG.video : CALL_SVG.videoOff);
+  const spkIcon = document.getElementById('csSpeakerBtn').querySelector('.cs-ctl-icon');
+  spkIcon.classList.toggle('cs-ctl-icon-active', !callSpeakerOn);
+  _putCallIcon(spkIcon, callSpeakerOn ? CALL_SVG.speaker : CALL_SVG.speakerOff);
+  document.getElementById('csSpeakerLabel').textContent = callSpeakerOn ? 'Audio' : 'Off';
+  const sharing = !!screenShareStream;
+  const shareIcon = document.getElementById('csShareBtn').querySelector('.cs-ctl-icon');
+  shareIcon.classList.toggle('cs-ctl-icon-blue', sharing);
+  document.getElementById('csShareLabel').textContent = sharing ? 'Stop' : 'Share';
+  document.getElementById('csShareBtn').title = sharing ? 'Stop sharing' : 'Share screen';
+  const addOpen = !document.getElementById('csAddPanel').classList.contains('hidden');
+  document.getElementById('csAddBtn').classList.toggle('is-open', addOpen);
+  document.getElementById('csAddCallerBtn').classList.toggle('is-open', addOpen);
+  const moreOpen = !!_moreSurface && !document.getElementById('callMoreMenu').classList.contains('hidden');
+  document.getElementById('csMoreBtn').classList.toggle('is-open', moreOpen && _moreSurface === 'screen');
+  _syncSelfTile();
+  _paintCallStatus();
+  if (moreOpen) _renderMoreMenu();
+}
+
+// Direct calls open in the compact call card (same pattern as a minimized call).
+function startCall(personKey) {
+  endCall();
+  const p = peopleData.find(x => x.key === personKey) || dmData[personKey];
+  if (!p) return;
+  startCallWith(p.name, '', p.color || '#7c3aed', p.initials || '??', false);
+  minimizeCallScreen();
 }
 
 function endCall() {
-  clearInterval(callTimerInterval);
-  document.getElementById('callWidget').classList.add('hidden');
+  _stopCallTimer();
+  stopScreenShare(true);
+  stopVideoStream();
+  _shareNotice = '';
+  clearTimeout(_shareNoticeTimer);
+  _resetCallFlags();
+  csCallState = null;
+  _closeMore();
+  _resetCallParticipants();
+  _hideCallScreen();
+  document.getElementById('callMini').classList.add('hidden');
+  document.getElementById('callMini').classList.remove('on-hold');
+  document.getElementById('csAddPanel').classList.add('hidden');
   if (typeof hideDialPad === 'function') hideDialPad();
-  document.getElementById('cwKeypadBtn').classList.remove('cw-btn-active');
+  _paintTimers();
+  callMuted = false;
+  vcMuted = false;
+  callHeld = false;
+  callRecording = false;
+  callSpeakerOn = true;
+  _syncCallChrome();
 }
 
-document.getElementById('cwEndBtn').addEventListener('click', endCall);
 
-document.getElementById('cwMuteBtn').addEventListener('click', () => {
+
+function toggleMute() {
   callMuted = !callMuted;
-  document.getElementById('cwMuteBtn').classList.toggle('cw-muted', !callMuted);
-  document.getElementById('cwMuteBtn').classList.toggle('cw-btn-muted-off', callMuted);
+  vcMuted = callMuted;
+  if (vcStream) vcStream.getAudioTracks().forEach(t => { t.enabled = !callMuted; });
+  _syncCallChrome();
+}
+function toggleHold() {
+  callHeld = !callHeld;
+  if (callHeld) {
+    _stopCallTimer();
+    document.querySelectorAll('.cs-gtile.speaking').forEach(t => t.classList.remove('speaking'));
+  } else if (callParticipants.some(p => p.joined)) {
+    _startCallTimer();
+  }
+  _syncCallChrome();
+  _closeMore();
+}
+function toggleRecord() {
+  callRecording = !callRecording;
+  _syncCallChrome();
+  _closeMore();
+}
+function toggleKeypad() {
+  const pad = document.getElementById('dialPad');
+  if (pad.classList.contains('hidden')) {
+    if (typeof showDialPad === 'function') showDialPad();
+  } else   if (typeof hideDialPad === 'function') hideDialPad();
+  _syncCallChrome();
+}
+function toggleSpeaker() {
+  callSpeakerOn = !callSpeakerOn;
+  _syncCallChrome();
+  _closeMore();
+}
+function toggleCamera() {
+  const screen = document.getElementById('callScreen');
+  const isVideo = screen.classList.contains('video-mode');
+  if (!isVideo) {
+    const p = callParticipants[0];
+    const av = document.getElementById('csAvatar');
+    setVideoMode(true, p?.color || av.style.background, p?.initials || av.textContent, p?.name || document.getElementById('csName').textContent);
+    return;
+  }
+  if (vcStream) {
+    const vTrack = vcStream.getVideoTracks()[0];
+    if (vTrack) {
+      vTrack.enabled = !vTrack.enabled;
+      vcCameraOn = vTrack.enabled;
+      document.getElementById('csSelfFallback').classList.toggle('hidden', vcCameraOn);
+      _syncCallChrome();
+      return;
+    }
+  }
+  setVideoMode(false);
+}
+function _closeMore() {
+  _moreSurface = null;
+  const menu = document.getElementById('callMoreMenu');
+  if (menu) menu.classList.add('hidden');
+  document.getElementById('csMoreBtn')?.classList.remove('is-open');
+}
+function _renderMoreMenu() {
+  const menu = document.getElementById('callMoreMenu');
+  const padOpen = !document.getElementById('dialPad').classList.contains('hidden');
+  const items = [
+    { id: 'hold', label: callHeld ? 'Resume' : 'Hold', on: callHeld },
+    { id: 'record', label: callRecording ? 'Stop recording' : 'Record', on: callRecording },
+    { id: 'keypad', label: 'Keypad', on: padOpen },
+  ];
+  menu.innerHTML = items.map(it =>
+    `<button type="button" class="call-more-item${it.on ? ' active' : ''}" data-act="${it.id}">${it.label}</button>`
+  ).join('');
+}
+function openCallMore(e, surface) {
+  e.stopPropagation();
+  const menu = document.getElementById('callMoreMenu');
+  if (_moreSurface === surface && !menu.classList.contains('hidden')) { _closeMore(); return; }
+  _moreSurface = surface;
+  _renderMoreMenu();
+  const r = e.currentTarget.getBoundingClientRect();
+  menu.classList.remove('hidden');
+  menu.style.left = Math.max(8, r.left + r.width / 2 - 84) + 'px';
+  menu.style.top = Math.max(8, r.top - menu.offsetHeight - 8) + 'px';
+  document.getElementById('csMoreBtn').classList.toggle('is-open', surface === 'screen');
+}
+document.getElementById('callMoreMenu').addEventListener('click', e => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  e.stopPropagation();
+  if (btn.dataset.act === 'hold') toggleHold();
+  else if (btn.dataset.act === 'record') toggleRecord();
+  else if (btn.dataset.act === 'keypad') toggleKeypad();
 });
+document.addEventListener('click', e => {
+  if (e.target.closest('#callMoreMenu') || e.target.closest('#csMoreBtn')) return;
+  _closeMore();
+});
+
 
 // Call from DM header (event delegation)
 document.getElementById('dmView').addEventListener('click', e => {
-  if (e.target.closest('.dm-header-btn[title="Call"]')) startCall(activeDm);
+  const dm = dmData[activeDm];
+  const video = !!e.target.closest('.dm-header-btn[title="Video call"]');
+  if (!video && !e.target.closest('.dm-header-btn[title="Call"]')) return;
+  if (dm && dm.isGroup) startGroupCall(dm.members, video, dm.name);
+  else if (video) startGroupCall([activeDm], true);
+  else startCall(activeDm);
 });
 
 // Call from channel header
 document.getElementById('channelView').addEventListener('click', e => {
-  if (e.target.closest('.dm-header-btn[title="Call"]')) startCall(activeChannel || 'sarah');
+  const video = !!e.target.closest('.dm-header-btn[title="Video call"]');
+  if (!video && !e.target.closest('.dm-header-btn[title="Call"]')) return;
+  const ch = channelData[activeChannel];
+  const members = channelMembers[activeChannel] || [];
+  if (members.length) startGroupCall(members, video, ch ? ch.displayName : null);
 });
 
 function createAndShowTask(title, dueDate, status, priority) {
@@ -2837,6 +3745,9 @@ let vcPc1 = null;          // local peer  (sends our tracks)
 let vcPc2 = null;          // remote peer (receives tracks, simulates far-end)
 let vcCameraOn = false;
 let vcMuted = false;
+let screenShareStream = null;
+let _shareNotice = '';
+let _shareNoticeTimer = null;
 
 const RTC_CONFIG = {
   iceServers: [
@@ -2846,12 +3757,15 @@ const RTC_CONFIG = {
 };
 
 async function startVideoStream() {
+  vcCameraOn = true;
   try {
     vcStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     const localEl = document.getElementById('localVideo');
     localEl.srcObject = vcStream;
     document.getElementById('csSelfFallback').classList.add('hidden');
     vcCameraOn = true;
+    if (callMuted) vcStream.getAudioTracks().forEach(t => { t.enabled = false; });
+    _syncCallChrome();
 
     // Build loopback RTCPeerConnection to demonstrate the remote tile
     vcPc1 = new RTCPeerConnection(RTC_CONFIG);
@@ -2882,6 +3796,7 @@ async function startVideoStream() {
     console.warn('Camera unavailable:', err.message);
     document.getElementById('csSelfFallback').classList.remove('hidden');
     vcCameraOn = false;
+    _syncCallChrome();
   }
 }
 
@@ -2896,7 +3811,99 @@ function stopVideoStream() {
   document.getElementById('csVideoOverlay').classList.remove('connected');
   document.getElementById('csSelfFallback').classList.remove('hidden');
   vcCameraOn = false;
-  vcMuted = false;
+}
+
+function _showShareNotice(text) {
+  _shareNotice = text;
+  clearTimeout(_shareNoticeTimer);
+  _paintCallStatus();
+  _shareNoticeTimer = setTimeout(() => {
+    _shareNotice = '';
+    _paintCallStatus();
+  }, 3500);
+}
+
+function _syncShareTile() {
+  const screen = document.getElementById('callScreen');
+  const group = screen.classList.contains('group-call');
+  const stage = document.getElementById('csShareStage');
+  const stageVideo = document.getElementById('csShareVideo');
+  if (screenShareStream && !group) {
+    stage.classList.remove('hidden');
+    if (stageVideo.srcObject !== screenShareStream) stageVideo.srcObject = screenShareStream;
+  } else {
+    stage.classList.add('hidden');
+    stageVideo.srcObject = null;
+  }
+  const grid = document.getElementById('csGroupGrid');
+  let tile = document.getElementById('csShareTile');
+  if (screenShareStream && group && grid) {
+    if (!tile) {
+      tile = document.createElement('div');
+      tile.id = 'csShareTile';
+      tile.className = 'cs-gtile cs-gtile-share';
+      tile.innerHTML = '<video id="csShareTileVideo" autoplay playsinline></video><span class="cs-share-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Presenting</span><div class="cs-gtile-name">Your screen</div>';
+      grid.appendChild(tile);
+    }
+    const v = tile.querySelector('video');
+    if (v && v.srcObject !== screenShareStream) v.srcObject = screenShareStream;
+    _sizeCallGrid();
+  } else if (tile) {
+    tile.remove();
+    _sizeCallGrid();
+  }
+  _paintPresenting();
+}
+
+function _paintPresenting() {
+  const on = !!screenShareStream;
+  document.getElementById('csPresentBar').classList.toggle('hidden', !on);
+  document.getElementById('cmPresentTag').classList.toggle('hidden', !on);
+  document.getElementById('callMini').classList.toggle('presenting', on);
+  document.querySelector('#csGroupGrid .cs-gtile.self')?.classList.toggle('presenting', on);
+}
+document.getElementById('csStopPresent').addEventListener('click', e => {
+  e.stopPropagation();
+  stopScreenShare();
+});
+
+function stopScreenShare(silent) {
+  const stream = screenShareStream;
+  screenShareStream = null;
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  _syncShareTile();
+  if (!silent) _syncCallChrome();
+}
+
+async function toggleScreenShare() {
+  _closeMore();
+  if (screenShareStream) {
+    stopScreenShare();
+    return;
+  }
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+  } catch (_) {
+    _showShareNotice('Screen share unavailable');
+    return;
+  }
+  screenShareStream = stream;
+  const track = stream.getVideoTracks()[0];
+  if (track) {
+    track.addEventListener('ended', () => {
+      if (!screenShareStream || !screenShareStream.getTracks().includes(track)) return;
+      screenShareStream = null;
+      _syncShareTile();
+      _syncCallChrome();
+    });
+  }
+  const screen = document.getElementById('callScreen');
+  if (screen.classList.contains('hidden')) {
+    expandMiniCall();
+  }
+  _syncShareTile();
+  _syncCallChrome();
 }
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -2910,11 +3917,23 @@ function hexToRgb(hex) {
   ].join(', ');
 }
 
-function startCallWith(name, role, color, initials, video = false) {
+function startCallWith(name, role, color, initials, video = false, startSecs = null) {
+  _stopCallTimer();
+  _closeMore();
+  if (startSecs == null) {
+    callMuted = false;
+    vcMuted = false;
+    callHeld = false;
+    callRecording = false;
+    callSpeakerOn = true;
+    callSeconds = 0;
+  }
   _resetCallParticipants();
   // Find person key for participant tracking
   const pd = peopleData.find(p => p.name === name);
-  callParticipants = [{ key: pd ? pd.key : name, name, color, initials }];
+  const already = startSecs != null;
+  callParticipants = [{ key: pd ? pd.key : name, name, color, initials, joined: already }];
+  callSeconds = startSecs || 0;
   const nameBar = document.getElementById('csTileNameBar');
   if (nameBar) nameBar.textContent = name;
 
@@ -2927,27 +3946,14 @@ function startCallWith(name, role, color, initials, video = false) {
   av.style.background = color;
   document.getElementById('csName').textContent = name;
   document.getElementById('csCallerName').textContent = name;
-  document.getElementById('csCallerSub').textContent = 'Ringing…';
-  document.getElementById('csStatus').textContent = 'Ringing…';
-  document.getElementById('csStatus').classList.remove('hidden');
-  document.getElementById('csTimer').classList.add('hidden');
-  clearInterval(csTimerInterval);
-  let secs = 0;
-  setTimeout(() => {
-    document.getElementById('csCallerSub').textContent = '';
-    document.getElementById('csStatus').classList.add('hidden');
-    const timerEl = document.getElementById('csTimer');
-    timerEl.textContent = '00:00';
-    timerEl.classList.remove('hidden');
-    csTimerInterval = setInterval(() => {
-      secs++;
-      timerEl.textContent =
-        String(Math.floor(secs / 60)).padStart(2, '0') + ':' +
-        String(secs % 60).padStart(2, '0');
-    }, 1000);
-  }, 2000);
   screen.classList.remove('hidden');
+  document.getElementById('callMini').classList.add('hidden');
   setVideoMode(video, color, initials, name);
+  renderCallLayout();
+  if (already) _startCallTimer();
+  else _joinAfter(callParticipants[0], 2000);
+  _paintTimers();
+  _syncCallChrome();
 }
 
 function setVideoMode(on, color, initials, name) {
@@ -2957,7 +3963,7 @@ function setVideoMode(on, color, initials, name) {
 
   screen.classList.toggle('video-mode', on);
   grid.classList.toggle('hidden', !on);
-  camIcon.classList.toggle('cs-ctl-icon-blue', on);
+  camIcon.classList.remove('cs-ctl-icon-blue');
 
   if (on) {
     // Populate avatar overlay (shown while WebRTC connects)
@@ -2971,10 +3977,345 @@ function setVideoMode(on, color, initials, name) {
   } else {
     stopVideoStream();
   }
+  _syncSelfTile();
+  _syncCallChrome();
 }
 
-// ── MULTI-PARTICIPANT VIDEO ──
+// ── MULTI-PARTICIPANT CALLS ──
 let callParticipants = [];
+let callTitle = null;           // explicit group/meeting name; null = derived from participants
+let _speakerInterval = null;
+let callView = 'gallery';       // 'gallery' | 'speaker'
+let callPinnedKey = null;
+let callStageKey = null;        // last active speaker shown on the main stage
+let myHandRaised = false;
+
+const MIC_OFF_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="2" y2="22"/><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`;
+
+function _callLabel() {
+  if (callTitle) return callTitle;
+  const names = callParticipants.map(p => p.name.split(' ')[0]);
+  if (names.length <= 1) return callParticipants[0]?.name || '';
+  if (names.length <= 3) return names.slice(0, -1).join(', ') + ' & ' + names[names.length - 1];
+  return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
+}
+
+function startGroupCall(people, video = false, title = null) {
+  const list = people
+    .map(x => typeof x === 'string' ? (peopleData.find(p => p.key === x) || dmData[x]) : x)
+    .filter(Boolean)
+    .map(p => ({ key: p.key, name: p.name, color: p.color, initials: p.initials }));
+  if (!list.length) return;
+  if (list.length === 1 && !title) {
+    const p = list[0];
+    return startCallWith(p.name, '', p.color, p.initials, video);
+  }
+  startCallWith(list[0].name, '', list[0].color, list[0].initials, video);
+  callTitle = title;
+  callParticipants = list.map(p => ({ ...p, joined: false }));
+  callParticipants.forEach((p, i) => _joinAfter(p, 1400 + i * 700));
+  renderCallLayout();
+}
+
+function _joinAfter(person, ms) {
+  setTimeout(() => {
+    if (!callParticipants.includes(person)) return;
+    person.joined = true;
+    const tile = document.querySelector(`.cs-gtile[data-key="${person.key}"]`);
+    if (tile) tile.classList.remove('ringing');
+    if (!callHeld) _startCallTimer();
+    _paintCallStatus();
+  }, ms);
+}
+
+function _applyOneToOne(p) {
+  const screen = document.getElementById('callScreen');
+  try { screen.style.setProperty('--call-rgb', hexToRgb(p.color)); } catch (_) {}
+  const av = document.getElementById('csAvatar');
+  av.textContent = p.initials;
+  av.style.background = p.color;
+  document.getElementById('csCallerName').textContent = p.name;
+  const va = document.getElementById('csVideoAvatar');
+  va.textContent = p.initials;
+  va.style.background = p.color;
+  document.getElementById('csVideoName').textContent = p.name;
+  document.getElementById('csTileNameBar').textContent = p.name;
+}
+
+function renderCallLayout() {
+  const screen = document.getElementById('callScreen');
+  const grid = document.getElementById('csGroupGrid');
+  const countEl = document.getElementById('csCount');
+  const isGroup = callParticipants.length > 1 || (callTitle && callParticipants.length > 0);
+
+  screen.classList.toggle('group-call', !!isGroup);
+  grid.classList.toggle('hidden', !isGroup);
+  document.getElementById('csName').textContent = _callLabel();
+  countEl.classList.toggle('hidden', !isGroup);
+  countEl.textContent = `· ${callParticipants.length + 1} people`;
+  document.getElementById('csViewBtn').classList.toggle('hidden', !isGroup);
+
+  if (!isGroup) {
+    clearInterval(_speakerInterval);
+    grid.innerHTML = '';
+    _applyCallView();
+    if (callParticipants[0]) _applyOneToOne(callParticipants[0]);
+    _syncShareTile();
+    _paintCallStatus();
+    return;
+  }
+
+  const first = callParticipants[0];
+  const av = document.getElementById('csAvatar');
+  av.textContent = first.initials;
+  av.style.background = first.color;
+
+  const myName = userEmail ? userEmail.split('@')[0] : 'You';
+  const myInitials = userEmail ? myName.slice(0, 2).toUpperCase() : 'ME';
+  const isVideo = screen.classList.contains('video-mode');
+  grid.innerHTML = callParticipants.map(p => `
+    <div class="cs-gtile${p.joined ? '' : ' ringing'}" data-key="${p.key}" title="Pin to main screen" style="--tile-rgb:${hexToRgb(p.color)}">
+      <div class="cs-gtile-av" style="background:${p.color}">${p.initials}</div>
+      <span class="cs-gtile-status">Ringing…</span>
+      <div class="cs-gtile-name">${p.name}</div>
+      <button class="cs-gtile-remove" title="Remove from call" data-remove="${p.key}">
+        <svg width="10" height="10" viewBox="0 0 8 8" fill="none"><path d="M1 1L7 7M7 1L1 7" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>`).join('') + `
+    <div class="cs-gtile self${screenShareStream ? ' presenting' : ''}${vcMuted ? ' muted' : ''}${isVideo && vcCameraOn ? '' : ' cam-off'}${myHandRaised ? ' hand' : ''}" data-key="self" title="Pin to main screen" style="--tile-rgb:246, 196, 83">
+      <span class="cs-gtile-hand">✋</span>
+      <video id="csGroupSelfVideo" autoplay muted playsinline></video>
+      <div class="cs-gtile-av cs-gtile-av-self">${myInitials}</div>
+      <div class="cs-gtile-name"><span class="cs-gtile-mic">${MIC_OFF_ICON}</span><span class="cs-gtile-presenting" title="Presenting"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg></span>You</div>
+    </div>`;
+  _attachGroupSelfVideo();
+  _syncShareTile();
+  _paintCallStatus();
+  _applyCallView();
+  _sizeCallGrid();
+  requestAnimationFrame(_sizeCallGrid);
+
+  clearInterval(_speakerInterval);
+  _speakerInterval = setInterval(() => {
+    const tiles = [...grid.querySelectorAll('.cs-gtile:not(.self):not(.ringing)')];
+    grid.querySelectorAll('.cs-gtile.speaking').forEach(t => t.classList.remove('speaking'));
+    let speaker = null;
+    if (!callHeld && tiles.length && Math.random() > 0.2) {
+      speaker = tiles[Math.floor(Math.random() * tiles.length)];
+      speaker.classList.add('speaking');
+      callStageKey = speaker.dataset.key;
+      if (Math.random() < 0.12) _showReaction(['👍', '👏', '😂', '❤️'][Math.floor(Math.random() * 4)], callStageKey);
+    }
+    _renderStage();
+    _paintMini();
+  }, 1800);
+}
+
+// ── SPEAKER VIEW ──
+function _stagePerson() {
+  const key = callPinnedKey || callStageKey || (callParticipants.find(p => p.joined) || callParticipants[0])?.key;
+  if (key === 'self') return { key: 'self', self: true, name: 'You', initials: (userEmail ? userEmail.split('@')[0].slice(0, 2).toUpperCase() : 'ME') };
+  return callParticipants.find(p => p.key === key) || callParticipants[0];
+}
+
+function _applyCallView() {
+  const screen = document.getElementById('callScreen');
+  const isGroup = screen.classList.contains('group-call');
+  const speaker = isGroup && callView === 'speaker';
+  screen.classList.toggle('speaker-view', speaker);
+  document.getElementById('csStage').classList.toggle('hidden', !speaker);
+  const btn = document.getElementById('csViewBtn');
+  btn.classList.toggle('is-speaker', speaker);
+  btn.title = speaker ? 'Switch to gallery view' : 'Switch to speaker view';
+  btn.querySelector('.cs-view-label').textContent = speaker ? 'Gallery' : 'Speaker';
+  const grid = document.getElementById('csGroupGrid');
+  if (speaker) grid.style.gridTemplateColumns = '';
+  _renderStage();
+  if (!speaker) _sizeCallGrid();
+}
+
+function _renderStage() {
+  const stage = document.getElementById('csStage');
+  const grid = document.getElementById('csGroupGrid');
+  if (!document.getElementById('callScreen').classList.contains('speaker-view')) {
+    grid.querySelectorAll('.on-stage').forEach(t => t.classList.remove('on-stage'));
+    return;
+  }
+  const p = _stagePerson();
+  if (!p) return;
+  grid.querySelectorAll('.cs-gtile').forEach(t => t.classList.toggle('on-stage', t.dataset.key === p.key));
+  const src = grid.querySelector(`.cs-gtile[data-key="${p.key}"]`);
+  const speaking = !!src?.classList.contains('speaking');
+  if (stage.dataset.key !== p.key || stage.dataset.pinned !== String(!!callPinnedKey)) {
+    stage.dataset.key = p.key;
+    stage.dataset.pinned = String(!!callPinnedKey);
+    const showVideo = p.self && document.getElementById('callScreen').classList.contains('video-mode') && vcCameraOn && vcStream;
+    stage.innerHTML = `
+      ${showVideo ? '<video id="csStageVideo" autoplay muted playsinline></video>' : ''}
+      <div class="cs-stage-av" style="${p.self ? 'background:var(--amber);color:var(--maroon-dark)' : `background:${p.color}`}">${p.initials}</div>
+      <div class="cs-gtile-name">${callPinnedKey ? '<span class="cs-pin">📌</span>' : ''}${p.self ? 'You' : p.name}</div>
+      <span class="cs-gtile-hand">✋</span>
+      ${callPinnedKey ? '<button type="button" class="cs-stage-unpin" id="csUnpin">Unpin</button>' : ''}`;
+    if (showVideo) document.getElementById('csStageVideo').srcObject = vcStream;
+  }
+  stage.classList.toggle('speaking', speaking);
+  stage.classList.toggle('ringing', !!src?.classList.contains('ringing'));
+  stage.classList.toggle('hand', !!p.self && myHandRaised);
+  stage.classList.toggle('has-video', !!stage.querySelector('video'));
+}
+
+function setCallView(view) {
+  callView = view;
+  if (view === 'gallery') callPinnedKey = null;
+  document.getElementById('csStage').dataset.key = '';
+  _applyCallView();
+}
+document.getElementById('csViewBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  setCallView(callView === 'speaker' ? 'gallery' : 'speaker');
+});
+document.getElementById('csStage').addEventListener('click', e => {
+  if (!e.target.closest('#csUnpin')) return;
+  e.stopPropagation();
+  callPinnedKey = null;
+  _renderStage();
+});
+
+// ── REACTIONS ──
+function _showReaction(emoji, key) {
+  const layer = document.getElementById('csReactLayer');
+  const el = document.createElement('div');
+  el.className = 'cs-react-float';
+  const who = key === 'self' ? 'You' : (callParticipants.find(p => p.key === key)?.name.split(' ')[0] || '');
+  el.innerHTML = `<span class="cs-react-emoji">${emoji}</span>${who ? `<span class="cs-react-who">${who}</span>` : ''}`;
+  el.style.left = (8 + Math.random() * 14) + '%';
+  el.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+  layer.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+  const targets = [document.querySelector(`#csGroupGrid .cs-gtile[data-key="${key}"]`)];
+  const stage = document.getElementById('csStage');
+  if (stage.dataset.key === key && !stage.classList.contains('hidden')) targets.push(stage);
+  targets.filter(Boolean).forEach(t => {
+    t.querySelector('.cs-tile-react')?.remove();
+    const badge = document.createElement('span');
+    badge.className = 'cs-tile-react';
+    badge.textContent = emoji;
+    t.appendChild(badge);
+    setTimeout(() => badge.remove(), 2600);
+  });
+}
+
+function _closeReactPanel() {
+  document.getElementById('csReactPanel').classList.add('hidden');
+  document.getElementById('csReactBtn').classList.remove('is-open');
+}
+
+function _paintHand() {
+  document.querySelector('#csGroupGrid .cs-gtile.self')?.classList.toggle('hand', myHandRaised);
+  document.getElementById('csHandChip').classList.toggle('hidden', !myHandRaised);
+  document.getElementById('csRaiseHand').classList.toggle('active', myHandRaised);
+  document.getElementById('csRaiseHandLabel').textContent = myHandRaised ? 'Lower hand' : 'Raise hand';
+  _renderStage();
+}
+
+document.getElementById('csReactBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const panel = document.getElementById('csReactPanel');
+  const opening = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !opening);
+  document.getElementById('csReactBtn').classList.toggle('is-open', opening);
+  if (!opening) return;
+  const screenR = document.getElementById('callScreen').getBoundingClientRect();
+  const r = e.currentTarget.getBoundingClientRect();
+  panel.style.left = Math.max(8, Math.min(screenR.width - panel.offsetWidth - 8, r.left - screenR.left + r.width / 2 - panel.offsetWidth / 2)) + 'px';
+  panel.style.bottom = (screenR.bottom - r.top + 18) + 'px';
+});
+document.getElementById('csReactPanel').addEventListener('click', e => {
+  e.stopPropagation();
+  const r = e.target.closest('[data-react]');
+  if (r) { _showReaction(r.dataset.react, 'self'); _closeReactPanel(); return; }
+  if (e.target.closest('#csRaiseHand')) {
+    myHandRaised = !myHandRaised;
+    _paintHand();
+    _closeReactPanel();
+  }
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#csReactPanel, #csReactBtn')) _closeReactPanel();
+});
+
+// ── MINIMIZE TO THE LEFT WHEN LEAVING THE CALL SCREEN ──
+function _callNavInset() {
+  const screen = document.getElementById('callScreen');
+  const nav = document.querySelector('.left-nav');
+  const w = nav && !(typeof isMobile === 'function' && isMobile()) ? nav.offsetWidth : 0;
+  screen.style.left = w + 'px';
+  document.documentElement.style.setProperty('--call-nav-w', w + 'px');
+}
+new MutationObserver(() => {
+  if (!document.getElementById('callScreen').classList.contains('hidden')) _callNavInset();
+}).observe(document.getElementById('callScreen'), { attributes: true, attributeFilter: ['class'] });
+new ResizeObserver(_callNavInset).observe(document.querySelector('.left-nav'));
+
+document.querySelector('.left-nav').addEventListener('click', e => {
+  if (e.target.closest('#navCollapseBtn')) return;
+  const screen = document.getElementById('callScreen');
+  if (screen.classList.contains('hidden') || screen.classList.contains('fullscreen')) return;
+  if (!callParticipants.length && !csCallState) return;
+  minimizeCallScreen();
+}, true);
+
+function _paintMini() {
+  const mini = document.getElementById('callMini');
+  if (!mini || mini.classList.contains('hidden')) return;
+  const isGroup = document.getElementById('callScreen').classList.contains('group-call');
+  document.getElementById('cmTitle').textContent = _callLabel() || csCallState?.name || '';
+  if (!isGroup) return;
+  const p = _stagePerson();
+  if (!p) return;
+  const av = document.getElementById('cmAvatar');
+  av.textContent = p.initials;
+  av.style.background = p.self ? 'var(--amber)' : p.color;
+  av.style.color = p.self ? 'var(--maroon-dark)' : '';
+  document.getElementById('cmName').textContent = p.self ? 'You' : p.name;
+  const speaking = !!document.querySelector(`#csGroupGrid .cs-gtile.speaking[data-key="${p.key}"]`);
+  mini.classList.toggle('speaking', speaking);
+  document.getElementById('cmStatus').textContent = `${callParticipants.filter(x => x.joined).length + 1} in call`;
+}
+
+function _attachGroupSelfVideo() {
+  const el = document.getElementById('csGroupSelfVideo');
+  if (el && vcStream && el.srcObject !== vcStream) el.srcObject = vcStream;
+}
+
+function _syncSelfTile() {
+  const tile = document.querySelector('.cs-gtile.self');
+  if (!tile) return;
+  const isVideo = document.getElementById('callScreen').classList.contains('video-mode');
+  tile.classList.toggle('muted', vcMuted);
+  tile.classList.toggle('cam-off', !(isVideo && vcCameraOn));
+  _attachGroupSelfVideo();
+  const stage = document.getElementById('csStage');
+  if (stage.dataset.key === 'self') { stage.dataset.key = ''; _renderStage(); }
+}
+
+// Fit n tiles (16:10) into the available area, choosing the column count that maximises tile size
+function _sizeCallGrid() {
+  const grid = document.getElementById('csGroupGrid');
+  if (grid.classList.contains('hidden') || document.getElementById('callScreen').classList.contains('speaker-view')) return;
+  const n = grid.children.length;
+  const W = grid.clientWidth, H = grid.clientHeight, GAP = 12, RATIO = 1.6;
+  if (!n || !W || !H) return;
+  let best = { w: 0, cols: 1 };
+  const maxCols = window.innerWidth <= 520 ? 1 : window.innerWidth <= 768 ? 2 : n;
+  for (let cols = 1; cols <= Math.min(n, maxCols); cols++) {
+    const rows = Math.ceil(n / cols);
+    const w = Math.min((W - GAP * (cols - 1)) / cols, ((H - GAP * (rows - 1)) / rows) * RATIO);
+    if (w > best.w) best = { w, cols };
+  }
+  grid.style.gridTemplateColumns = `repeat(${best.cols}, ${Math.floor(best.w)}px)`;
+}
+new ResizeObserver(_sizeCallGrid).observe(document.getElementById('csGroupGrid'));
 
 function refreshAddPanel(filter) {
   const q = (filter || '').toLowerCase();
@@ -2994,7 +4335,7 @@ function refreshAddPanel(filter) {
         </div>
         <span class="cs-ap-add-icon">${inCall ? '✓' : '+'}</span>`;
       if (!inCall) {
-        row.addEventListener('click', () => addCallParticipant(p));
+        row.addEventListener('click', e => { e.stopPropagation(); addCallParticipant(p); });
       }
       list.appendChild(row);
     });
@@ -3002,30 +4343,32 @@ function refreshAddPanel(filter) {
 
 function addCallParticipant(person) {
   if (callParticipants.some(p => p.key === person.key)) return;
-  callParticipants.push(person);
-
-  // Stack PiP tiles right side, below the top bar, above self-PiP
-  const extraIndex = callParticipants.length - 2; // 0-based among extra tiles
-  const TILE_H = 118, GAP = 8, TOP_START = 60;
-  const topOffset = TOP_START + extraIndex * (TILE_H + GAP);
-
-  const tile = document.createElement('div');
-  tile.className = 'cs-remote-tile cs-extra-tile';
-  tile.style.top = topOffset + 'px';
-  tile.dataset.personKey = person.key;
-  tile.innerHTML = `
-    <div style="position:absolute;inset:0;background:${person.color};opacity:0.18;border-radius:12px"></div>
-    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
-      <div style="width:48px;height:48px;border-radius:50%;background:${person.color};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.4)">${person.initials}</div>
-    </div>
-    <div style="position:absolute;bottom:0;left:0;right:0;padding:18px 6px 6px;background:linear-gradient(transparent,rgba(0,0,0,0.7));text-align:center">
-      <span style="font-size:10px;font-weight:600;color:#fff">${person.name.split(' ')[0]}</span>
-    </div>`;
-  document.getElementById('csRemoteTiles').appendChild(tile);
-
-  document.getElementById('csAddPanel').classList.add('hidden');
-  refreshAddPanel();
+  const entry = { key: person.key, name: person.name, color: person.color, initials: person.initials, joined: false };
+  callParticipants.push(entry);
+  _joinAfter(entry, 2000);
+  renderCallLayout();
+  refreshAddPanel(document.getElementById('csApSearch').value);
 }
+
+function removeCallParticipant(key) {
+  callParticipants = callParticipants.filter(p => p.key !== key);
+  if (!callParticipants.length) return endCallScreen();
+  if (callParticipants.length === 1) callTitle = null;
+  renderCallLayout();
+  refreshAddPanel(document.getElementById('csApSearch').value);
+}
+
+document.getElementById('csGroupGrid').addEventListener('click', e => {
+  const btn = e.target.closest('[data-remove]');
+  if (btn) { e.stopPropagation(); removeCallParticipant(btn.dataset.remove); return; }
+  const tile = e.target.closest('.cs-gtile[data-key]');
+  if (!tile || tile.classList.contains('cs-gtile-share')) return;
+  e.stopPropagation();
+  callPinnedKey = tile.dataset.key;
+  callView = 'speaker';
+  document.getElementById('csStage').dataset.key = '';
+  _applyCallView();
+});
 
 function toggleAddPanel(e) {
   e.stopPropagation();
@@ -3037,6 +4380,7 @@ function toggleAddPanel(e) {
     document.getElementById('csApSearch').value = '';
     document.getElementById('csApSearch').focus();
   }
+  _syncCallChrome();
 }
 document.getElementById('csAddBtn').addEventListener('click', toggleAddPanel);
 document.getElementById('csAddCallerBtn').addEventListener('click', toggleAddPanel);
@@ -3050,13 +4394,32 @@ document.addEventListener('click', e => {
   if (!panel.contains(e.target) &&
       !document.getElementById('csAddBtn').contains(e.target) &&
       !document.getElementById('csAddCallerBtn').contains(e.target)) {
-    panel.classList.add('hidden');
+    if (!panel.classList.contains('hidden')) {
+      panel.classList.add('hidden');
+      _syncCallChrome();
+    }
   }
 });
 
 function _resetCallParticipants() {
   callParticipants = [];
-  document.querySelectorAll('.cs-extra-tile').forEach(el => el.remove());
+  callTitle = null;
+  clearInterval(_speakerInterval);
+  callView = 'gallery';
+  callPinnedKey = null;
+  callStageKey = null;
+  myHandRaised = false;
+  _paintHand();
+  _closeReactPanel();
+  document.getElementById('csReactLayer').innerHTML = '';
+  document.getElementById('csStage').classList.add('hidden');
+  document.getElementById('csStage').dataset.key = '';
+  document.getElementById('callScreen').classList.remove('speaker-view');
+  document.getElementById('csViewBtn').classList.add('hidden');
+  document.getElementById('csGroupGrid').innerHTML = '';
+  document.getElementById('csGroupGrid').classList.add('hidden');
+  document.getElementById('csCount').classList.add('hidden');
+  document.getElementById('callScreen').classList.remove('group-call');
   document.getElementById('csAddPanel').classList.add('hidden');
 }
 // ────────────────────────────────────────────────────────────────────────────
@@ -3065,115 +4428,91 @@ function _resetCallParticipants() {
 let csCallState = null;
 let cmMuted = false;
 let callIsFullscreen = false;
-const ICON_EXPAND   = `<path d="M3 8V4H7M17 4H21V8M21 16V20H17M7 20H3V16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
-const ICON_CONTRACT = `<path d="M9 4V8H5M15 4V8H19M19 20V16H15M5 20V16H9" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+const _callScreenAnchor = document.getElementById('callScreen').parentElement;
+
+function _placeCallScreen(fullscreen) {
+  const screen = document.getElementById('callScreen');
+  if (fullscreen) {
+    if (screen.parentElement !== document.body) document.body.appendChild(screen);
+  } else if (_callScreenAnchor && screen.parentElement !== _callScreenAnchor) {
+    _callScreenAnchor.appendChild(screen);
+  }
+}
 
 function _hideCallScreen() {
   const screen = document.getElementById('callScreen');
   screen.classList.add('hidden');
   screen.classList.remove('video-mode');
   screen.classList.remove('fullscreen');
+  screen.classList.remove('controls-hidden');
   callIsFullscreen = false;
-  document.getElementById('csFullscreenIcon').innerHTML = ICON_EXPAND;
+  _placeCallScreen(false);
+  _paintZoomBtn(false);
   document.getElementById('csVideoGrid').classList.add('hidden');
   document.getElementById('csCameraBtn').querySelector('.cs-ctl-icon').classList.remove('cs-ctl-icon-blue');
   document.getElementById('csMuteBtn').querySelector('.cs-ctl-icon').classList.remove('cs-ctl-icon-active');
   document.getElementById('csSpeakerBtn').querySelector('.cs-ctl-icon').classList.remove('cs-ctl-icon-active');
 }
 
-function endCallScreen() {
-  clearInterval(csTimerInterval);
-  stopVideoStream();
-  csCallState = null;
-  _resetCallParticipants();
-  _hideCallScreen();
-  document.getElementById('callMini').classList.add('hidden');
-  if (typeof hideDialPad === 'function') hideDialPad();
-}
+function endCallScreen() { endCall(); }
 
 function minimizeCallScreen() {
-  clearInterval(csTimerInterval);
-  stopVideoStream();
-
-  // Snapshot call state
+  const screen = document.getElementById('callScreen');
   const avEl = document.getElementById('csAvatar');
-  const timerText = document.getElementById('csTimer').textContent || '00:00';
-  const [mm, ss] = timerText.split(':').map(Number);
-  callSeconds = (mm || 0) * 60 + (ss || 0);
   csCallState = {
-    name:     document.getElementById('csName').textContent,
+    name: document.getElementById('csName').textContent,
     initials: avEl.textContent,
-    color:    avEl.style.background,
+    color: avEl.style.background,
+    video: screen.classList.contains('video-mode'),
   };
-
-  _hideCallScreen();
-
-  // Populate mini card
+  _closeMore();
+  document.getElementById('csAddPanel').classList.add('hidden');
+  if (callIsFullscreen) {
+    callIsFullscreen = false;
+    screen.classList.remove('fullscreen');
+    _placeCallScreen(false);
+    _paintZoomBtn(false);
+  }
+  screen.classList.add('hidden');
   const cmAv = document.getElementById('cmAvatar');
   cmAv.textContent = csCallState.initials;
   cmAv.style.background = csCallState.color;
   document.getElementById('cmName').textContent = csCallState.name;
-  cmMuted = false;
-  document.getElementById('cmMuteBtn').classList.remove('muted');
-
-  // Sync timer and keep ticking
-  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
-  document.getElementById('cmTimer').textContent = fmt(callSeconds);
-  clearInterval(callTimerInterval);
-  callTimerInterval = setInterval(() => {
-    callSeconds++;
-    const el = document.getElementById('cmTimer');
-    if (el) el.textContent = fmt(callSeconds);
-  }, 1000);
-
-  document.getElementById('callMini').classList.remove('hidden');
+  const mini = document.getElementById('callMini');
+  mini.style.left = mini.style.top = mini.style.right = mini.style.bottom = '';
+  mini.classList.remove('hidden');
+  _closeReactPanel();
+  _paintTimers();
+  _paintMini();
+  _syncCallChrome();
 }
 
 function expandMiniCall() {
-  if (!csCallState) return;
-  clearInterval(callTimerInterval);
+  if (!csCallState && !callParticipants.length) return;
   document.getElementById('callMini').classList.add('hidden');
-
-  // Restore full-screen call at the current elapsed time
-  const avEl = document.getElementById('csAvatar');
-  avEl.textContent = csCallState.initials;
-  avEl.style.background = csCallState.color;
-  document.getElementById('csName').textContent = csCallState.name;
-  document.getElementById('csCallerName').textContent = csCallState.name;
-  document.getElementById('csCallerSub').textContent = '';
-  document.getElementById('csStatus').classList.add('hidden');
-
-  const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
-  const timerEl = document.getElementById('csTimer');
-  timerEl.textContent = fmt(callSeconds);
-  timerEl.classList.remove('hidden');
   document.getElementById('callScreen').classList.remove('hidden');
-
-  clearInterval(csTimerInterval);
-  let secs = callSeconds;
-  csTimerInterval = setInterval(() => {
-    secs++;
-    timerEl.textContent = fmt(secs);
-  }, 1000);
+  renderCallLayout();
+  _paintTimers();
+  _syncCallChrome();
 }
 
 // Mini card buttons
 document.getElementById('cmExpand').addEventListener('click', expandMiniCall);
-document.getElementById('cmEndBtn').addEventListener('click', () => {
-  clearInterval(callTimerInterval);
-  csCallState = null;
-  document.getElementById('callMini').classList.add('hidden');
-  if (typeof hideDialPad === 'function') hideDialPad();
-});
-document.getElementById('cmMuteBtn').addEventListener('click', function() {
-  cmMuted = !cmMuted;
-  this.classList.toggle('muted', cmMuted);
-});
-document.getElementById('cmVideoBtn').addEventListener('click', () => {
-  if (!csCallState) return;
+document.getElementById('cmBody').addEventListener('click', expandMiniCall);
+document.getElementById('cmAddBtn').addEventListener('click', e => {
+  e.stopPropagation();
   expandMiniCall();
-  setTimeout(() => setVideoMode(true, csCallState.color, csCallState.initials, csCallState.name), 50);
+  const panel = document.getElementById('csAddPanel');
+  panel.classList.remove('hidden');
+  document.getElementById('csApSearch').value = '';
+  refreshAddPanel();
+  document.getElementById('csApSearch').focus();
+  _syncCallChrome();
 });
+document.getElementById('cmEndBtn').addEventListener('click', endCall);
+document.getElementById('cmMuteBtn').addEventListener('click', toggleMute);
+document.getElementById('cmVideoBtn').addEventListener('click', toggleCamera);
 
 // Mini card drag
 (function() {
@@ -3181,16 +4520,18 @@ document.getElementById('cmVideoBtn').addEventListener('click', () => {
   const handle = document.getElementById('cmHandle');
   let dragging = false, ox = 0, oy = 0;
   handle.addEventListener('mousedown', e => {
+    if (e.button !== 0 || e.target.closest('button')) return;
     dragging = true;
     const r = mini.getBoundingClientRect();
+    const cr = mini.offsetParent.getBoundingClientRect();
     ox = e.clientX - r.left; oy = e.clientY - r.top;
-    mini.style.bottom = ''; mini.style.right = '';
-    mini.style.left = r.left + 'px'; mini.style.top = r.top + 'px';
+    mini.style.bottom = 'auto'; mini.style.right = 'auto';
+    mini.style.left = (r.left - cr.left) + 'px'; mini.style.top = (r.top - cr.top) + 'px';
     e.preventDefault();
   });
   document.addEventListener('mousemove', e => {
     if (!dragging) return;
-    const cr = (mini.closest('.app') || document.body).getBoundingClientRect();
+    const cr = mini.offsetParent.getBoundingClientRect();
     const pr = mini.getBoundingClientRect();
     mini.style.left = Math.max(0, Math.min(e.clientX - cr.left - ox, cr.width  - pr.width))  + 'px';
     mini.style.top  = Math.max(0, Math.min(e.clientY - cr.top  - oy, cr.height - pr.height)) + 'px';
@@ -3199,8 +4540,44 @@ document.getElementById('cmVideoBtn').addEventListener('click', () => {
 })();
 
 document.getElementById('csHangup').addEventListener('click', endCallScreen);
-document.getElementById('csMinimize').addEventListener('click', minimizeCallScreen);
-document.getElementById('cwExpandBtn').addEventListener('click', expandMiniCall);
+
+// ── FULL SCREEN (ZOOM IN) ──
+function setCallFullscreen(on) {
+  const screen = document.getElementById('callScreen');
+  if (screen.classList.contains('hidden')) return;
+  callIsFullscreen = on;
+  screen.classList.toggle('fullscreen', on);
+  _placeCallScreen(on);
+  _paintZoomBtn(on);
+  _sizeCallGrid();
+}
+function _paintZoomBtn(on) {
+  const btn = document.getElementById('csZoomBtn');
+  btn.classList.toggle('is-zoomed', on);
+  btn.title = on ? 'Exit full screen (Esc)' : 'Full screen (F)';
+}
+document.getElementById('csZoomBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  setCallFullscreen(!callIsFullscreen);
+});
+document.getElementById('callScreen').addEventListener('dblclick', e => {
+  if (e.target.closest('button, .cs-controls, .cs-react-panel, .cs-add-panel')) return;
+  setCallFullscreen(!callIsFullscreen);
+});
+document.addEventListener('keydown', e => {
+  if (document.getElementById('callScreen').classList.contains('hidden')) return;
+  if (e.target.closest('input, textarea, [contenteditable]')) return;
+  if (e.key === 'Escape') {
+    const react = document.getElementById('csReactPanel');
+    const add = document.getElementById('csAddPanel');
+    const more = document.getElementById('callMoreMenu');
+    if (!react.classList.contains('hidden')) _closeReactPanel();
+    else if (!add.classList.contains('hidden')) { add.classList.add('hidden'); _syncCallChrome(); }
+    else if (more && !more.classList.contains('hidden')) _closeMore();
+    else if (callIsFullscreen) setCallFullscreen(false);
+  }
+  else if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey && !e.altKey) setCallFullscreen(!callIsFullscreen);
+});
 
 // ── AUTO-HIDE CONTROLS IN VIDEO MODE ──
 let _csHideTimer = null;
@@ -3215,52 +4592,12 @@ function _showCallControls() {
 document.getElementById('callScreen').addEventListener('mousemove', _showCallControls);
 document.getElementById('callScreen').addEventListener('click', _showCallControls);
 
-// ── FULLSCREEN CALL TOGGLE ──
-document.getElementById('csFullscreenBtn').addEventListener('click', () => {
-  const screen = document.getElementById('callScreen');
-  callIsFullscreen = !callIsFullscreen;
-  screen.classList.toggle('fullscreen', callIsFullscreen);
-  document.getElementById('csFullscreenIcon').innerHTML = callIsFullscreen ? ICON_CONTRACT : ICON_EXPAND;
-});
-
 // Camera toggle — enable/disable video track on the fly
-document.getElementById('csCameraBtn').addEventListener('click', function() {
-  const screen = document.getElementById('callScreen');
-  const isVideo = screen.classList.contains('video-mode');
-
-  if (!isVideo) {
-    // Switch to video mode mid-call
-    const av = document.getElementById('csAvatar');
-    setVideoMode(true, av.style.background, av.textContent, document.getElementById('csName').textContent);
-    return;
-  }
-
-  // Toggle camera track enabled state
-  if (vcStream) {
-    const vTrack = vcStream.getVideoTracks()[0];
-    if (vTrack) {
-      vTrack.enabled = !vTrack.enabled;
-      vcCameraOn = vTrack.enabled;
-      const fallback = document.getElementById('csSelfFallback');
-      fallback.classList.toggle('hidden', vcCameraOn);
-      this.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-blue', vcCameraOn);
-    }
-  }
-});
-
-// Mute — disable audio track
-document.getElementById('csMuteBtn').addEventListener('click', function() {
-  vcMuted = !vcMuted;
-  if (vcStream) {
-    vcStream.getAudioTracks().forEach(t => { t.enabled = !vcMuted; });
-  }
-  this.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active', vcMuted);
-});
-
-// Speaker button — visual toggle only (actual output device API requires Electron permissions)
-document.getElementById('csSpeakerBtn').addEventListener('click', function() {
-  this.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active');
-});
+document.getElementById('csCameraBtn').addEventListener('click', toggleCamera);
+document.getElementById('csMuteBtn').addEventListener('click', toggleMute);
+document.getElementById('csSpeakerBtn').addEventListener('click', toggleSpeaker);
+document.getElementById('csMoreBtn').addEventListener('click', e => openCallMore(e, 'screen'));
+document.getElementById('csShareBtn').addEventListener('click', toggleScreenShare);
 
 // ── FLOATING DIALPAD ──
 (function() {
@@ -3286,6 +4623,7 @@ document.getElementById('csSpeakerBtn').addEventListener('click', function() {
     pad.classList.add('hidden');
     digits = '';
     display.textContent = '';
+    if (typeof _syncCallChrome === 'function') _syncCallChrome();
   }
   window.showDialPad = showDialPad;
   window.hideDialPad = hideDialPad;
@@ -3371,16 +4709,6 @@ document.getElementById('csSpeakerBtn').addEventListener('click', function() {
 })();
 
 // Keypad button on call widget
-document.getElementById('cwKeypadBtn').addEventListener('click', function() {
-  const pad = document.getElementById('dialPad');
-  if (pad.classList.contains('hidden')) {
-    showDialPad();
-    this.classList.add('cw-btn-active');
-  } else {
-    hideDialPad();
-    this.classList.remove('cw-btn-active');
-  }
-});
 
 // ── CALL PEOPLE PICKER (redesigned) ──
 const cpmSelected = new Set();
@@ -3438,18 +4766,23 @@ document.querySelectorAll('.cpm-person').forEach(p => {
     cpmRefresh();
   });
 });
+function _cpmPeople() {
+  return [...cpmSelected].map(key => {
+    const el = document.querySelector(`.cpm-person[data-key="${key}"]`);
+    return { key, name: el.dataset.name, color: el.dataset.color, initials: el.dataset.initials };
+  });
+}
+
 document.getElementById('cpmVoiceBtn').addEventListener('click', () => {
   if (cpmSelected.size === 0) return;
-  const first = document.querySelector(`.cpm-person[data-key="${[...cpmSelected][0]}"]`);
   closeModal('callPeopleModal');
-  startCallWith(first.dataset.name, first.dataset.role, first.dataset.color, first.dataset.initials, false);
+  startGroupCall(_cpmPeople(), false);
 });
 
 document.getElementById('cpmVideoBtn').addEventListener('click', () => {
   if (cpmSelected.size === 0) return;
-  const first = document.querySelector(`.cpm-person[data-key="${[...cpmSelected][0]}"]`);
   closeModal('callPeopleModal');
-  startCallWith(first.dataset.name, first.dataset.role, first.dataset.color, first.dataset.initials, true);
+  startGroupCall(_cpmPeople(), true);
 });
 
 // ── CALL DROPDOWN ──
@@ -3457,11 +4790,48 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
   const btn = document.getElementById('quickCallBtn');
   const dd  = document.getElementById('callDropdown');
   const search = document.getElementById('cdSearch');
+  const list = document.getElementById('cdList');
+  const footer = document.getElementById('cdFooter');
+  const countEl = document.getElementById('cdCount');
+  const selected = new Set();
+
+  const PHONE = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
+  const VIDEO = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>`;
+  const CHECK = `<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  function renderList(filter) {
+    const q = (filter || '').toLowerCase();
+    list.innerHTML = peopleData
+      .filter(p => !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q))
+      .map(p => `
+        <div class="cd-item${selected.has(p.key) ? ' selected' : ''}" data-key="${p.key}">
+          <button type="button" class="cd-select" aria-label="Select ${p.name}"><div class="cd-check">${selected.has(p.key) ? CHECK : ''}</div></button>
+          <div class="cd-av" style="background:${p.color}">${p.initials}${p.online ? '<span class="cd-online"></span>' : ''}</div>
+          <div class="cd-info"><span>${p.name}</span><small>${p.role}</small></div>
+          <button class="cd-act cd-voice" title="Voice call">${PHONE}</button>
+          <button class="cd-act cd-video" title="Video call">${VIDEO}</button>
+        </div>`).join('');
+  }
+
+  function syncFooter() {
+    const n = selected.size;
+    footer.classList.toggle('hidden', n === 0);
+    countEl.textContent = n === 1 ? '1 person selected' : `${n} people selected`;
+    const ps = selectedPeople();
+    document.getElementById('cdStack').innerHTML = ps.slice(0, 3).map(p => `<span class="cd-stack-av" style="background:${p.color}">${p.initials}</span>`).join('')
+      + (ps.length > 3 ? `<span class="cd-stack-av cd-stack-more">+${ps.length - 3}</span>` : '');
+  }
+
+  function selectedPeople() {
+    return [...selected].map(key => peopleData.find(p => p.key === key)).filter(Boolean);
+  }
 
   function openDropdown() {
     closeAllQuickDds();
     search.value = '';
-    document.querySelectorAll('.cd-item').forEach(el => el.style.display = '');
+    selected.clear();
+    renderList();
+    syncFooter();
     positionDropdown(dd, btn);
     dd.classList.remove('hidden');
     search.focus();
@@ -3472,27 +4842,41 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
     dd.classList.contains('hidden') ? openDropdown() : closeAllQuickDds();
   });
 
-  // Search filter
-  search.addEventListener('input', function() {
-    const q = this.value.toLowerCase();
-    document.querySelectorAll('.cd-item').forEach(el => {
-      el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
-    });
+  search.addEventListener('input', function() { renderList(this.value); });
+
+  list.addEventListener('click', e => {
+    const item = e.target.closest('.cd-item');
+    if (!item) return;
+    const person = peopleData.find(p => p.key === item.dataset.key);
+    if (!person) return;
+    if (e.target.closest('.cd-voice') || e.target.closest('.cd-video')) {
+      e.stopPropagation();
+      closeAllQuickDds();
+      startGroupCall([person], !!e.target.closest('.cd-video'));
+      return;
+    }
+    e.stopPropagation();
+    selected.has(person.key) ? selected.delete(person.key) : selected.add(person.key);
+    item.classList.toggle('selected', selected.has(person.key));
+    const check = item.querySelector('.cd-check');
+    if (check) check.innerHTML = selected.has(person.key) ? CHECK : '';
+    syncFooter();
   });
 
-  // Per-person call buttons
-  dd.querySelectorAll('.cd-item').forEach(item => {
-    item.querySelector('.cd-voice').addEventListener('click', e => {
-      e.stopPropagation();
-      closeAllQuickDds();
-      startCallWith(item.dataset.name, item.dataset.role, item.dataset.color, item.dataset.initials, false);
-    });
-    item.querySelector('.cd-video').addEventListener('click', e => {
-      e.stopPropagation();
-      closeAllQuickDds();
-      startCallWith(item.dataset.name, item.dataset.role, item.dataset.color, item.dataset.initials, true);
-    });
+  function startSelected(video) {
+    const people = selectedPeople();
+    if (!people.length) return;
+    closeAllQuickDds();
+    startGroupCall(people, video);
+  }
+  document.getElementById('cdClear').addEventListener('click', e => {
+    e.stopPropagation();
+    selected.clear();
+    renderList(search.value);
+    syncFooter();
   });
+  document.getElementById('cdStartVoice').addEventListener('click', e => { e.stopPropagation(); startSelected(false); });
+  document.getElementById('cdStartVideo').addEventListener('click', e => { e.stopPropagation(); startSelected(true); });
 })();
 
 document.getElementById('scDurRow').addEventListener('click', e => {
@@ -3514,6 +4898,23 @@ document.getElementById('scSubmit').addEventListener('click', () => {
   const withName = getSelectedPeopleNames('scPeopleRow');
   const durLabel = dur === '60' ? '1 hour' : `${dur} minutes`;
   closeModal('scheduleCallModal');
+
+  const people = getSelectedPeopleKeys('scPeopleRow');
+  if (window._editingMeetingId || /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const editing = window._editingMeetingId;
+    window._editingMeetingId = null;
+    window._sdEditMode = false;
+    placeMeeting({
+      id: editing || undefined,
+      title,
+      date,
+      time,
+      dur: parseDurMinutes(dur),
+      participants: people,
+      type: 'video',
+    });
+    return;
+  }
 
   if (window._sdEditMode && window._currentSchedule) {
     const old = window._currentSchedule;
@@ -3584,23 +4985,16 @@ document.getElementById('scSubmit').addEventListener('click', () => {
     const date = document.getElementById('qdScDate').value;
     const time = document.getElementById('qdScTime').value;
     const dur  = document.querySelector('#qdDurRow .sd-dur-btn.sd-dur-active')?.dataset.min || '30';
-    const withName = getSelectedPeopleNames('qdPeopleRow');
-    const durLabel = dur === '60' ? '1 hour' : `${dur} minutes`;
     closeAllQuickDds();
     titleIn.value = '';
-    const upcomingList = document.getElementById('upcomingList');
-    const upcomingSection = document.getElementById('upcomingSection');
-    if (upcomingList && upcomingSection) {
-      upcomingSection.classList.remove('hidden');
-      const item = document.createElement('div');
-      item.className = 'upcoming-item';
-      item.style.cursor = 'pointer';
-      item.dataset.scheduleTitle = title;
-      const scheduleObj = { title, date, time, duration: durLabel, withName };
-      item.innerHTML = `<div class="upcoming-icon">📅</div><div class="upcoming-body"><span class="upcoming-name">${title}</span><span class="upcoming-meta">${date} · ${time} · ${durLabel}${withName ? ' · with ' + withName : ''}</span></div><span class="upcoming-badge">Scheduled</span>`;
-      item.addEventListener('click', () => showScheduleDetail(scheduleObj));
-      upcomingList.appendChild(item);
-    }
+    placeMeeting({
+      title,
+      date,
+      time,
+      dur: parseDurMinutes(dur),
+      participants: getSelectedPeopleKeys('qdPeopleRow'),
+      type: 'video',
+    });
   });
 })();
 
@@ -3774,7 +5168,7 @@ document.getElementById('scSubmit').addEventListener('click', () => {
     if (!text) return;
     input.value = '';
     addUserMessage(text);
-    if (text.toLowerCase().includes('@ai') || text.includes('?')) {
+    if (text.toLowerCase().includes('@yuzuai') || text.includes('?')) {
       setTimeout(() => {
         addAiResponse(aiResponses[aiIdx % aiResponses.length]);
         aiIdx++;
@@ -3804,7 +5198,7 @@ document.getElementById('scSubmit').addEventListener('click', () => {
     const topic = room.dataset.topic;
     if (topic) {
       setTimeout(() => {
-        addAiResponse(`Welcome to <strong>${name}</strong>! I'm here to help the team with: <em>${topic}</em>\n\nType <strong>@AI</strong> followed by your question to get started.`);
+        addAiResponse(`Welcome to <strong>${name}</strong>! I'm here to help the team with: <em>${topic}</em>\n\nType <strong>@yuzuai</strong> followed by your question, or just ask anything.`);
       }, 400);
     }
 
