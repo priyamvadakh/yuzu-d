@@ -26,7 +26,7 @@ document.getElementById('obNextBtn').addEventListener('click', () => {
   if (obCurrent < obSlides.length - 1) obGoTo(obCurrent + 1);
   else goTo('screen-login');
 });
-document.getElementById('obSkipBtn').addEventListener('click', () => goTo('screen-login'));
+document.getElementById('obSkipBtn').addEventListener('click', showHome);
 
 // ── Screen navigation ──
 let userEmail = '';
