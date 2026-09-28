@@ -406,7 +406,7 @@ function makeVoiceBubble(msg, isMe) {
   const bars = (msg.bars || [4,7,5,9,6,8,5,7,4,6,8,5,7,4,9]).map(h =>
     `<div class="dmvn-bar" style="height:${h * 2.4}px"></div>`
   ).join('');
-  const tickHTML = isMe ? ' <span class="dm-tick">✓✓</span>' : '';
+  const tickHTML = isMe ? ' <svg class="dm-tick" width="16" height="10" viewBox="0 0 16 10" fill="none" aria-label="Read"><path d="M1 5.2 3.8 8 9.6 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.4 7.2 7.2 8 13 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
   return `<div class="dm-voice-bubble ${isMe ? 'me' : 'them'}" id="${id}">
     <div class="dmvn-player">
       <button class="dmvn-play" aria-label="Play">
@@ -480,7 +480,7 @@ function makeCallBubble(msg) {
 
 function makeBubble(msg, dm, showAvatar) {
   const isMe = msg.from === 'me';
-  const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <span class="dm-tick">✓✓</span>' : ''}</div>`;
+  const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <svg class="dm-tick" width="16" height="10" viewBox="0 0 16 10" fill="none" aria-label="Read"><path d="M1 5.2 3.8 8 9.6 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.4 7.2 7.2 8 13 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</div>`;
 
   // For group DMs, use per-message sender info; fall back to dm-level for 1:1
   const senderColor    = msg.senderColor    || dm.color;
@@ -488,6 +488,7 @@ function makeBubble(msg, dm, showAvatar) {
   const senderName     = msg.senderName     || dm.name;
 
   if (msg.type === 'call') return makeCallBubble(msg);
+  if (msg.type === 'system') return `<div class="dm-system-note">${msg.text}</div>`;
 
   if (msg.type === 'voice') {
     const voiceHTML = makeVoiceBubble(msg, isMe);
@@ -547,17 +548,23 @@ function loadDmConversation(dmKey) {
   }
   document.getElementById('dmConvoHeader').innerHTML = `
     ${hdrAvatarHTML}
-    <div class="dm-convo-info">
+    <div class="dm-convo-info${dm.isGroup ? ' is-group' : ''}"${dm.isGroup ? ' role="button" tabindex="0" title="View and add members"' : ''}>
       <div class="dm-convo-name">${dm.name}</div>
       <div class="dm-convo-status ${dm.isGroup ? 'members' : (dm.online ? '' : 'offline')}">${hdrStatusHTML}</div>
     </div>
     <div class="dm-header-actions">
+      ${dm.isGroup ? `<button class="dm-header-btn dm-members-btn" title="Members">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>${dm.members.length + 1}</span>
+      </button>` : ''}
+      <div class="dm-call-group" role="group" aria-label="Start a call">
       <button class="dm-header-btn" title="Video call">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="2" y="6" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/></svg>
       </button>
       <button class="dm-header-btn" title="Call">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>
       </button>
+      </div>
       <button class="dm-header-btn" title="Search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button>
@@ -566,6 +573,9 @@ function loadDmConversation(dmKey) {
       </button>
     </div>
   `;
+
+  closeDmFind();
+  closeDmMembers();
 
   // Messages with WhatsApp-style bubbles
   const msgs = document.getElementById('dmMessages');
@@ -593,7 +603,187 @@ function sendDmMessage(text) {
   const msgs = document.getElementById('dmMessages');
   msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, false));
   msgs.scrollTop = msgs.scrollHeight;
+  if (!document.getElementById('dmFind').classList.contains('hidden')) runDmFind(false);
 }
+
+// ── GROUP MEMBERS (view + add) ──
+function _memberRow(m, isYou) {
+  const p = peopleData.find(x => x.key === m.key) || {};
+  return `<div class="dmm-row">
+    <div class="cd-av" style="background:${m.color}">${m.initials}${p.online || isYou ? '<span class="cd-online"></span>' : ''}</div>
+    <div class="cd-info"><span>${isYou ? 'You' : m.name}</span><small>${isYou ? 'Group member' : (p.role || '')}</small></div>
+    ${isYou ? '' : `<button type="button" class="dmm-remove" data-remove="${m.key}" title="Remove from group">Remove</button>`}
+  </div>`;
+}
+function renderDmMembers() {
+  const dm = dmData[activeDm];
+  const panel = document.getElementById('dmMembers');
+  if (!dm || !dm.isGroup) return;
+  const me = { key: 'me', name: 'You', color: 'var(--maroon)', initials: userEmail ? userEmail.slice(0, 2).toUpperCase() : 'ME' };
+  const adding = panel.classList.contains('adding');
+  const q = (document.getElementById('dmmSearch')?.value || '').toLowerCase();
+  const others = peopleData.filter(p => !dm.members.some(m => m.key === p.key) && (!q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q)));
+  panel.innerHTML = `
+    <div class="dmm-head">
+      <span>${adding ? 'Add people' : `Members · ${dm.members.length + 1}`}</span>
+      <button type="button" class="dmm-close" id="dmmClose" aria-label="Close">×</button>
+    </div>
+    ${adding ? `
+      <div class="cd-search-row"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="cd-search" id="dmmSearch" placeholder="Search people…" value="${q.replace(/"/g, '&quot;')}" autocomplete="off" /></div>
+      <div class="dmm-list">${others.map(p => `<div class="dmm-row">
+        <div class="cd-av" style="background:${p.color}">${p.initials}${p.online ? '<span class="cd-online"></span>' : ''}</div>
+        <div class="cd-info"><span>${p.name}</span><small>${p.role}</small></div>
+        <button type="button" class="dmm-add" data-add="${p.key}">Add</button></div>`).join('') || '<div class="nd-empty">Everyone is already in this group</div>'}</div>
+      <button type="button" class="dmm-back" id="dmmBack">← Back to members</button>`
+    : `
+      <button type="button" class="dmm-add-row" id="dmmAddPeople">
+        <span class="dmm-add-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg></span>
+        Add people
+      </button>
+      <div class="dmm-list">${_memberRow(me, true)}${dm.members.map(m => _memberRow(m, false)).join('')}</div>`}`;
+  if (adding) {
+    const input = document.getElementById('dmmSearch');
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+}
+function openDmMembers(adding = false) {
+  const panel = document.getElementById('dmMembers');
+  panel.classList.toggle('adding', adding);
+  panel.classList.remove('hidden');
+  renderDmMembers();
+}
+function closeDmMembers() {
+  const panel = document.getElementById('dmMembers');
+  panel?.classList.add('hidden');
+  panel?.classList.remove('adding');
+}
+function _refreshGroupHeader(note) {
+  const dm = dmData[activeDm];
+  dm.messages.push({ type: 'system', text: note });
+  const keepOpen = !document.getElementById('dmMembers').classList.contains('hidden');
+  const adding = document.getElementById('dmMembers').classList.contains('adding');
+  loadDmConversation(activeDm);
+  renderDmList();
+  if (keepOpen) openDmMembers(adding);
+}
+document.getElementById('dmMembers').addEventListener('click', e => {
+  e.stopPropagation();
+  const dm = dmData[activeDm];
+  if (e.target.closest('#dmmClose')) return closeDmMembers();
+  if (e.target.closest('#dmmAddPeople')) return openDmMembers(true);
+  if (e.target.closest('#dmmBack')) return openDmMembers(false);
+  const add = e.target.closest('[data-add]');
+  if (add) {
+    const p = peopleData.find(x => x.key === add.dataset.add);
+    dm.members.push({ key: p.key, name: p.name, color: p.color, initials: p.initials });
+    return _refreshGroupHeader(`You added <strong>${p.name}</strong> to the group`);
+  }
+  const rm = e.target.closest('[data-remove]');
+  if (rm) {
+    if (dm.members.length <= 2) return;
+    const m = dm.members.find(x => x.key === rm.dataset.remove);
+    dm.members = dm.members.filter(x => x.key !== m.key);
+    return _refreshGroupHeader(`You removed <strong>${m.name}</strong> from the group`);
+  }
+});
+document.getElementById('dmMembers').addEventListener('input', e => {
+  if (e.target.id === 'dmmSearch') renderDmMembers();
+});
+document.getElementById('dmConvoHeader').addEventListener('click', e => {
+  if (!e.target.closest('.dm-members-btn, .dm-convo-info.is-group')) return;
+  e.stopPropagation();
+  document.getElementById('dmMembers').classList.contains('hidden') ? openDmMembers(false) : closeDmMembers();
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#dmMembers, .dm-members-btn, .dm-convo-info.is-group')) closeDmMembers();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDmMembers(); });
+
+// ── SEARCH INSIDE A DM ──
+let _dmHits = [], _dmHitIdx = -1;
+function _clearDmHits() {
+  document.querySelectorAll('#dmMessages mark.dm-hit').forEach(m => {
+    const parent = m.parentNode;
+    parent.replaceChild(document.createTextNode(m.textContent), m);
+    parent.normalize();
+  });
+  _dmHits = []; _dmHitIdx = -1;
+}
+function _focusDmHit() {
+  _dmHits.forEach((h, i) => h.classList.toggle('current', i === _dmHitIdx));
+  const count = document.getElementById('dmFindCount');
+  const q = document.getElementById('dmFindInput').value.trim();
+  count.textContent = !q ? '' : _dmHits.length ? `${_dmHitIdx + 1} of ${_dmHits.length}` : 'No results';
+  count.classList.toggle('none', !!q && !_dmHits.length);
+  _dmHits[_dmHitIdx]?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+// Highlights every match in message text; starts on the most recent match, like Slack/Teams.
+function runDmFind(jumpToLatest = true) {
+  _clearDmHits();
+  const q = document.getElementById('dmFindInput').value.trim().toLowerCase();
+  if (q) {
+    document.querySelectorAll('#dmMessages .dm-bubble').forEach(bubble => {
+      const walker = document.createTreeWalker(bubble, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(node => {
+        const text = node.nodeValue, lower = text.toLowerCase();
+        let i = lower.indexOf(q);
+        if (i === -1) return;
+        const frag = document.createDocumentFragment();
+        let last = 0;
+        while (i !== -1) {
+          frag.append(text.slice(last, i));
+          const mark = document.createElement('mark');
+          mark.className = 'dm-hit';
+          mark.textContent = text.slice(i, i + q.length);
+          frag.append(mark);
+          last = i + q.length;
+          i = lower.indexOf(q, last);
+        }
+        frag.append(text.slice(last));
+        node.parentNode.replaceChild(frag, node);
+      });
+    });
+    _dmHits = [...document.querySelectorAll('#dmMessages mark.dm-hit')];
+    _dmHitIdx = _dmHits.length ? (jumpToLatest ? _dmHits.length - 1 : Math.min(_dmHitIdx, _dmHits.length - 1)) : -1;
+    if (!jumpToLatest && _dmHits.length && _dmHitIdx < 0) _dmHitIdx = _dmHits.length - 1;
+  }
+  _focusDmHit();
+}
+function stepDmFind(dir) {
+  if (!_dmHits.length) return;
+  _dmHitIdx = (_dmHitIdx + dir + _dmHits.length) % _dmHits.length;
+  _focusDmHit();
+}
+function openDmFind() {
+  const bar = document.getElementById('dmFind');
+  bar.classList.remove('hidden');
+  document.querySelector('#dmConvoHeader .dm-header-btn[title="Search"]')?.classList.add('active');
+  const input = document.getElementById('dmFindInput');
+  input.focus();
+  input.select();
+}
+function closeDmFind() {
+  _clearDmHits();
+  document.getElementById('dmFind').classList.add('hidden');
+  document.getElementById('dmFindInput').value = '';
+  document.getElementById('dmFindCount').textContent = '';
+  document.querySelector('#dmConvoHeader .dm-header-btn[title="Search"]')?.classList.remove('active');
+}
+document.getElementById('dmFindInput').addEventListener('input', () => runDmFind(true));
+document.getElementById('dmFindInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); stepDmFind(e.shiftKey ? 1 : -1); }
+  else if (e.key === 'Escape') { e.preventDefault(); closeDmFind(); }
+});
+document.getElementById('dmFindPrev').addEventListener('click', () => stepDmFind(-1));
+document.getElementById('dmFindNext').addEventListener('click', () => stepDmFind(1));
+document.getElementById('dmFindClose').addEventListener('click', closeDmFind);
+document.getElementById('dmConvoHeader').addEventListener('click', e => {
+  if (!e.target.closest('.dm-header-btn[title="Search"]')) return;
+  document.getElementById('dmFind').classList.contains('hidden') ? openDmFind() : closeDmFind();
+});
 
 // ── DM VOICE RECORDING ──
 let _dmRec = {
@@ -700,12 +890,12 @@ function stopDmRecording(send) {
 
 // ── PEOPLE DATA ──
 const peopleData = [
-  { key: 'sarah',   name: 'Sarah Jenkins', role: 'Head of Design',    initials: 'SJ', color: '#7c3aed', online: true,  email: 'sarah.j@yuzu.team',   dept: 'Design' },
-  { key: 'alex',    name: 'Alex Kim',       role: 'Senior Designer',   initials: 'AK', color: '#059669', online: true,  email: 'alex.k@yuzu.team',    dept: 'Design' },
+  { key: 'sarah',   name: 'Sarah Jenkins', role: 'Head of Design',    initials: 'SJ', color: '#7c3aed', online: true,  email: 'sarah.j@yuzu.team',   dept: 'Design', photo: 'assets/avatars/sarah.jpg' },
+  { key: 'alex',    name: 'Alex Kim',       role: 'Senior Designer',   initials: 'AK', color: '#059669', online: true,  email: 'alex.k@yuzu.team',    dept: 'Design', photo: 'assets/avatars/alex.jpg' },
   { key: 'david',   name: 'David Chen',     role: 'Lead Engineer',     initials: 'DC', color: '#2563eb', online: false, email: 'david.c@yuzu.team',   dept: 'Engineering' },
   { key: 'jessica', name: 'Jessica Park',   role: 'Marketing Manager', initials: 'JP', color: '#d97706', online: false, email: 'jessica.p@yuzu.team', dept: 'Marketing' },
-  { key: 'marcus',  name: 'Marcus Lee',     role: 'Product Manager',   initials: 'ML', color: '#0891b2', online: true,  email: 'marcus.l@yuzu.team',  dept: 'Product' },
-  { key: 'priya',   name: 'Priya Nair',     role: 'UX Researcher',     initials: 'PN', color: '#be185d', online: true,  email: 'priya.n@yuzu.team',   dept: 'Design' },
+  { key: 'marcus',  name: 'Marcus Lee',     role: 'Product Manager',   initials: 'ML', color: '#0891b2', online: true,  email: 'marcus.l@yuzu.team',  dept: 'Product', photo: 'assets/avatars/marcus.jpg' },
+  { key: 'priya',   name: 'Priya Nair',     role: 'UX Researcher',     initials: 'PN', color: '#be185d', online: true,  email: 'priya.n@yuzu.team',   dept: 'Design', photo: 'assets/avatars/priya.jpg' },
   { key: 'tom',     name: 'Tom Eriksson',   role: 'Backend Engineer',  initials: 'TE', color: '#64748b', online: false, email: 'tom.e@yuzu.team',     dept: 'Engineering' },
 ];
 
@@ -1473,7 +1663,7 @@ function renderPeopleList(filter) {
     el.querySelector('.pha-msg')?.addEventListener('click', e => {
       e.stopPropagation();
       const key = el.dataset.personKey;
-      if (dmData[key]) { activeDm = key; navigateTo('dms'); }
+      openDmWith(key);
     });
     el.querySelector('.pha-call')?.addEventListener('click', e => {
       e.stopPropagation();
@@ -1483,6 +1673,21 @@ function renderPeopleList(filter) {
 }
 
 let activePersonKey = 'sarah';
+
+// Opens the 1:1 chat with a person, creating an empty one if you haven't messaged them yet.
+function openDmWith(key) {
+  const p = peopleData.find(x => x.key === key);
+  if (!dmData[key]) {
+    if (!p) return;
+    dmData[key] = { name: p.name, color: p.color, initials: p.initials, online: p.online, unread: 0, messages: [] };
+  }
+  activeDm = key;
+  navigateTo('dms');
+  renderDmList();
+  loadDmConversation(key);
+  if (typeof isMobile === 'function' && isMobile()) mobOpenDetail();
+  setTimeout(() => document.getElementById('dmInput')?.focus(), 50);
+}
 
 function showContactDetail(personKey) {
   const p = peopleData.find(x => x.key === personKey);
@@ -1526,7 +1731,7 @@ function showContactDetail(personKey) {
   }
 
   document.getElementById('caMessageBtn').onclick = () => {
-    if (dmData[personKey]) { activeDm = personKey; navigateTo('dms'); }
+    openDmWith(personKey);
   };
   document.getElementById('caCallBtn').onclick = () => startCall(personKey);
   document.getElementById('caVideoBtn').onclick = () => {
@@ -1644,12 +1849,14 @@ function loadChannelConversation(channelKey) {
       <div class="dm-convo-status" style="color:var(--text-muted)">${ch.members} members</div>
     </div>
     <div class="dm-header-actions">
+      <div class="dm-call-group" role="group" aria-label="Start a call">
       <button class="dm-header-btn" title="Video call">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 10L20.553 6.724C21.224 6.566 22 7.05 22 7.764V16.236C22 16.95 21.224 17.434 20.553 17.276L15 14V10Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="2" y="6" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/></svg>
       </button>
       <button class="dm-header-btn" title="Call">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>
       </button>
+      </div>
       <button class="dm-header-btn" title="Search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button>
@@ -1668,7 +1875,7 @@ function loadChannelConversation(channelKey) {
     const prevMsg = ch.messages[i - 1];
     const showSender = !prevMsg || prevMsg.from !== msg.from;
     const isMe = msg.from === 'me';
-    const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <span class="dm-tick">✓✓</span>' : ''}</div>`;
+    const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <svg class="dm-tick" width="16" height="10" viewBox="0 0 16 10" fill="none" aria-label="Read"><path d="M1 5.2 3.8 8 9.6 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.4 7.2 7.2 8 13 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</div>`;
     if (isMe) {
       msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row me"><div class="dm-msg-col-me"><div class="dm-bubble">${msg.text}</div>${timeHTML}</div></div>`);
     } else {
@@ -2104,7 +2311,7 @@ document.getElementById('channelSendBtn').addEventListener('click', () => {
   if (!text || !activeChannel) return;
   channelData[activeChannel].messages.push({ from: 'me', name: 'Me', initials: 'ME', color: '#4c1515', text, time: 'Just now' });
   const msgs = document.getElementById('channelMessages');
-  const timeHTML = `<div class="dm-bubble-time">Just now <span class="dm-tick">✓✓</span></div>`;
+  const timeHTML = `<div class="dm-bubble-time">Just now <svg class="dm-tick" width="16" height="10" viewBox="0 0 16 10" fill="none" aria-label="Read"><path d="M1 5.2 3.8 8 9.6 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.4 7.2 7.2 8 13 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
   msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row me"><div class="dm-msg-col-me"><div class="dm-bubble">${text}</div>${timeHTML}</div></div>`);
   msgs.scrollTop = msgs.scrollHeight;
   input.value = '';
@@ -3571,130 +3778,106 @@ document.addEventListener('click', e => {
   if (clickedOutside && !clickedTrigger) closeAllQuickDds();
 });
 
-// ── DM DROPDOWN ──
+// ── NEW MESSAGE (one person = DM, several = group) ──
 (function() {
-  const btn    = document.getElementById('quickNewDmBtn');
-  const dd     = document.getElementById('dmDropdown');
+  const btn = document.getElementById('quickNewDmBtn');
+  const dd = document.getElementById('dmDropdown');
   const search = document.getElementById('ddmSearch');
-  const tabDirect  = document.getElementById('ddmTabDirect');
-  const tabGroup   = document.getElementById('ddmTabGroup');
-  const directSec  = document.getElementById('ddmDirectSection');
-  const groupSec   = document.getElementById('ddmGroupSection');
-  const groupNameIn = document.getElementById('ddmGroupName');
-  const createBtn  = document.getElementById('ddmGroupCreate');
-  const chipsRow   = document.getElementById('ddmSelectedChips');
+  const list = document.getElementById('ddmList');
+  const chips = document.getElementById('ddmSelectedChips');
+  const footer = document.getElementById('ddmFooter');
+  const nameIn = document.getElementById('ddmGroupName');
+  const go = document.getElementById('ddmGo');
+  const CHECK = `<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const picked = [];
 
-  let selectedKeys = new Set();
+  const person = k => peopleData.find(p => p.key === k);
 
-  function switchTab(tab) {
-    const isDirect = tab === 'direct';
-    tabDirect.classList.toggle('active', isDirect);
-    tabGroup.classList.toggle('active', !isDirect);
-    directSec.classList.toggle('hidden', !isDirect);
-    groupSec.classList.toggle('hidden', isDirect);
-    if (!isDirect) {
-      selectedKeys.clear();
-      updateGroupUI();
-      groupNameIn.value = '';
-    } else {
-      search.focus();
-    }
+  function render() {
+    const q = search.value.trim().toLowerCase();
+    list.innerHTML = peopleData
+      .filter(p => !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q))
+      .map(p => `
+        <div class="cd-item${picked.includes(p.key) ? ' selected' : ''}" data-key="${p.key}">
+          <button type="button" class="cd-select" aria-label="Select ${p.name}"><div class="cd-check">${picked.includes(p.key) ? CHECK : ''}</div></button>
+          <div class="cd-av" style="background:${p.color}">${p.initials}${p.online ? '<span class="cd-online"></span>' : ''}</div>
+          <div class="cd-info"><span>${p.name}</span><small>${p.role}</small></div>
+        </div>`).join('') || '<div class="nd-empty">No one matches that search</div>';
+    chips.classList.toggle('hidden', !picked.length);
+    chips.innerHTML = picked.map(k => { const p = person(k); return `<span class="nd-chip"><span class="nd-chip-av" style="background:${p.color}">${p.initials}</span>${p.name.split(' ')[0]}<button type="button" data-rm="${k}" aria-label="Remove ${p.name}">×</button></span>`; }).join('');
+    footer.classList.toggle('hidden', !picked.length);
+    nameIn.classList.toggle('hidden', picked.length < 2);
+    go.innerHTML = picked.length === 1
+      ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Message ${person(picked[0]).name.split(' ')[0]}`
+      : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Start group · ${picked.length} people`;
   }
 
-  tabDirect.addEventListener('click', e => { e.stopPropagation(); switchTab('direct'); });
-  tabGroup.addEventListener('click',  e => { e.stopPropagation(); switchTab('group'); });
+  function toggle(key) {
+    const i = picked.indexOf(key);
+    i === -1 ? picked.push(key) : picked.splice(i, 1);
+    render();
+  }
+
+  function openChat() {
+    if (!picked.length) return;
+    let key;
+    if (picked.length === 1) {
+      closeAllQuickDds();
+      openDmWith(picked[0]);
+      return;
+    } else {
+      const members = picked.map(k => { const p = person(k); return { key: p.key, name: p.name, color: p.color, initials: p.initials }; });
+      const name = nameIn.value.trim() || members.map(m => m.name.split(' ')[0]).join(', ');
+      key = 'group-' + Date.now();
+      dmData[key] = {
+        name, isGroup: true, members, color: members[0].color,
+        initials: name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+        online: false, unread: 0, messages: [],
+      };
+    }
+    closeAllQuickDds();
+    activeDm = key;
+    navigateTo('dms');
+    renderDmList();
+    loadDmConversation(key);
+    if (isMobile()) mobOpenDetail();
+  }
 
   window.openDmDropdown = function(triggerEl) {
     if (!dd.classList.contains('hidden')) { closeAllQuickDds(); return; }
-    openQuickDd(dd, triggerEl || btn, () => { switchTab('direct'); search.value = ''; filterDdm(''); search.focus(); });
+    openQuickDd(dd, triggerEl || btn, () => {
+      picked.length = 0;
+      search.value = '';
+      nameIn.value = '';
+      render();
+      search.focus();
+    });
   };
+  btn.addEventListener('click', e => { e.stopPropagation(); window.openDmDropdown(btn); });
 
-  btn.addEventListener('click', e => {
+  search.addEventListener('input', render);
+  search.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const rows = list.querySelectorAll('.cd-item');
+    if (rows.length === 1 && !picked.includes(rows[0].dataset.key)) { toggle(rows[0].dataset.key); search.value = ''; render(); }
+    else openChat();
+  });
+  list.addEventListener('click', e => {
+    const row = e.target.closest('.cd-item');
+    if (!row) return;
     e.stopPropagation();
-    window.openDmDropdown(btn);
+    toggle(row.dataset.key);
   });
-
-  // Direct tab — search filter
-  function filterDdm(q) {
-    document.querySelectorAll('.qd-dm-item').forEach(item => {
-      item.style.display = item.querySelector('span').textContent.toLowerCase().includes(q) ? '' : 'none';
-    });
-  }
-  search.addEventListener('input', function() { filterDdm(this.value.toLowerCase()); });
-
-  document.querySelectorAll('.qd-dm-item').forEach(item => {
-    item.addEventListener('click', e => {
-      e.stopPropagation();
-      closeAllQuickDds();
-      switchMiddleView('dms');
-      loadDmConversation(item.dataset.dm);
-      if (isMobile()) mobOpenDetail();
-    });
-  });
-
-  // Group tab — multi-select
-  function updateGroupUI() {
-    // checkmarks
-    document.querySelectorAll('.qd-grp-item').forEach(item => {
-      item.classList.toggle('selected', selectedKeys.has(item.dataset.key));
-    });
-    // chips
-    if (selectedKeys.size > 0) {
-      chipsRow.classList.remove('hidden');
-      chipsRow.innerHTML = [...selectedKeys].map(k => {
-        const el = document.querySelector(`.qd-grp-item[data-key="${k}"]`);
-        const color = el?.dataset.color || '#999';
-        const initials = el?.dataset.initials || k[0].toUpperCase();
-        const name = el?.dataset.name || k;
-        return `<div class="qd-grp-chip">
-          <div class="qd-grp-chip-av" style="background:${color}">${initials.charAt(0)}</div>
-          ${name.split(' ')[0]}
-        </div>`;
-      }).join('');
-    } else {
-      chipsRow.classList.add('hidden');
-    }
-    createBtn.disabled = selectedKeys.size < 2;
-  }
-
-  document.querySelectorAll('.qd-grp-item').forEach(item => {
-    item.addEventListener('click', e => {
-      e.stopPropagation();
-      const key = item.dataset.key;
-      selectedKeys.has(key) ? selectedKeys.delete(key) : selectedKeys.add(key);
-      updateGroupUI();
-    });
-  });
-
-  createBtn.addEventListener('click', e => {
+  chips.addEventListener('click', e => {
+    const rm = e.target.closest('[data-rm]');
+    if (!rm) return;
     e.stopPropagation();
-    if (selectedKeys.size < 2) return;
-
-    const members = [...selectedKeys].map(k => {
-      const el = document.querySelector(`.qd-grp-item[data-key="${k}"]`);
-      return { key: k, name: el.dataset.name, color: el.dataset.color, initials: el.dataset.initials };
-    });
-
-    const autoName = members.map(m => m.name.split(' ')[0]).join(', ');
-    const groupName = groupNameIn.value.trim() || autoName;
-    const groupKey  = 'group-' + Date.now();
-
-    dmData[groupKey] = {
-      name: groupName,
-      isGroup: true,
-      members,
-      color: members[0].color,
-      initials: groupName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
-      online: false, unread: 0,
-      messages: []
-    };
-
-    closeAllQuickDds();
-    switchMiddleView('dms');
-    renderDmList();
-    loadDmConversation(groupKey);
-    if (isMobile()) mobOpenDetail();
+    toggle(rm.dataset.rm);
   });
+  nameIn.addEventListener('keydown', e => { if (e.key === 'Enter') openChat(); });
+  go.addEventListener('click', e => { e.stopPropagation(); openChat(); });
+  dd.addEventListener('click', e => e.stopPropagation());
 })();
 
 // ── CHANNEL DROPDOWN ──
@@ -3999,6 +4182,13 @@ let myHandRaised = false;
 
 const MIC_OFF_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="2" y2="22"/><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`;
 
+function _photoOf(key) { return peopleData.find(p => p.key === key)?.photo || ''; }
+// Avatar markup: photo when the person has one, initials on their colour otherwise.
+function _avStyle(p) {
+  const photo = _photoOf(p.key);
+  return photo ? `background:${p.color} url('${photo}') center/cover no-repeat;color:transparent` : `background:${p.color}`;
+}
+
 function _callLabel() {
   if (callTitle) return callTitle;
   const names = callParticipants.map(p => p.name.split(' ')[0]);
@@ -4098,7 +4288,7 @@ function renderCallLayout() {
   const isVideo = screen.classList.contains('video-mode');
   grid.innerHTML = callParticipants.map(p => `
     <div class="cs-gtile${p.joined ? '' : ' ringing'}${p.muted ? ' muted' : ''}" data-key="${p.key}" title="Pin to main screen" style="--tile-rgb:${hexToRgb(p.color)}">
-      <div class="cs-gtile-av" style="background:${p.color}">${p.initials}</div>
+      <div class="cs-gtile-av${_photoOf(p.key) ? ' has-photo' : ''}" style="${_avStyle(p)}">${p.initials}</div>
       <span class="cs-gtile-status">Ringing…</span>
       <div class="cs-gtile-name">${p.name}<span class="cs-gtile-mic">${MIC_OFF_ICON}</span></div>
       <button class="cs-gtile-remove" title="Remove from call" data-remove="${p.key}">
@@ -4186,7 +4376,7 @@ function _renderStage() {
     }
     stage.innerHTML = `
       ${showVideo ? '<video id="csStageVideo" autoplay muted playsinline></video>' : ''}
-      <div class="cs-stage-av" style="${p.self ? 'background:var(--amber);color:var(--maroon-dark)' : `background:${p.color}`}">${p.initials}</div>
+      <div class="cs-stage-av${!p.self && _photoOf(p.key) ? ' has-photo' : ''}" style="${p.self ? 'background:var(--amber);color:var(--maroon-dark)' : _avStyle(p)}">${p.initials}</div>
       <div class="cs-gtile-name">${callPinnedKey ? '<span class="cs-pin">📌</span>' : ''}${p.self ? 'You' : p.name}</div>
       <span class="cs-gtile-hand">✋</span>
       ${callPinnedKey ? '<button type="button" class="cs-stage-unpin" id="csUnpin">Unpin</button>' : ''}`;
@@ -4345,8 +4535,7 @@ function _paintMini() {
   if (!p) return;
   const av = document.getElementById('cmAvatar');
   av.textContent = p.initials;
-  av.style.background = p.self ? 'var(--amber)' : p.color;
-  av.style.color = p.self ? 'var(--maroon-dark)' : '';
+  av.style.cssText = p.self ? 'background:var(--amber);color:var(--maroon-dark)' : _avStyle(p);
   document.getElementById('cmName').textContent = p.self ? 'You' : p.name;
   const speaking = !!document.querySelector(`#csGroupGrid .cs-gtile.speaking[data-key="${p.key}"]`);
   mini.classList.toggle('speaking', speaking);
@@ -5038,19 +5227,17 @@ document.getElementById('scSubmit').addEventListener('click', () => {
   const titleIn = document.getElementById('qdScTitle');
   const scheduleBtn = document.getElementById('qdScSchedule');
 
+  // Same full "New meeting" form as the Meetings page Schedule button
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    dd.classList.contains('hidden')
-      ? openQuickDd(dd, btn, () => {
-          titleIn.value = '';
-          const today = new Date().toISOString().split('T')[0];
-          document.getElementById('qdScDate').value = today;
-          document.getElementById('qdScTime').value = '10:00';
-          document.querySelectorAll('#qdDurRow .sd-dur-btn').forEach((b, i) => b.classList.toggle('sd-dur-active', i === 1));
-          renderSchedulePeople('qdPeopleRow', null);
-          titleIn.focus();
-        })
-      : closeAllQuickDds();
+    closeAllQuickDds();
+    const today = mvToday();
+    mvYear = today.y;
+    mvMonth = today.m;
+    mvSelected = today.ymd;
+    navigateTo('meetings');
+    showPanel('meetingsCal');
+    mvOpenNewMeeting({ date: today.ymd });
   });
 
   document.getElementById('qdDurRow').addEventListener('click', e => {
