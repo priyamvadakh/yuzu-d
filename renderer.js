@@ -218,7 +218,7 @@ const dmData = {
       { key: 'alex',    name: 'Alex Kim',       color: '#059669', initials: 'AK' },
       { key: 'jessica', name: 'Jessica Park',   color: '#d97706', initials: 'JP' },
     ],
-    color: '#7c3aed', initials: 'DT', online: true, unread: 2,
+    color: '#7c3aed', initials: 'DT', online: true, unread: 2, lastActive: Date.now() - 15 * 60e3,
     messages: [
       { from: 'sarah',   senderName: 'Sarah Jenkins', senderColor: '#7c3aed', senderInitials: 'SJ', text: 'Hey team! Just uploaded the updated design system v2 🎨', time: '10:30 AM' },
       { from: 'alex',    senderName: 'Alex Kim',       senderColor: '#059669', senderInitials: 'AK', text: 'Looks great! The new component library is exactly what we needed', time: '10:32 AM' },
@@ -266,6 +266,20 @@ const dmData = {
     messages: [
       { from: 'them', text: "I'll share the campaign slides tomorrow morning", time: 'Yesterday' },
       { from: 'me',   text: "Sounds good, looking forward to it 👍", time: 'Yesterday' },
+    ]
+  },
+  'group-campaign': {
+    name: 'Campaign Launch',
+    isGroup: true,
+    members: [
+      { key: 'sarah',   name: 'Sarah Jenkins', color: '#7c3aed', initials: 'SJ' },
+      { key: 'alex',    name: 'Alex Kim',       color: '#059669', initials: 'AK' },
+      { key: 'jessica', name: 'Jessica Park',   color: '#d97706', initials: 'JP' },
+    ],
+    color: '#d97706', initials: 'CL', online: true, unread: 0, lastActive: Date.now() - 26 * 3600e3,
+    messages: [
+      { from: 'jessica', senderName: 'Jessica Park', senderColor: '#d97706', senderInitials: 'JP', text: 'Kicking off the Q3 campaign thread here 🚀', time: 'Yesterday' },
+      { from: 'me', text: 'Perfect, let’s keep launch comms in this group', time: 'Yesterday' },
     ]
   }
 };
@@ -600,10 +614,12 @@ function sendDmMessage(text) {
   const dm = dmData[activeDm];
   const msg = { from: 'me', text: text.trim(), time: 'Just now' };
   dm.messages.push(msg);
+  dm.lastActive = Date.now();
   const msgs = document.getElementById('dmMessages');
   msgs.insertAdjacentHTML('beforeend', makeBubble(msg, dm, false));
   msgs.scrollTop = msgs.scrollHeight;
   if (!document.getElementById('dmFind').classList.contains('hidden')) runDmFind(false);
+  renderCallChat();
 }
 
 // ── GROUP MEMBERS (view + add) ──
@@ -1735,8 +1751,8 @@ function showContactDetail(personKey) {
   };
   document.getElementById('caCallBtn').onclick = () => startCall(personKey);
   document.getElementById('caVideoBtn').onclick = () => {
-    const pd = peopleData.find(x => x.key === personKey) || dmData[personKey];
-    if (pd) startCallWith(pd.name, pd.role || '', pd.color, pd.initials, true);
+    const pd = peopleData.find(x => x.key === personKey);
+    if (pd) startGroupCall([pd], true);
   };
   document.getElementById('caScheduleBtn').onclick = () => {
     const pd = peopleData.find(x => x.key === personKey);
@@ -1872,8 +1888,9 @@ function loadChannelConversation(channelKey) {
   const msgs = document.getElementById('channelMessages');
   msgs.innerHTML = '<div class="dm-date-sep">Today</div>';
   ch.messages.forEach((msg, i) => {
+    if (msg.type === 'system') { msgs.insertAdjacentHTML('beforeend', `<div class="dm-system-note">${msg.text}</div>`); return; }
     const prevMsg = ch.messages[i - 1];
-    const showSender = !prevMsg || prevMsg.from !== msg.from;
+    const showSender = !prevMsg || prevMsg.from !== msg.from || prevMsg.type === 'system';
     const isMe = msg.from === 'me';
     const timeHTML = `<div class="dm-bubble-time">${msg.time}${isMe ? ' <svg class="dm-tick" width="16" height="10" viewBox="0 0 16 10" fill="none" aria-label="Read"><path d="M1 5.2 3.8 8 9.6 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.4 7.2 7.2 8 13 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</div>`;
     if (isMe) {
@@ -2314,6 +2331,7 @@ document.getElementById('channelSendBtn').addEventListener('click', () => {
   const timeHTML = `<div class="dm-bubble-time">Just now <svg class="dm-tick" width="16" height="10" viewBox="0 0 16 10" fill="none" aria-label="Read"><path d="M1 5.2 3.8 8 9.6 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.4 7.2 7.2 8 13 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
   msgs.insertAdjacentHTML('beforeend', `<div class="dm-msg-row me"><div class="dm-msg-col-me"><div class="dm-bubble">${text}</div>${timeHTML}</div></div>`);
   msgs.scrollTop = msgs.scrollHeight;
+  renderCallChat();
   input.value = '';
   syncSendBtn(input, document.getElementById('channelSendBtn'));
 });
@@ -3247,7 +3265,7 @@ function showScheduleDetail(s) {
 
   joinBtn.onclick = () => {
     if (withPerson) {
-      startCallWith(withPerson.name, withPerson.role || '', withPerson.color, withPerson.initials, true);
+      startGroupCall([withPerson], true);
     } else {
       startCallWith(s.title, 'Meeting', '#3d5af1', '📅', true);
     }
@@ -3400,9 +3418,7 @@ let callTimerInterval = null;
 let callSeconds = 0;
 let callMuted = false;
 let callHeld = false;
-let callRecording = false;
 let callSpeakerOn = true;
-let _moreSurface = null;
 
 function _fmtClock(n, padMin) {
   const m = Math.floor(n / 60);
@@ -3411,9 +3427,9 @@ function _fmtClock(n, padMin) {
 }
 function _paintTimers() {
   const c = document.getElementById('csTimer');
-  const m = document.getElementById('cmTimer');
   if (c) c.textContent = _fmtClock(callSeconds, true);
-  if (m) m.textContent = _fmtClock(callSeconds, false);
+  _paintCallerSub();
+  _paintCwStatus();
 }
 function _stopCallTimer() {
   clearInterval(callTimerInterval);
@@ -3434,10 +3450,20 @@ function _resetCallFlags() {
   callMuted = false;
   vcMuted = false;
   callHeld = false;
-  callRecording = false;
   callSpeakerOn = true;
   callSeconds = 0;
   _stopCallTimer();
+}
+// Line under the name on the 1:1 call screen: status while ringing or held, then the call timer.
+function _paintCallerSub() {
+  const ringing = !callParticipants.some(p => p.joined);
+  document.getElementById('csCallerSub').textContent =
+    _shareNotice || (callHeld ? 'On hold' : (ringing ? 'Ringing…' : _fmtClock(callSeconds, true)));
+}
+function _paintCwStatus() {
+  const joined = callParticipants.filter(p => p.joined).length;
+  const live = joined ? _fmtClock(callSeconds, true) + (_isGroupCall() ? ` · ${joined + 1} in call` : '') : 'Ringing…';
+  document.getElementById('cwPersonStatus').textContent = callHeld ? 'On hold' : (screenShareStream ? 'Presenting · ' : '') + live;
 }
 function _paintCallStatus() {
   const ringing = callParticipants.length > 0 && callParticipants.some(p => !p.joined);
@@ -3445,21 +3471,15 @@ function _paintCallStatus() {
   const label = _shareNotice || (callHeld ? 'On hold' : (ringing ? 'Ringing…' : ''));
   const statusEl = document.getElementById('csStatus');
   const timerEl = document.getElementById('csTimer');
-  const sub = document.getElementById('csCallerSub');
   if (statusEl) {
     statusEl.textContent = label;
     statusEl.classList.toggle('hidden', !label);
   }
   if (timerEl) timerEl.classList.toggle('hidden', !live && !callHeld && ringing);
-  if (sub) sub.textContent = label;
-  const cm = document.getElementById('cmStatus');
-  if (cm) {
-    cm.textContent = callHeld ? 'On hold' : (ringing ? 'Ringing…' : 'Connected');
-    cm.style.color = callHeld ? '#f6c453' : (ringing ? 'rgba(255,255,255,.55)' : '#4ade80');
-  }
+  _paintCallerSub();
   document.getElementById('callScreen').classList.toggle('on-hold', callHeld);
-  document.getElementById('callMini').classList.toggle('on-hold', callHeld);
-  document.getElementById('csRec').classList.toggle('hidden', !callRecording);
+  _paintWidget();
+  document.getElementById('callWidget').classList.toggle('on-hold', callHeld);
 }
 const CALL_SVG = {
   mic: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`,
@@ -3476,18 +3496,31 @@ function _putCallIcon(el, svg) {
 function _syncCallChrome() {
   vcMuted = callMuted;
   document.getElementById('csMuteBtn').querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active', callMuted);
-  document.getElementById('cmMuteBtn').classList.toggle('muted', callMuted);
   _putCallIcon(document.getElementById('csMuteBtn'), callMuted ? CALL_SVG.micOff : CALL_SVG.mic);
-  _putCallIcon(document.getElementById('cmMuteBtn'), callMuted ? CALL_SVG.micOff : CALL_SVG.mic);
+  const cwMute = document.getElementById('cwMuteBtn');
+  cwMute.classList.toggle('on', callMuted);
+  _putCallIcon(cwMute, callMuted ? CALL_SVG.micOff : CALL_SVG.mic);
+  cwMute.querySelector('span').textContent = callMuted ? 'Unmute' : 'Mute';
+  const cwSpk = document.getElementById('cwSpeakerBtn');
+  cwSpk.classList.toggle('dim', !callSpeakerOn);
+  _putCallIcon(cwSpk, CALL_SVG.speaker);
+  const cwHold = document.getElementById('cwHoldBtn');
+  cwHold.classList.toggle('on', callHeld);
+  cwHold.querySelector('span').textContent = callHeld ? 'Resume' : 'Hold';
   const camOn = !!vcCameraOn;
   document.getElementById('csCameraBtn').querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-blue', camOn);
-  document.getElementById('cmVideoBtn').classList.toggle('cam-on', camOn);
+  const cwVideo = document.getElementById('cwVideoBtn');
+  const camLive = camOn && document.getElementById('callScreen').classList.contains('video-mode');
+  cwVideo.classList.toggle('on', camLive);
+  _putCallIcon(cwVideo, camLive ? CALL_SVG.video : CALL_SVG.videoOff);
   _putCallIcon(document.getElementById('csCameraBtn'), camOn ? CALL_SVG.video : CALL_SVG.videoOff);
-  _putCallIcon(document.getElementById('cmVideoBtn'), camOn ? CALL_SVG.video : CALL_SVG.videoOff);
   const spkIcon = document.getElementById('csSpeakerBtn').querySelector('.cs-ctl-icon');
   spkIcon.classList.toggle('cs-ctl-icon-active', !callSpeakerOn);
   _putCallIcon(spkIcon, callSpeakerOn ? CALL_SVG.speaker : CALL_SVG.speakerOff);
-  document.getElementById('csSpeakerLabel').textContent = callSpeakerOn ? 'Audio' : 'Off';
+  document.getElementById('csSpeakerLabel').textContent = 'Speaker';
+  document.getElementById('csMuteLabel').textContent = callMuted ? 'Unmute' : 'Mute';
+  document.getElementById('csHoldBtn').querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active', callHeld);
+  document.getElementById('csHoldLabel').textContent = callHeld ? 'Resume' : 'Hold';
   const sharing = !!screenShareStream;
   const shareIcon = document.getElementById('csShareBtn').querySelector('.cs-ctl-icon');
   shareIcon.classList.toggle('cs-ctl-icon-blue', sharing);
@@ -3495,42 +3528,108 @@ function _syncCallChrome() {
   document.getElementById('csShareBtn').title = sharing ? 'Stop sharing' : 'Share screen';
   const addOpen = !document.getElementById('csAddPanel').classList.contains('hidden');
   document.getElementById('csAddCallerBtn').classList.toggle('is-open', addOpen);
-  const moreOpen = !!_moreSurface && !document.getElementById('callMoreMenu').classList.contains('hidden');
-  document.getElementById('csMoreBtn').classList.toggle('is-open', moreOpen && _moreSurface === 'screen');
   _syncSelfTile();
   _paintCallStatus();
-  if (moreOpen) _renderMoreMenu();
 }
 
-// Direct calls open in the compact call card (same pattern as a minimized call).
+// 1:1 voice calls open in the phone-style call widget.
 function startCall(personKey) {
   endCall();
   const p = peopleData.find(x => x.key === personKey) || dmData[personKey];
   if (!p) return;
   startCallWith(p.name, '', p.color || '#7c3aed', p.initials || '??', false);
-  minimizeCallScreen();
+  _linkCall(_adHocConvo([personKey]));
+  showCallWidget();
+}
+
+function _isGroupCall() {
+  return callParticipants.length > 1 || !!callTitle;
+}
+function showCallWidget() {
+  if (!callParticipants.length) return;
+  const w = document.getElementById('callWidget');
+  document.getElementById('csAddPanel').classList.add('hidden');
+  _closeReactPanel();
+  _stashCallScreen();
+  w.classList.remove('hidden');
+  _paintWidget();
+  _paintTimers();
+  _paintCallStatus();
+  _syncCallChrome();
+}
+function _paintWidget() {
+  const w = document.getElementById('callWidget');
+  if (w.classList.contains('hidden') || !callParticipants.length) return;
+  const group = _isGroupCall();
+  w.classList.toggle('group', group);
+  const shown = callParticipants.slice(0, group ? 3 : 1);
+  const extra = callParticipants.length - shown.length;
+  document.getElementById('cwAvatars').innerHTML =
+    shown.map(p => `<div class="cw-av" style="${_avStyle(p)}">${p.initials}</div>`).join('') +
+    (extra > 0 ? `<div class="cw-av cw-av-more">+${extra}</div>` : '');
+  document.getElementById('cwPersonName').textContent = _callLabel();
+
+  const link = group ? (callConvo ? 'Open chat' : '') : (peopleData.some(x => x.key === callParticipants[0].key) ? 'View profile' : '');
+  document.getElementById('cwContextLabel').textContent = group ? 'Group call' : 'Yuzu Internal';
+  document.getElementById('cwContextLinkText').textContent = link;
+  document.getElementById('cwContextLink').classList.toggle('hidden', !link);
+  document.getElementById('cwContextSep').classList.toggle('hidden', !link);
+
+  const people = document.getElementById('cwPeople');
+  people.classList.toggle('hidden', !group);
+  people.innerHTML = group ? callParticipants.map(x => {
+    const state = !x.joined ? 'Ringing…' : (x.muted ? 'Muted' : 'In call');
+    return `<div class="cw-person">
+      <div class="cw-person-av" style="${_avStyle(x)}">${x.initials}</div>
+      <span class="cw-person-name">${x.name}</span>
+      <span class="cw-person-state${x.joined && !x.muted ? ' live' : ''}">${state}</span>
+      <button class="cw-person-x" data-remove="${x.key}" title="Remove from call">×</button>
+    </div>`;
+  }).join('') : '';
+  _paintCwStatus();
+}
+function _renderCwAdd() {
+  const q = document.getElementById('cwAddSearch').value.trim().toLowerCase();
+  const list = peopleData.filter(p => !q || p.name.toLowerCase().includes(q) || (p.role || '').toLowerCase().includes(q));
+  document.getElementById('cwAddList').innerHTML = list.length ? list.map(p => {
+    const inCall = callParticipants.some(c => c.key === p.key);
+    return `<button type="button" class="cw-add-item${inCall ? ' in-call' : ''}" data-key="${p.key}">
+      <div class="cw-add-av" style="${_avStyle(p)}">${p.initials}</div>
+      <span>${p.name}<small>${inCall ? 'In call' : (p.role || '')}</small></span>
+    </button>`;
+  }).join('') : '<div class="cw-add-empty">No people found</div>';
+}
+function _openCwAdd() {
+  const add = document.getElementById('cwAdd');
+  if (!add.classList.contains('hidden')) return _closeCwAdd();
+  document.getElementById('cwAddSearch').value = '';
+  _renderCwAdd();
+  add.classList.remove('hidden');
+  document.getElementById('cwAddSearch').focus();
+}
+function _closeCwAdd() {
+  document.getElementById('cwAdd').classList.add('hidden');
 }
 
 function endCall() {
+  _closeCallConvo();
   _stopCallTimer();
   stopScreenShare(true);
   stopVideoStream();
   _shareNotice = '';
   clearTimeout(_shareNoticeTimer);
   _resetCallFlags();
-  csCallState = null;
-  _closeMore();
   _resetCallParticipants();
   _hideCallScreen();
-  document.getElementById('callMini').classList.add('hidden');
-  document.getElementById('callMini').classList.remove('on-hold');
+  const cw = document.getElementById('callWidget');
+  cw.classList.add('hidden');
+  cw.style.left = cw.style.top = cw.style.right = cw.style.bottom = '';
+  _closeCwAdd();
   document.getElementById('csAddPanel').classList.add('hidden');
-  if (typeof hideDialPad === 'function') hideDialPad();
   _paintTimers();
   callMuted = false;
   vcMuted = false;
   callHeld = false;
-  callRecording = false;
   callSpeakerOn = true;
   _syncCallChrome();
 }
@@ -3552,25 +3651,10 @@ function toggleHold() {
     _startCallTimer();
   }
   _syncCallChrome();
-  _closeMore();
-}
-function toggleRecord() {
-  callRecording = !callRecording;
-  callToast(callRecording ? 'Recording started' : 'Recording stopped');
-  _syncCallChrome();
-  _closeMore();
-}
-function toggleKeypad() {
-  const pad = document.getElementById('dialPad');
-  if (pad.classList.contains('hidden')) {
-    if (typeof showDialPad === 'function') showDialPad();
-  } else   if (typeof hideDialPad === 'function') hideDialPad();
-  _syncCallChrome();
 }
 function toggleSpeaker() {
   callSpeakerOn = !callSpeakerOn;
   _syncCallChrome();
-  _closeMore();
 }
 function toggleCamera() {
   const screen = document.getElementById('callScreen');
@@ -3593,57 +3677,14 @@ function toggleCamera() {
   }
   setVideoMode(false);
 }
-function _closeMore() {
-  _moreSurface = null;
-  const menu = document.getElementById('callMoreMenu');
-  if (menu) menu.classList.add('hidden');
-  document.getElementById('csMoreBtn')?.classList.remove('is-open');
-}
-function _renderMoreMenu() {
-  const menu = document.getElementById('callMoreMenu');
-  const padOpen = !document.getElementById('dialPad').classList.contains('hidden');
-  const items = [
-    { id: 'hold', label: callHeld ? 'Resume' : 'Hold', on: callHeld },
-    { id: 'record', label: callRecording ? 'Stop recording' : 'Record', on: callRecording },
-    { id: 'keypad', label: 'Keypad', on: padOpen },
-  ];
-  menu.innerHTML = items.map(it =>
-    `<button type="button" class="call-more-item${it.on ? ' active' : ''}" data-act="${it.id}">${it.label}</button>`
-  ).join('');
-}
-function openCallMore(e, surface) {
-  e.stopPropagation();
-  const menu = document.getElementById('callMoreMenu');
-  if (_moreSurface === surface && !menu.classList.contains('hidden')) { _closeMore(); return; }
-  _moreSurface = surface;
-  _renderMoreMenu();
-  const r = e.currentTarget.getBoundingClientRect();
-  menu.classList.remove('hidden');
-  menu.style.left = Math.max(8, r.left + r.width / 2 - 84) + 'px';
-  menu.style.top = (r.top < innerHeight / 2 ? r.bottom + 8 : Math.max(8, r.top - menu.offsetHeight - 8)) + 'px';
-  document.getElementById('csMoreBtn').classList.toggle('is-open', surface === 'screen');
-}
-document.getElementById('callMoreMenu').addEventListener('click', e => {
-  const btn = e.target.closest('[data-act]');
-  if (!btn) return;
-  e.stopPropagation();
-  if (btn.dataset.act === 'hold') toggleHold();
-  else if (btn.dataset.act === 'record') toggleRecord();
-  else if (btn.dataset.act === 'keypad') toggleKeypad();
-});
-document.addEventListener('click', e => {
-  if (e.target.closest('#callMoreMenu') || e.target.closest('#csMoreBtn')) return;
-  _closeMore();
-});
-
-
 // Call from DM header (event delegation)
 document.getElementById('dmView').addEventListener('click', e => {
   const dm = dmData[activeDm];
   const video = !!e.target.closest('.dm-header-btn[title="Video call"]');
   if (!video && !e.target.closest('.dm-header-btn[title="Call"]')) return;
-  if (dm && dm.isGroup) startGroupCall(dm.members, video, dm.name);
-  else if (video) startGroupCall([activeDm], true);
+  const convo = { kind: 'dm', key: activeDm };
+  if (dm && dm.isGroup) startGroupCall(dm.members, video, dm.name, convo);
+  else if (video) startGroupCall([activeDm], true, null, convo);
   else startCall(activeDm);
 });
 
@@ -3653,7 +3694,7 @@ document.getElementById('channelView').addEventListener('click', e => {
   if (!video && !e.target.closest('.dm-header-btn[title="Call"]')) return;
   const ch = channelData[activeChannel];
   const members = channelMembers[activeChannel] || [];
-  if (members.length) startGroupCall(members, video, ch ? ch.displayName : null);
+  if (members.length) startGroupCall(members, video, ch ? ch.displayName : null, { kind: 'channel', key: activeChannel });
 });
 
 function createAndShowTask(title, dueDate, status, priority) {
@@ -3832,7 +3873,7 @@ document.addEventListener('click', e => {
       dmData[key] = {
         name, isGroup: true, members, color: members[0].color,
         initials: name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
-        online: false, unread: 0, messages: [],
+        online: false, unread: 0, lastActive: Date.now(), messages: [],
       };
     }
     closeAllQuickDds();
@@ -4048,8 +4089,7 @@ function _paintPresenting() {
   else if (!on && _viewBeforeShare !== null) { const v = _viewBeforeShare; _viewBeforeShare = null; setCallView(v); }
   else if (group) { document.getElementById('csStage').dataset.key = ''; _renderStage(); }
   document.getElementById('csPresentBar').classList.toggle('hidden', !on);
-  document.getElementById('cmPresentTag').classList.toggle('hidden', !on);
-  document.getElementById('callMini').classList.toggle('presenting', on);
+  _paintCwStatus();
   document.querySelector('#csGroupGrid .cs-gtile.self')?.classList.toggle('presenting', on);
 }
 document.getElementById('csStopPresent').addEventListener('click', e => {
@@ -4066,7 +4106,6 @@ function stopScreenShare(silent) {
 }
 
 async function toggleScreenShare() {
-  _closeMore();
   if (screenShareStream) {
     stopScreenShare();
     return;
@@ -4108,13 +4147,12 @@ function hexToRgb(hex) {
 }
 
 function startCallWith(name, role, color, initials, video = false, startSecs = null) {
+  _closeCallConvo();
   _stopCallTimer();
-  _closeMore();
   if (startSecs == null) {
     callMuted = false;
     vcMuted = false;
     callHeld = false;
-    callRecording = false;
     callSpeakerOn = true;
     callSeconds = 0;
   }
@@ -4137,7 +4175,6 @@ function startCallWith(name, role, color, initials, video = false, startSecs = n
   document.getElementById('csName').textContent = name;
   document.getElementById('csCallerName').textContent = name;
   screen.classList.remove('hidden');
-  document.getElementById('callMini').classList.add('hidden');
   setVideoMode(video, color, initials, name);
   renderCallLayout();
   if (already) _startCallTimer();
@@ -4197,7 +4234,9 @@ function _callLabel() {
   return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
 }
 
-function startGroupCall(people, video = false, title = null) {
+// convo: the chat this call belongs to ({ kind: 'dm' | 'channel', key }). Omitted for ad-hoc calls,
+// which reuse the most recently active chat with exactly these people, or open a new group lazily.
+function startGroupCall(people, video = false, title = null, convo = null) {
   const list = people
     .map(x => typeof x === 'string' ? (peopleData.find(p => p.key === x) || dmData[x]) : x)
     .filter(Boolean)
@@ -4205,23 +4244,35 @@ function startGroupCall(people, video = false, title = null) {
   if (!list.length) return;
   if (list.length === 1 && !title) {
     const p = list[0];
-    return startCallWith(p.name, '', p.color, p.initials, video);
+    startCallWith(p.name, '', p.color, p.initials, video);
+    _linkCall(convo || _adHocConvo([p.key]));
+    if (!video) showCallWidget();
+    return;
   }
   startCallWith(list[0].name, '', list[0].color, list[0].initials, video);
   callTitle = title;
   callParticipants = list.map((p, i) => ({ ...p, joined: false, muted: i % 2 === 1 }));
   callParticipants.forEach((p, i) => _joinAfter(p, 1400 + i * 700));
+  _linkCall(convo || _adHocConvo(list.map(p => p.key)));
   renderCallLayout();
 }
 
 let _toastTimer = null;
-function callToast(text) {
+let _toastHasAction = false;
+function callToast(text, action = null) {
   const toast = document.getElementById('csToast');
+  // Don't let passing notices (e.g. "joined") bury a prompt that needs a decision.
+  if (!action && _toastHasAction && !toast.classList.contains('hidden')) return;
+  _toastHasAction = !!action;
   document.getElementById('csToastText').textContent = text;
+  const act = document.getElementById('csToastAction');
+  act.classList.toggle('hidden', !action);
+  act.textContent = action ? action.label : '';
+  act.onclick = action ? e => { e.stopPropagation(); toast.classList.add('hidden'); action.run(); } : null;
   toast.classList.remove('hidden');
   toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => toast.classList.add('hidden'), 4500);
+  _toastTimer = setTimeout(() => toast.classList.add('hidden'), action ? 8000 : 4500);
 }
 document.getElementById('csToastClose').addEventListener('click', e => {
   e.stopPropagation();
@@ -4245,7 +4296,7 @@ function _applyOneToOne(p) {
   try { screen.style.setProperty('--call-rgb', hexToRgb(p.color)); } catch (_) {}
   const av = document.getElementById('csAvatar');
   av.textContent = p.initials;
-  av.style.background = p.color;
+  av.style.cssText = _avStyle(p);
   document.getElementById('csCallerName').textContent = p.name;
   const va = document.getElementById('csVideoAvatar');
   va.textContent = p.initials;
@@ -4287,7 +4338,8 @@ function renderCallLayout() {
   const myInitials = userEmail ? myName.slice(0, 2).toUpperCase() : 'ME';
   const isVideo = screen.classList.contains('video-mode');
   grid.innerHTML = callParticipants.map(p => `
-    <div class="cs-gtile${p.joined ? '' : ' ringing'}${p.muted ? ' muted' : ''}" data-key="${p.key}" title="Pin to main screen" style="--tile-rgb:${hexToRgb(p.color)}">
+    <div class="cs-gtile${p.joined ? '' : ' ringing'}${p.muted ? ' muted' : ''}${_photoOf(p.key) ? ' has-bg' : ''}" data-key="${p.key}" title="Pin to main screen" style="--tile-rgb:${hexToRgb(p.color)}">
+      ${_photoOf(p.key) ? `<div class="cs-gtile-bg" style="background-image:url('${_photoOf(p.key)}')"></div>` : ''}
       <div class="cs-gtile-av${_photoOf(p.key) ? ' has-photo' : ''}" style="${_avStyle(p)}">${p.initials}</div>
       <span class="cs-gtile-status">Ringing…</span>
       <div class="cs-gtile-name">${p.name}<span class="cs-gtile-mic">${MIC_OFF_ICON}</span></div>
@@ -4320,7 +4372,6 @@ function renderCallLayout() {
       if (Math.random() < 0.12) _showReaction(['👍', '👏', '😂', '❤️'][Math.floor(Math.random() * 4)], callStageKey);
     }
     _renderStage();
-    _paintMini();
   }, 1800);
 }
 
@@ -4468,18 +4519,23 @@ function _closeReactPanel() {
 function _paintHand() {
   document.querySelector('#csGroupGrid .cs-gtile.self')?.classList.toggle('hand', myHandRaised);
   document.getElementById('csHandChip').classList.toggle('hidden', !myHandRaised);
-  document.getElementById('csRaiseHand').classList.toggle('active', myHandRaised);
-  document.getElementById('csRaiseHandLabel').textContent = myHandRaised ? 'Lower hand' : 'Raise hand';
   const raise = document.getElementById('csRaiseBtn');
   raise.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-active', myHandRaised);
   raise.querySelector('span').textContent = myHandRaised ? 'Lower' : 'Raise';
+  raise.title = myHandRaised ? 'Lower hand' : 'Raise hand';
+  const cwRaise = document.getElementById('cwRaiseBtn');
+  cwRaise.classList.toggle('on', myHandRaised);
+  cwRaise.title = myHandRaised ? 'Lower hand' : 'Raise hand';
   _renderStage();
 }
-document.getElementById('csRaiseBtn').addEventListener('click', e => {
-  e.stopPropagation();
+function toggleHand() {
   myHandRaised = !myHandRaised;
   _paintHand();
-});
+  _closeReactPanel();
+  callToast(myHandRaised ? 'You raised your hand' : 'You lowered your hand');
+}
+document.getElementById('csRaiseBtn').addEventListener('click', e => { e.stopPropagation(); toggleHand(); });
+document.getElementById('csLowerHand').addEventListener('click', e => { e.stopPropagation(); if (myHandRaised) toggleHand(); });
 
 document.getElementById('csReactBtn').addEventListener('click', e => {
   e.stopPropagation();
@@ -4493,54 +4549,25 @@ document.getElementById('csReactBtn').addEventListener('click', e => {
 document.getElementById('csReactPanel').addEventListener('click', e => {
   e.stopPropagation();
   const r = e.target.closest('[data-react]');
-  if (r) { _showReaction(r.dataset.react, 'self'); _closeReactPanel(); return; }
-  if (e.target.closest('#csRaiseHand')) {
-    myHandRaised = !myHandRaised;
-    _paintHand();
-    _closeReactPanel();
-  }
+  if (r) { _showReaction(r.dataset.react, 'self'); _closeReactPanel(); }
 });
 document.addEventListener('click', e => {
   if (!e.target.closest('#csReactPanel, #csReactBtn')) _closeReactPanel();
 });
 
-// ── MINIMIZE TO THE LEFT WHEN LEAVING THE CALL SCREEN ──
-function _callNavInset() {
-  const screen = document.getElementById('callScreen');
-  const nav = document.querySelector('.left-nav');
-  const w = nav && !(typeof isMobile === 'function' && isMobile()) ? nav.offsetWidth : 0;
-  screen.style.left = w + 'px';
-  document.documentElement.style.setProperty('--call-nav-w', w + 'px');
-}
-new MutationObserver(() => {
-  if (!document.getElementById('callScreen').classList.contains('hidden')) _callNavInset();
-}).observe(document.getElementById('callScreen'), { attributes: true, attributeFilter: ['class'] });
-new ResizeObserver(_callNavInset).observe(document.querySelector('.left-nav'));
 
-document.querySelector('.left-nav').addEventListener('click', e => {
-  if (e.target.closest('#navCollapseBtn')) return;
+// Switching screens shrinks an open call: 1:1 voice to the call card, everything else to the mini card.
+function minimizeCallForNav() {
+  if (!document.getElementById('callWidget').classList.contains('hidden')) return;
   const screen = document.getElementById('callScreen');
   if (screen.classList.contains('hidden') || screen.classList.contains('fullscreen')) return;
-  if (!callParticipants.length && !csCallState) return;
+  if (!callParticipants.length) return;
   minimizeCallScreen();
+}
+document.querySelector('.left-nav').addEventListener('click', e => {
+  if (!e.target.closest('#navCollapseBtn')) minimizeCallForNav();
 }, true);
 
-function _paintMini() {
-  const mini = document.getElementById('callMini');
-  if (!mini || mini.classList.contains('hidden')) return;
-  const isGroup = document.getElementById('callScreen').classList.contains('group-call');
-  document.getElementById('cmTitle').textContent = _callLabel() || csCallState?.name || '';
-  if (!isGroup) return;
-  const p = _stagePerson();
-  if (!p) return;
-  const av = document.getElementById('cmAvatar');
-  av.textContent = p.initials;
-  av.style.cssText = p.self ? 'background:var(--amber);color:var(--maroon-dark)' : _avStyle(p);
-  document.getElementById('cmName').textContent = p.self ? 'You' : p.name;
-  const speaking = !!document.querySelector(`#csGroupGrid .cs-gtile.speaking[data-key="${p.key}"]`);
-  mini.classList.toggle('speaking', speaking);
-  document.getElementById('cmStatus').textContent = `${callParticipants.filter(x => x.joined).length + 1} in call`;
-}
 
 function _attachGroupSelfVideo() {
   const el = document.getElementById('csGroupSelfVideo');
@@ -4590,7 +4617,7 @@ function refreshAddPanel(filter) {
       const row = document.createElement('div');
       row.className = 'cs-ap-item' + (inCall ? ' in-call' : '');
       row.innerHTML = `
-        <div class="cs-ap-av" style="background:${p.color}">${p.initials}</div>
+        <div class="cs-ap-av" style="${_avStyle(p)}">${p.initials}</div>
         <div class="cs-ap-info">
           <div class="cs-ap-name">${p.name}</div>
           <div class="cs-ap-role">${p.role}</div>
@@ -4610,6 +4637,7 @@ function addCallParticipant(person) {
   _joinAfter(entry, 2000);
   renderCallLayout();
   refreshAddPanel(document.getElementById('csApSearch').value);
+  _onCallPersonAdded(person);
 }
 
 function removeCallParticipant(key) {
@@ -4693,12 +4721,262 @@ function _resetCallParticipants() {
   document.getElementById('csCount').classList.add('hidden');
   document.getElementById('callScreen').classList.remove('group-call');
   document.getElementById('csAddPanel').classList.add('hidden');
+  _setCallChatOpen(false);
 }
+
+// ── CALL ↔ CHAT ──
+// Every call is tied to one conversation. Its chat panel shows that conversation, so nothing
+// said during the call is lost afterwards.
+let callConvo = null;        // { kind: 'dm' | 'channel', key } or { kind: 'pending' } until the first message
+let callChatUnread = 0;
+let _callChatSeq = 0;
+
+function _callPeopleKeys() {
+  return callParticipants.map(p => p.key).filter(k => peopleData.some(pd => pd.key === k));
+}
+function _memberSig(keys) { return [...new Set(keys)].sort().join('|'); }
+
+// Most recently active group whose members are exactly these people (no more, no fewer).
+function findGroupWithMembers(keys) {
+  const want = _memberSig(keys);
+  return Object.keys(dmData)
+    .filter(k => dmData[k].isGroup && _memberSig(dmData[k].members.map(m => m.key)) === want)
+    .sort((a, b) => (dmData[b].lastActive || 0) - (dmData[a].lastActive || 0))[0] || null;
+}
+function _adHocConvo(keys) {
+  if (keys.length === 1) return dmData[keys[0]] ? { kind: 'dm', key: keys[0] } : { kind: 'pending' };
+  const key = findGroupWithMembers(keys);
+  return key ? { kind: 'dm', key } : { kind: 'pending' };
+}
+function _isGroupConvo(c) {
+  return c && (c.kind === 'channel' || (c.kind === 'dm' && dmData[c.key]?.isGroup));
+}
+function _convoName(c) {
+  if (!c) return '';
+  if (c.kind === 'dm') return dmData[c.key]?.name || '';
+  if (c.kind === 'channel') return '#' + (channelData[c.key]?.name || '');
+  return _callLabel();
+}
+
+function _pushToConvo(c, msg) {
+  if (c.kind === 'dm') {
+    dmData[c.key].messages.push(msg);
+    dmData[c.key].lastActive = Date.now();
+  } else if (c.kind === 'channel') {
+    channelData[c.key].messages.push(msg.type === 'system' ? msg : {
+      from: msg.from, name: msg.from === 'me' ? 'Me' : msg.senderName, initials: msg.from === 'me' ? 'ME' : msg.senderInitials,
+      color: msg.from === 'me' ? '#4c1515' : msg.senderColor, text: msg.text, time: msg.time,
+    });
+  }
+}
+// Keep the chat list and any open conversation behind the call in sync.
+function _refreshConvoViews(c) {
+  renderDmList();
+  if (c?.kind === 'dm' && activeDm === c.key && document.getElementById('dmView').offsetParent) loadDmConversation(c.key);
+  if (c?.kind === 'channel' && activeChannel === c.key && document.getElementById('channelView').offsetParent) loadChannelConversation(c.key);
+}
+
+function _startNote() {
+  const video = document.getElementById('callScreen').classList.contains('video-mode');
+  return { type: 'system', text: `📞 <strong>You</strong> started a ${video ? 'video ' : ''}call` };
+}
+
+function _linkCall(c) {
+  callConvo = c;
+  callChatUnread = 0;
+  const seq = ++_callChatSeq;
+  if (_isGroupConvo(c)) {
+    _pushToConvo(c, _startNote());
+    _refreshConvoViews(c);
+    // Demo: someone drops a message into the call chat shortly after joining.
+    setTimeout(() => {
+      if (seq !== _callChatSeq || !callConvo) return;
+      const p = callParticipants.find(x => x.joined && peopleData.some(pd => pd.key === x.key));
+      if (p) _receiveCallChat(p, 'Dropping the doc link here so we have it after the call 📎');
+    }, 9000);
+  }
+  _paintCallChat();
+}
+
+// Turns a pending ad-hoc chat into a real one: the 1:1 DM, or a new group named after the call.
+function _materializeCallConvo() {
+  const keys = _callPeopleKeys();
+  if (keys.length === 1) {
+    const p = peopleData.find(x => x.key === keys[0]);
+    if (!dmData[p.key]) dmData[p.key] = { name: p.name, color: p.color, initials: p.initials, online: p.online, unread: 0, messages: [] };
+    callConvo = { kind: 'dm', key: p.key };
+    return;
+  }
+  const members = keys.map(k => { const p = peopleData.find(x => x.key === k); return { key: p.key, name: p.name, color: p.color, initials: p.initials }; });
+  const name = callTitle || members.map(m => m.name.split(' ')[0]).join(', ');
+  const key = 'group-' + Date.now();
+  dmData[key] = {
+    name, isGroup: true, members, color: members[0].color,
+    initials: name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+    online: false, unread: 0, lastActive: Date.now(),
+    messages: [{ type: 'system', text: 'Group created from a call' }, _startNote()],
+  };
+  callConvo = { kind: 'dm', key };
+  callToast(`New group “${name}” created for this call`);
+}
+
+function _closeCallConvo() {
+  const c = callConvo;
+  callConvo = null;
+  _callChatSeq++;
+  if (!c) return;
+  const dur = callSeconds ? _fmtClock(callSeconds, false) : '';
+  const video = document.getElementById('callScreen').classList.contains('video-mode');
+  if (_isGroupConvo(c)) {
+    _pushToConvo(c, { type: 'system', text: `📞 Call ended${dur ? ' · ' + dur : ''} · ${callParticipants.length + 1} people` });
+  } else {
+    // 1:1 calls always leave a call record in the DM, creating it if this is the first contact.
+    // A group call nobody chatted in leaves nothing behind.
+    if (c.kind === 'pending') {
+      const keys = _callPeopleKeys();
+      if (keys.length !== 1) return;
+      const p = peopleData.find(x => x.key === keys[0]);
+      if (!dmData[p.key]) dmData[p.key] = { name: p.name, color: p.color, initials: p.initials, online: p.online, unread: 0, messages: [] };
+      c.kind = 'dm'; c.key = p.key;
+    }
+    _pushToConvo(c, { from: 'me', type: 'call', callType: 'outbound', video, dur, time: 'Just now' });
+  }
+  _refreshConvoViews(c);
+}
+
+function _onCallPersonAdded(person) {
+  const c = callConvo;
+  if (!c) return;
+  if (c.kind === 'pending' || (c.kind === 'dm' && !dmData[c.key]?.isGroup)) {
+    // An ad-hoc or 1:1 call follows its people: it moves to their existing group, or waits to create one.
+    const next = _adHocConvo(_callPeopleKeys());
+    if (next.kind === 'pending' && c.kind === 'pending') { _paintCallChat(); return; }
+    _linkCall(next);
+    callToast(next.kind === 'dm' ? `Chat moved to ${dmData[next.key].name}` : 'A group chat will be created when someone sends a message');
+    return;
+  }
+  const first = person.name.split(' ')[0];
+  if (c.kind === 'dm') {
+    const dm = dmData[c.key];
+    if (dm.members.some(m => m.key === person.key)) return;
+    callToast(`${first} isn't in ${dm.name} and can't see the chat`, {
+      label: 'Add to group',
+      run: () => {
+        dm.members.push({ key: person.key, name: person.name, color: person.color, initials: person.initials });
+        _pushToConvo(c, { type: 'system', text: `You added <strong>${person.name}</strong> to the group` });
+        _refreshConvoViews(c);
+        _paintCallChat();
+        callToast(`${first} can now see the chat`);
+      },
+    });
+  } else if (!(channelMembers[c.key] || []).includes(person.key)) {
+    callToast(`${first} isn't in ${_convoName(c)} and can't see the chat`);
+  }
+}
+
+function _receiveCallChat(p, text) {
+  if (!callConvo || callConvo.kind === 'pending') return;
+  const person = peopleData.find(x => x.key === p.key) || p;
+  const c = callConvo;
+  const is1to1 = c.kind === 'dm' && !dmData[c.key].isGroup;
+  _pushToConvo(c, { from: is1to1 ? 'them' : person.key, senderName: person.name, senderColor: person.color, senderInitials: person.initials, text, time: 'Just now' });
+  _refreshConvoViews(c);
+  if (_callChatOpen()) { renderCallChat(); return; }
+  callChatUnread++;
+  _paintCallChat();
+  callToast(`${person.name.split(' ')[0]} in chat: ${text}`, { label: 'Open chat', run: () => _setCallChatOpen(true) });
+}
+
+function sendCallChat(text) {
+  text = text.trim();
+  if (!text || !callConvo) return;
+  if (callConvo.kind === 'pending') _materializeCallConvo();
+  _pushToConvo(callConvo, { from: 'me', text, time: 'Just now' });
+  _refreshConvoViews(callConvo);
+  renderCallChat();
+}
+
+function _callChatOpen() { return document.getElementById('callScreen').classList.contains('chat-open'); }
+function _setCallChatOpen(open) {
+  const screen = document.getElementById('callScreen');
+  screen.classList.toggle('chat-open', open && !!callConvo);
+  document.getElementById('csChat').classList.toggle('hidden', !(open && callConvo));
+  if (open && callConvo) {
+    callChatUnread = 0;
+    renderCallChat();
+    setTimeout(() => document.getElementById('csChatInput').focus(), 30);
+  }
+  _paintCallChat();
+  _sizeCallGrid();
+}
+
+function _paintCallChat() {
+  const btn = document.getElementById('csChatBtn');
+  if (!btn) return;
+  btn.classList.toggle('hidden', !callConvo);
+  btn.classList.toggle('is-open', _callChatOpen());
+  const dot = document.getElementById('csChatDot');
+  dot.textContent = callChatUnread || '';
+  dot.classList.toggle('hidden', !callChatUnread);
+  if (_callChatOpen()) renderCallChat();
+}
+
+function renderCallChat() {
+  if (!_callChatOpen() || !callConvo) return;
+  const c = callConvo;
+  let dm = null, msgs = [], sub = '';
+  if (c.kind === 'dm') {
+    dm = dmData[c.key];
+    msgs = dm.messages;
+    sub = dm.isGroup ? `Group chat · ${dm.members.length + 1} members` : 'Direct message';
+  } else if (c.kind === 'channel') {
+    const ch = channelData[c.key];
+    dm = { name: ch.displayName, isGroup: true, color: '#0d8f82', initials: '#' };
+    msgs = ch.messages.map(m => m.type === 'system' ? m : { from: m.from, senderName: m.name, senderColor: m.color, senderInitials: m.initials, text: m.text, time: m.time });
+    sub = `Channel · posts to #${ch.name}`;
+  } else {
+    sub = 'Starts a new group chat';
+  }
+  document.getElementById('csChatName').textContent = _convoName(c);
+  document.getElementById('csChatSub').textContent = sub;
+  document.getElementById('csChatOpenBtn').classList.toggle('hidden', c.kind === 'pending');
+  const list = document.getElementById('csChatMsgs');
+  if (!msgs.length) {
+    list.innerHTML = c.kind === 'pending'
+      ? `<div class="cs-chat-empty"><strong>No chat yet</strong>Send a message to create a group chat with everyone in this call. Nothing is created if no one types.</div>`
+      : `<div class="cs-chat-empty"><strong>No messages yet</strong>Messages you send here stay in ${_convoName(c)}.</div>`;
+  } else {
+    list.innerHTML = msgs.map((msg, i) => {
+      const prev = msgs[i - 1];
+      const showAvatar = msg.from !== 'me' && msg.type !== 'call' && msg.type !== 'system' && (!prev || prev.from !== msg.from || prev.type === 'call' || prev.type === 'system');
+      return makeBubble(msg, dm, showAvatar);
+    }).join('');
+  }
+  list.scrollTop = list.scrollHeight;
+  document.getElementById('csChatInput').placeholder = `Message ${_convoName(c)}…`;
+}
+
+document.getElementById('csChatBtn').addEventListener('click', e => { e.stopPropagation(); _setCallChatOpen(!_callChatOpen()); });
+document.getElementById('csChatClose').addEventListener('click', () => _setCallChatOpen(false));
+document.getElementById('csChatForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('csChatInput');
+  sendCallChat(input.value);
+  input.value = '';
+});
+document.getElementById('csChatOpenBtn').addEventListener('click', () => {
+  const c = callConvo;
+  if (!c || c.kind === 'pending') return;
+  minimizeCallForNav();
+  if (c.kind === 'channel') { loadChannelConversation(c.key); return; }
+  activeDm = c.key;
+  navigateTo('dms');
+  renderDmList();
+  loadDmConversation(c.key);
+  if (isMobile()) mobOpenDetail();
+});
 // ────────────────────────────────────────────────────────────────────────────
 
-// Stored state so expand can restore the full-screen call
-let csCallState = null;
-let cmMuted = false;
 let callIsFullscreen = false;
 
 const _callScreenAnchor = document.getElementById('callScreen').parentElement;
@@ -4729,17 +5007,9 @@ function _hideCallScreen() {
 
 function endCallScreen() { endCall(); }
 
-function minimizeCallScreen() {
+// Hides the call screen but keeps its video and share state, so maximizing restores it as it was.
+function _stashCallScreen() {
   const screen = document.getElementById('callScreen');
-  const avEl = document.getElementById('csAvatar');
-  csCallState = {
-    name: document.getElementById('csName').textContent,
-    initials: avEl.textContent,
-    color: avEl.style.background,
-    video: screen.classList.contains('video-mode'),
-  };
-  _closeMore();
-  document.getElementById('csAddPanel').classList.add('hidden');
   if (callIsFullscreen) {
     callIsFullscreen = false;
     screen.classList.remove('fullscreen');
@@ -4747,69 +5017,125 @@ function minimizeCallScreen() {
     _paintZoomBtn(false);
   }
   screen.classList.add('hidden');
-  const cmAv = document.getElementById('cmAvatar');
-  cmAv.textContent = csCallState.initials;
-  cmAv.style.background = csCallState.color;
-  document.getElementById('cmName').textContent = csCallState.name;
-  const mini = document.getElementById('callMini');
-  mini.style.left = mini.style.top = mini.style.right = mini.style.bottom = '';
-  mini.classList.remove('hidden');
-  _closeReactPanel();
-  _paintTimers();
-  _paintMini();
-  _syncCallChrome();
+}
+
+// Calls have two views: maximized (the call screen) and minimized (the call card).
+function minimizeCallScreen() {
+  showCallWidget();
 }
 
 function expandMiniCall() {
-  if (!csCallState && !callParticipants.length) return;
-  document.getElementById('callMini').classList.add('hidden');
+  if (!callParticipants.length) return;
+  _closeCwAdd();
+  document.getElementById('callWidget').classList.add('hidden');
   document.getElementById('callScreen').classList.remove('hidden');
   renderCallLayout();
   _paintTimers();
   _syncCallChrome();
 }
 
-// Mini card buttons
-document.getElementById('cmExpand').addEventListener('click', expandMiniCall);
-document.getElementById('cmBody').addEventListener('click', expandMiniCall);
-document.getElementById('cmAddBtn').addEventListener('click', e => {
-  e.stopPropagation();
-  expandMiniCall();
-  const panel = document.getElementById('csAddPanel');
-  panel.classList.remove('hidden');
-  document.getElementById('csApSearch').value = '';
-  refreshAddPanel();
-  document.getElementById('csApSearch').focus();
-  _syncCallChrome();
+document.getElementById('cwExpandBtn').addEventListener('click', expandMiniCall);
+document.getElementById('cwAddBtn').addEventListener('click', e => { e.stopPropagation(); _openCwAdd(); });
+document.getElementById('cwAddSearch').addEventListener('input', _renderCwAdd);
+document.getElementById('cwAddList').addEventListener('click', e => {
+  const item = e.target.closest('.cw-add-item:not(.in-call)');
+  const p = item && peopleData.find(x => x.key === item.dataset.key);
+  if (!p) return;
+  const wasGroup = _isGroupCall();
+  _closeCwAdd();
+  addCallParticipant(p);
+  // Adding to a 1:1 opens the tiles screen; a minimized group call stays in the card.
+  if (wasGroup) _paintWidget();
+  else expandMiniCall();
 });
-document.getElementById('cmEndBtn').addEventListener('click', endCall);
-document.getElementById('cmMuteBtn').addEventListener('click', toggleMute);
-document.getElementById('cmVideoBtn').addEventListener('click', toggleCamera);
-
-// Mini card drag
+document.getElementById('cwPeople').addEventListener('click', e => {
+  const btn = e.target.closest('[data-remove]');
+  if (btn) removeCallParticipant(btn.dataset.remove);
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#cwAdd, #cwAddBtn')) _closeCwAdd();
+});
+document.getElementById('cwEndBtn').addEventListener('click', endCall);
+document.getElementById('cwMuteBtn').addEventListener('click', toggleMute);
+document.getElementById('cwSpeakerBtn').addEventListener('click', toggleSpeaker);
+document.getElementById('cwHoldBtn').addEventListener('click', toggleHold);
+document.getElementById('cwVideoBtn').addEventListener('click', () => {
+  if (document.getElementById('callScreen').classList.contains('video-mode')) return toggleCamera();
+  expandMiniCall();
+  toggleCamera();
+});
+// Drag the card from anywhere except its controls.
 (function() {
-  const mini = document.getElementById('callMini');
-  const handle = document.getElementById('cmHandle');
+  const w = document.getElementById('callWidget');
   let dragging = false, ox = 0, oy = 0;
-  handle.addEventListener('mousedown', e => {
-    if (e.button !== 0 || e.target.closest('button')) return;
+  w.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || e.target.closest('button, input, .cw-add')) return;
+    const r = w.getBoundingClientRect();
+    const cr = w.offsetParent.getBoundingClientRect();
     dragging = true;
-    const r = mini.getBoundingClientRect();
-    const cr = mini.offsetParent.getBoundingClientRect();
-    ox = e.clientX - r.left; oy = e.clientY - r.top;
-    mini.style.bottom = 'auto'; mini.style.right = 'auto';
-    mini.style.left = (r.left - cr.left) + 'px'; mini.style.top = (r.top - cr.top) + 'px';
-    e.preventDefault();
+    ox = e.clientX - r.left;
+    oy = e.clientY - r.top;
+    w.style.right = w.style.bottom = 'auto';
+    w.style.left = (r.left - cr.left) + 'px';
+    w.style.top = (r.top - cr.top) + 'px';
+    w.setPointerCapture(e.pointerId);
+    w.classList.add('dragging');
   });
-  document.addEventListener('mousemove', e => {
+  w.addEventListener('pointermove', e => {
     if (!dragging) return;
-    const cr = mini.offsetParent.getBoundingClientRect();
-    const pr = mini.getBoundingClientRect();
-    mini.style.left = Math.max(0, Math.min(e.clientX - cr.left - ox, cr.width  - pr.width))  + 'px';
-    mini.style.top  = Math.max(0, Math.min(e.clientY - cr.top  - oy, cr.height - pr.height)) + 'px';
+    const cr = w.offsetParent.getBoundingClientRect();
+    w.style.left = Math.max(0, Math.min(e.clientX - cr.left - ox, cr.width - w.offsetWidth)) + 'px';
+    w.style.top = Math.max(0, Math.min(e.clientY - cr.top - oy, cr.height - w.offsetHeight)) + 'px';
   });
-  document.addEventListener('mouseup', () => { dragging = false; });
+  const stop = () => { dragging = false; w.classList.remove('dragging'); };
+  w.addEventListener('pointerup', stop);
+  w.addEventListener('pointercancel', stop);
 })();
+document.getElementById('cwContextLink').addEventListener('click', () => {
+  if (_isGroupCall()) {
+    if (callConvo?.kind === 'pending') _materializeCallConvo();
+    minimizeCallForNav();
+    if (callConvo?.kind === 'dm') openDmWith(callConvo.key);
+    else if (callConvo?.kind === 'channel') {
+      loadChannelConversation(callConvo.key);
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    }
+    return;
+  }
+  const p = callParticipants[0];
+  if (!p) return;
+  activePersonKey = p.key;
+  minimizeCallForNav();
+  navigateTo('people');
+});
+
+
+document.getElementById('cwShareBtn').addEventListener('click', () => { expandMiniCall(); toggleScreenShare(); });
+
+// React and raise hand without leaving the call card.
+document.getElementById('cwReactPanel').innerHTML = document.getElementById('csReactPanel').innerHTML;
+document.getElementById('cwRaiseBtn').addEventListener('click', e => { e.stopPropagation(); toggleHand(); });
+document.getElementById('cwReactBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  _closeCwAdd();
+  document.getElementById('cwReactPanel').classList.toggle('hidden');
+});
+document.getElementById('cwReactPanel').addEventListener('click', e => {
+  const r = e.target.closest('[data-react]');
+  if (!r) return;
+  e.stopPropagation();
+  _showReaction(r.dataset.react, 'self');
+  document.getElementById('cwReactPanel').classList.add('hidden');
+  const pop = document.createElement('div');
+  pop.className = 'cw-react-pop';
+  pop.textContent = r.dataset.react;
+  document.getElementById('callWidget').appendChild(pop);
+  setTimeout(() => pop.remove(), 1600);
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#cwReactPanel, #cwReactBtn')) document.getElementById('cwReactPanel').classList.add('hidden');
+});
+
 
 document.getElementById('csHangup').addEventListener('click', endCallScreen);
 
@@ -4842,10 +5168,9 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     const react = document.getElementById('csReactPanel');
     const add = document.getElementById('csAddPanel');
-    const more = document.getElementById('callMoreMenu');
     if (!react.classList.contains('hidden')) _closeReactPanel();
     else if (!add.classList.contains('hidden')) { add.classList.add('hidden'); _syncCallChrome(); }
-    else if (more && !more.classList.contains('hidden')) _closeMore();
+    else if (_callChatOpen()) _setCallChatOpen(false);
     else if (callIsFullscreen) setCallFullscreen(false);
   }
   else if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey && !e.altKey) setCallFullscreen(!callIsFullscreen);
@@ -4868,119 +5193,11 @@ document.getElementById('callScreen').addEventListener('click', _showCallControl
 document.getElementById('csCameraBtn').addEventListener('click', toggleCamera);
 document.getElementById('csMuteBtn').addEventListener('click', toggleMute);
 document.getElementById('csSpeakerBtn').addEventListener('click', toggleSpeaker);
-document.getElementById('csMoreBtn').addEventListener('click', e => openCallMore(e, 'screen'));
 document.getElementById('csShareBtn').addEventListener('click', toggleScreenShare);
+document.getElementById('csMinBtn').addEventListener('click', () => minimizeCallScreen());
+document.getElementById('csHoldBtn').addEventListener('click', toggleHold);
 
-// ── FLOATING DIALPAD ──
-(function() {
-  const pad = document.getElementById('dialPad');
-  const display = document.getElementById('dpDisplay');
-  const handle = document.getElementById('dpHandle');
-  let digits = '';
 
-  // Show / hide
-  function showDialPad() {
-    digits = '';
-    display.textContent = '';
-    pad.classList.remove('hidden');
-    // Default bottom-left inside .app; reset to default position
-    if (!pad.style.left && !pad.style.bottom) {
-      pad.style.left = '24px';
-      pad.style.bottom = '100px';
-      pad.style.top = '';
-      pad.style.right = '';
-    }
-  }
-  function hideDialPad() {
-    pad.classList.add('hidden');
-    digits = '';
-    display.textContent = '';
-    if (typeof _syncCallChrome === 'function') _syncCallChrome();
-  }
-  window.showDialPad = showDialPad;
-  window.hideDialPad = hideDialPad;
-
-  // Digit buttons
-  pad.querySelectorAll('.dp-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      digits += btn.dataset.digit;
-      display.textContent = digits;
-    });
-  });
-
-  // Backspace
-  document.getElementById('dpBackspace').addEventListener('click', () => {
-    digits = digits.slice(0, -1);
-    display.textContent = digits;
-  });
-
-  // Close button
-  document.getElementById('dpClose').addEventListener('click', hideDialPad);
-
-  // ── Drag to move ──
-  let dragging = false, ox = 0, oy = 0;
-
-  handle.addEventListener('mousedown', e => {
-    dragging = true;
-    const rect = pad.getBoundingClientRect();
-    ox = e.clientX - rect.left;
-    oy = e.clientY - rect.top;
-    pad.style.bottom = '';
-    pad.style.right = '';
-    pad.style.left = rect.left + 'px';
-    pad.style.top = rect.top + 'px';
-    e.preventDefault();
-  });
-
-  document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const container = pad.closest('.app') || document.body;
-    const cr = container.getBoundingClientRect();
-    const pr = pad.getBoundingClientRect();
-    let x = e.clientX - cr.left - ox;
-    let y = e.clientY - cr.top - oy;
-    // Clamp within container
-    x = Math.max(0, Math.min(x, cr.width - pr.width));
-    y = Math.max(0, Math.min(y, cr.height - pr.height));
-    pad.style.left = x + 'px';
-    pad.style.top = y + 'px';
-  });
-
-  document.addEventListener('mouseup', () => { dragging = false; });
-
-  // Touch drag support
-  handle.addEventListener('touchstart', e => {
-    dragging = true;
-    const t = e.touches[0];
-    const rect = pad.getBoundingClientRect();
-    ox = t.clientX - rect.left;
-    oy = t.clientY - rect.top;
-    pad.style.bottom = '';
-    pad.style.right = '';
-    pad.style.left = rect.left + 'px';
-    pad.style.top = rect.top + 'px';
-    e.preventDefault();
-  }, { passive: false });
-
-  document.addEventListener('touchmove', e => {
-    if (!dragging) return;
-    const t = e.touches[0];
-    const container = pad.closest('.app') || document.body;
-    const cr = container.getBoundingClientRect();
-    const pr = pad.getBoundingClientRect();
-    let x = t.clientX - cr.left - ox;
-    let y = t.clientY - cr.top - oy;
-    x = Math.max(0, Math.min(x, cr.width - pr.width));
-    y = Math.max(0, Math.min(y, cr.height - pr.height));
-    pad.style.left = x + 'px';
-    pad.style.top = y + 'px';
-    e.preventDefault();
-  }, { passive: false });
-
-  document.addEventListener('touchend', () => { dragging = false; });
-})();
-
-// Keypad button on call widget
 
 // ── CALL PEOPLE PICKER (redesigned) ──
 const cpmSelected = new Set();

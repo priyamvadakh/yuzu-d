@@ -918,7 +918,7 @@
         <span class="cs-present-dot"></span>You're presenting
         <button type="button" id="csStopPresent">Stop presenting</button>
       </div>
-        <div class="cs-hand-chip hidden" id="csHandChip">✋ Your hand is raised</div>
+        <div class="cs-hand-chip hidden" id="csHandChip">✋ Your hand is raised<button type="button" id="csLowerHand">Lower</button></div>
       </div>
       
       <div class="cs-react-panel hidden" id="csReactPanel">
@@ -930,7 +930,6 @@
           <button type="button" data-react="😮" title="Surprised">😮</button>
           <button type="button" data-react="🎉" title="Celebrate">🎉</button>
         </div>
-        <button type="button" class="cs-react-hand" id="csRaiseHand">✋ <span id="csRaiseHandLabel">Raise hand</span></button>
       </div>
 
       <!-- Add-to-call panel -->
@@ -951,13 +950,23 @@
             <svg class="cs-shield" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             <span class="cs-status" id="csStatus">Ringing…</span>
             <span class="cs-timer hidden" id="csTimer">00:00</span>
-            <span class="cs-rec hidden" id="csRec"><span class="cs-rec-dot"></span>Recording</span>
             <span class="cs-count hidden" id="csCount"></span>
           </div>
         </div>
         <div class="cs-header-right">
+          <button class="cs-hdr-btn cs-hdr-labeled" id="csReactBtn" title="React">
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 14.5s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9.5" y2="9.5"/><line x1="15" x2="15.01" y1="9.5" y2="9.5"/></svg></div>
+          <span>React</span>
+        </button>
+          <button class="cs-hdr-btn cs-hdr-labeled" id="csRaiseBtn" title="Raise hand">
+            <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg></div>
+            <span>Raise</span>
+          </button>
           <button class="cs-hdr-btn cs-view-btn hidden" id="csViewBtn" title="Switch to speaker view">
             <svg class="cs-view-gallery" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg><svg class="cs-view-speaker" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="14" height="16" rx="2"/><rect x="18" y="4" width="4" height="4.5" rx="1"/><rect x="18" y="9.75" width="4" height="4.5" rx="1"/><rect x="18" y="15.5" width="4" height="4.5" rx="1"/></svg><span class="cs-view-label">Speaker</span>
+          </button>
+          <button class="cs-hdr-btn" id="csMinBtn" title="Minimise">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="m3 21 7-7"/><path d="M20 10h-6V4"/><path d="m21 3-7 7"/></svg>
           </button>
           <button class="cs-hdr-btn" id="csZoomBtn" title="Full screen (F)">
             <svg class="cs-zoom-in" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
@@ -969,37 +978,32 @@
       <!-- Bottom pill bar -->
       <div class="cs-dock">
         <div class="cs-controls" id="csControls">
-          <button class="cs-ctl" id="csReactBtn" title="React">
-          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 14.5s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9.5" y2="9.5"/><line x1="15" x2="15.01" y1="9.5" y2="9.5"/></svg></div>
-          <span>React</span>
-        </button>
-          <button class="cs-ctl" id="csRaiseBtn" title="Raise hand">
-            <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg></div>
-            <span>Raise</span>
-          </button>
-          <button class="cs-ctl" id="csAddCallerBtn" title="People">
-          <div class="cs-ctl-icon"><span class="cs-ctl-badge" id="csPeopleCount"></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg></div>
-          <span>People</span>
-        </button>
-          
-          <button class="cs-ctl" id="csMoreBtn" title="More">
-          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg></div>
-          <span>More</span>
-        </button>
-          <div class="cs-ctl-divider"></div>
-          <div class="cs-ctl-split"><button class="cs-ctl" id="csCameraBtn" title="Camera">
-          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg></div>
-          <span>Camera</span>
-        </button><button type="button" class="cs-ctl-caret" data-device="camera" title="Camera settings"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+          <!-- Call card order (Mute, Video, Speaker, Hold, Add caller, Share) plus Chat -->
           <div class="cs-ctl-split"><button class="cs-ctl" id="csMuteBtn" title="Mute">
           <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></div>
-          <span>Mic</span>
+          <span id="csMuteLabel">Mute</span>
         </button><button type="button" class="cs-ctl-caret" data-device="mic" title="Audio settings"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+          <div class="cs-ctl-split"><button class="cs-ctl" id="csCameraBtn" title="Video">
+          <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg></div>
+          <span>Video</span>
+        </button><button type="button" class="cs-ctl-caret" data-device="camera" title="Camera settings"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
           <button class="cs-ctl" id="csSpeakerBtn" title="Speaker">
           <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg></div>
-          <span id="csSpeakerLabel">Audio</span>
+          <span id="csSpeakerLabel">Speaker</span>
+        </button>
+          <button class="cs-ctl" id="csHoldBtn" title="Hold">
+            <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="6" y="4" width="4" height="16" rx="2"/><rect x="14" y="4" width="4" height="16" rx="2"/></svg></div>
+            <span id="csHoldLabel">Hold</span>
+          </button>
+          <button class="cs-ctl" id="csAddCallerBtn" title="Add caller">
+          <div class="cs-ctl-icon"><span class="cs-ctl-badge" id="csPeopleCount"></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg></div>
+          <span>Add caller</span>
         </button>
           <div class="cs-ctl-divider"></div>
+          <button class="cs-ctl hidden" id="csChatBtn" title="Chat">
+          <div class="cs-ctl-icon"><span class="cs-chat-dot hidden" id="csChatDot"></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <span>Chat</span>
+        </button>
           <button class="cs-ctl" id="csShareBtn" title="Share screen">
           <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg></div>
           <span id="csShareLabel">Share</span>
@@ -1010,7 +1014,30 @@
           <span>Leave</span>
         </button>
       </div>
-      <div class="cs-toast hidden" id="csToast"><span id="csToastText"></span><button type="button" id="csToastClose" aria-label="Dismiss">×</button></div>
+      <div class="cs-toast hidden" id="csToast"><span id="csToastText"></span><button type="button" class="cs-toast-action hidden" id="csToastAction"></button><button type="button" id="csToastClose" aria-label="Dismiss">×</button></div>
+
+      <!-- In-call chat: the conversation this call belongs to -->
+      <aside class="cs-chat hidden" id="csChat" aria-label="Call chat">
+        <div class="cs-chat-head">
+          <div class="cs-chat-titles">
+            <div class="cs-chat-name" id="csChatName"></div>
+            <div class="cs-chat-sub" id="csChatSub"></div>
+          </div>
+          <button type="button" class="cs-chat-icon-btn" id="csChatOpenBtn" title="Open in Messages">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+          </button>
+          <button type="button" class="cs-chat-icon-btn" id="csChatClose" aria-label="Close chat">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="cs-chat-msgs" id="csChatMsgs"></div>
+        <form class="cs-chat-compose" id="csChatForm">
+          <input type="text" id="csChatInput" placeholder="Message…" autocomplete="off" />
+          <button type="submit" title="Send" aria-label="Send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </form>
+      </aside>
       <div class="call-more cs-device-menu hidden" id="csDeviceMenu"></div>
 
       <div class="cs-share-stage hidden" id="csShareStage">
@@ -1132,71 +1159,64 @@
       </div>
     </div>
 
-    <!-- MINI CALL CARD (minimized from full-screen) -->
-    <div class="call-mini hidden" id="callMini">
-      <div class="cm-drag" id="cmHandle">
-        <div class="cm-top-row">
-          <button class="cm-icon-btn" id="cmAddBtn" title="Add people">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
-          </button>
-          <button class="cm-icon-btn" id="cmExpand" title="Return to call">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg>
-          </button>
-          <div class="cm-live">
-            <span class="cm-amber-dot"></span>
-            <span class="cm-title" id="cmTitle"></span>
-            <span class="cm-present-tag hidden" id="cmPresentTag">Presenting</span>
-            <span class="cm-timer" id="cmTimer">0:00</span>
-          </div>
-        </div>
-      </div>
-      <div class="cm-body" id="cmBody" title="Return to call">
-        <div class="cm-avatar" id="cmAvatar"></div>
-        <div class="cm-name" id="cmName"></div>
-        <div class="cm-status" id="cmStatus">Connected</div>
-      </div>
-      <div class="cm-controls">
-        <button class="cm-ctrl-btn" id="cmMuteBtn" title="Mute">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+    <!-- 1:1 VOICE CALL CARD (group/video calls use the call screen) -->
+    <div class="call-widget hidden" id="callWidget">
+      <div class="cw-corner">
+        <button class="cw-icon" id="cwReactBtn" title="React">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 14.5s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9.5" y2="9.5"/><line x1="15" x2="15.01" y1="9.5" y2="9.5"/></svg>
         </button>
-        <button class="cm-ctrl-btn cm-ctrl-end" id="cmEndBtn" title="End">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) rotate(135) scale(0.7) translate(-12 -12)"><path stroke-width="2.7" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg>
+        <button class="cw-icon" id="cwRaiseBtn" title="Raise hand">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
         </button>
-        <button class="cm-ctrl-btn" id="cmVideoBtn" title="Video">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg>
+        <button class="cw-icon" id="cwExpandBtn" title="Expand to full screen">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg>
         </button>
       </div>
-    </div>
-
-    <div class="call-more hidden" id="callMoreMenu"></div>
-
-    <!-- FLOATING DIALPAD -->
-    <div class="dial-pad hidden" id="dialPad">
-      <div class="dp-titlebar" id="dpHandle">
-        <span class="dp-title">Keypad</span>
-        <button class="dp-close" id="dpClose">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 3L3 11M3 3L11 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <div class="cw-avs" id="cwAvatars"></div>
+      <div class="cw-name" id="cwPersonName"></div>
+      <div class="cw-status" id="cwPersonStatus">Ringing…</div>
+      <div class="cw-context">
+        <span class="cw-context-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
+          <span id="cwContextLabel">Yuzu Internal</span>
+        </span>
+        <span class="cw-context-sep" id="cwContextSep"></span>
+        <button class="cw-context-link" id="cwContextLink"><span id="cwContextLinkText">View profile</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
         </button>
       </div>
-      <div class="dp-display" id="dpDisplay"></div>
-      <div class="dp-grid">
-        <button class="dp-btn" data-digit="1"><span class="dp-num">1</span><span class="dp-sub"> </span></button>
-        <button class="dp-btn" data-digit="2"><span class="dp-num">2</span><span class="dp-sub">ABC</span></button>
-        <button class="dp-btn" data-digit="3"><span class="dp-num">3</span><span class="dp-sub">DEF</span></button>
-        <button class="dp-btn" data-digit="4"><span class="dp-num">4</span><span class="dp-sub">GHI</span></button>
-        <button class="dp-btn" data-digit="5"><span class="dp-num">5</span><span class="dp-sub">JKL</span></button>
-        <button class="dp-btn" data-digit="6"><span class="dp-num">6</span><span class="dp-sub">MNO</span></button>
-        <button class="dp-btn" data-digit="7"><span class="dp-num">7</span><span class="dp-sub">PQRS</span></button>
-        <button class="dp-btn" data-digit="8"><span class="dp-num">8</span><span class="dp-sub">TUV</span></button>
-        <button class="dp-btn" data-digit="9"><span class="dp-num">9</span><span class="dp-sub">WXYZ</span></button>
-        <button class="dp-btn dp-btn-sym" data-digit="*"><span class="dp-num">*</span></button>
-        <button class="dp-btn" data-digit="0"><span class="dp-num">0</span><span class="dp-sub">+</span></button>
-        <button class="dp-btn dp-btn-sym" data-digit="#"><span class="dp-num">#</span></button>
+      <div class="cw-people hidden" id="cwPeople"></div>
+      <div class="cw-grid">
+        <button class="cw-ctl" id="cwMuteBtn"><svg width="24" height="24" viewBox="0 0 24 24"></svg><span>Mute</span></button>
+        <button class="cw-ctl" id="cwVideoBtn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg>
+          <span>Video</span>
+        </button>
+        <button class="cw-ctl" id="cwSpeakerBtn"><svg width="24" height="24" viewBox="0 0 24 24"></svg><span>Speaker</span></button>
+        <button class="cw-ctl" id="cwHoldBtn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="6" y="4" width="4" height="16" rx="2"/><rect x="14" y="4" width="4" height="16" rx="2"/></svg>
+          <span>Hold</span>
+        </button>
+        <button class="cw-ctl" id="cwAddBtn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+          <span>Add caller</span>
+        </button>
+        <button class="cw-ctl" id="cwShareBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>
+          <span>Share</span>
+        </button>
       </div>
-      <button class="dp-backspace" id="dpBackspace" title="Backspace">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 6H8L1 12L8 18H21V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15 10L11 14M11 10L15 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <div class="cw-react hidden" id="cwReactPanel"></div>
+      <div class="cw-add hidden" id="cwAdd">
+        <input type="text" class="cw-add-search" id="cwAddSearch" placeholder="Search people…" autocomplete="off" />
+        <div class="cw-add-list" id="cwAddList"></div>
+      </div>
+      <button class="cw-end" id="cwEndBtn" title="End call">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) rotate(135) scale(0.7) translate(-12 -12)"><path stroke-width="2.7" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg>
       </button>
     </div>
+
+
 
     <section class="middle-panel">
       <div class="quick-actions-bar">
