@@ -603,7 +603,8 @@ function loadDmConversation(dmKey) {
   });
   msgs.scrollTop = msgs.scrollHeight;
 
-  document.getElementById('dmInput').placeholder = dm.isGroup ? `Message ${dm.name}…` : `Message ${dm.name.split(' ')[0]}…`;
+  document.getElementById('dmInput').placeholder = dm.isGroup ? `Message ${dm.name}… or type add @name` : `Message ${dm.name.split(' ')[0]}…`;
+  closeMention();
   document.querySelectorAll('.dm-item').forEach(el => {
     el.classList.toggle('selected', el.dataset.dm === dmKey);
   });
@@ -611,6 +612,7 @@ function loadDmConversation(dmKey) {
 
 function sendDmMessage(text) {
   if (!text.trim()) return;
+  if (_runAddCommand(text)) return;
   const dm = dmData[activeDm];
   const msg = { from: 'me', text: text.trim(), time: 'Just now' };
   dm.messages.push(msg);
@@ -715,6 +717,159 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#dmMembers, .dm-members-btn, .dm-convo-info.is-group')) closeDmMembers();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDmMembers(); });
+
+// ── "add @name" IN THE COMPOSER ──
+// Matches the longest name first so "@Priya Nair" wins over "@Priya".
+function _mentionedPeople(text) {
+  const found = [];
+  const names = peopleData.flatMap(p => [[p.name, p], [p.name.split(' ')[0], p]]).sort((a, b) => b[0].length - a[0].length);
+  text.replace(/@([^@]+)/g, (_, rest) => {
+    const hit = names.find(([n]) => rest.toLowerCase().startsWith(n.toLowerCase()) && !/\w/.test(rest[n.length] || ''));
+    if (hit && !found.includes(hit[1])) found.push(hit[1]);
+  });
+  return found;
+}
+const _asMember = p => ({ key: p.key, name: p.name, color: p.color, initials: p.initials });
+function _addToGroup(people) {
+  const dm = dmData[activeDm];
+  const fresh = people.filter(p => !dm.members.some(m => m.key === p.key));
+  if (!fresh.length) {
+    const msgs = document.getElementById('dmMessages');
+    msgs.insertAdjacentHTML('beforeend', `<div class="dm-system-note">${people.map(p => `<strong>${p.name}</strong>`).join(', ')} ${people.length > 1 ? 'are' : 'is'} already in this group</div>`);
+    msgs.scrollTop = msgs.scrollHeight;
+    return;
+  }
+  dm.members.push(...fresh.map(_asMember));
+  dm.lastActive = Date.now();
+  _refreshGroupHeader(`You added ${fresh.map(p => `<strong>${p.name}</strong>`).join(', ')} to the group`);
+}
+function _startGroupWith(people) {
+  if (people.length === 1) return openDmWith(people[0].key);
+  const members = people.map(_asMember);
+  const name = members.map(m => m.name.split(' ')[0]).join(', ');
+  const key = 'group-' + Date.now();
+  dmData[key] = {
+    name, isGroup: true, members, color: members[0].color,
+    initials: name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+    online: false, unread: 0, lastActive: Date.now(),
+    messages: [{ type: 'system', text: `You started a group with ${members.map(m => `<strong>${m.name}</strong>`).join(', ')}` }],
+  };
+  activeDm = key;
+  renderDmList();
+  loadDmConversation(key);
+  setTimeout(() => document.getElementById('dmInput')?.focus(), 50);
+}
+function _runAddCommand(text) {
+  if (!/^\s*add\s+@/i.test(text)) return false;
+  const people = _mentionedPeople(text);
+  if (!people.length) return false;
+  if (dmData[activeDm].isGroup) _addToGroup(people);
+  else _startGroupWith([peopleData.find(p => p.key === activeDm), ...people.filter(p => p.key !== activeDm)].filter(Boolean));
+  return true;
+}
+
+// "@" opens a people picker: tick several people, then start a group (or add them to this one).
+const _MENTION_TOKEN = /(?:^|\s)@([A-Za-z]*(?: [A-Za-z]*)?)$/;
+let _mentionHits = [], _mentionIdx = 0, _mentionPicked = [], _mentionOpen = false;
+function _mentionQuery(input) {
+  const m = input.value.slice(0, input.selectionStart).match(_MENTION_TOKEN);
+  return m ? m[1] : null;
+}
+function renderMention() {
+  const input = document.getElementById('dmInput');
+  const box = document.getElementById('dmMention');
+  const dm = dmData[activeDm];
+  const q = _mentionQuery(input);
+  if (q === null || !dm) return closeMention();
+  if (!_mentionOpen) {
+    _mentionOpen = true;
+    _mentionPicked = dm.isGroup || !peopleData.some(p => p.key === activeDm) ? [] : [activeDm];
+  }
+  const ql = q.toLowerCase();
+  const inGroup = p => dm.isGroup && dm.members.some(m => m.key === p.key);
+  _mentionHits = peopleData.filter(p => !inGroup(p) && (!ql || p.name.toLowerCase().split(' ').some(w => w.startsWith(ql)) || p.name.toLowerCase().startsWith(ql)));
+  _mentionIdx = Math.max(0, Math.min(_mentionIdx, _mentionHits.length - 1));
+  const picked = _mentionPicked.map(k => peopleData.find(p => p.key === k));
+  const n = picked.length;
+  const goLabel = dm.isGroup ? `Add ${n || ''} to group` : (n === 1 ? `Chat with ${picked[0].name.split(' ')[0]}` : `Start group chat${n ? ` · ${n}` : ''}`);
+  const check = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  box.innerHTML = `
+    <div class="dmn-head">${dm.isGroup ? 'Add people to this group' : 'Pick people for a group chat'}</div>
+    ${n ? `<div class="dmn-chips">${picked.map(p => `<span class="nd-chip"><span class="nd-chip-av" style="background:${p.color}">${p.initials}</span>${p.name.split(' ')[0]}<button type="button" data-pick="${p.key}" aria-label="Remove ${p.name}">×</button></span>`).join('')}</div>` : ''}
+    <div class="dmn-list">${_mentionHits.map((p, i) => {
+      const on = _mentionPicked.includes(p.key);
+      return `<button type="button" class="dmn-row${i === _mentionIdx ? ' active' : ''}${on ? ' picked' : ''}" data-pick="${p.key}" role="option" aria-selected="${on}">
+        <div class="cd-av" style="background:${p.color}">${p.initials}${p.online ? '<span class="cd-online"></span>' : ''}</div>
+        <div class="cd-info"><span>${p.name}</span><small>${p.role}</small></div>
+        <span class="dmn-check">${on ? check : ''}</span>
+      </button>`;
+    }).join('') || '<div class="nd-empty">No one matches that name</div>'}</div>
+    <div class="dmn-foot">
+      <span class="dmn-hint">↵ select · ⌘↵ ${dm.isGroup ? 'add' : 'start'}</span>
+      <button type="button" class="dmn-go" id="dmnGo"${n ? '' : ' disabled'}>${goLabel}</button>
+    </div>`;
+  box.classList.remove('hidden');
+  box.querySelector('.dmn-row.active')?.scrollIntoView({ block: 'nearest' });
+}
+function _stripMentionToken() {
+  const input = document.getElementById('dmInput');
+  const before = input.value.slice(0, input.selectionStart).replace(/(^|\s)@[A-Za-z]*(?: [A-Za-z]*)?$/, '$1');
+  input.value = (before + input.value.slice(input.selectionStart)).replace(/^\s+$/, '');
+  input.setSelectionRange(before.length, before.length);
+  syncSendBtn(input, document.getElementById('dmSendBtn'));
+}
+function closeMention(strip = false) {
+  if (strip && _mentionOpen) _stripMentionToken();
+  document.getElementById('dmMention').classList.add('hidden');
+  _mentionHits = []; _mentionIdx = 0; _mentionPicked = []; _mentionOpen = false;
+}
+function toggleMention(key) {
+  const i = _mentionPicked.indexOf(key);
+  i < 0 ? _mentionPicked.push(key) : _mentionPicked.splice(i, 1);
+  // Clear what was typed after "@" so the full list comes back for the next pick.
+  const input = document.getElementById('dmInput');
+  const before = input.value.slice(0, input.selectionStart).replace(/@[A-Za-z]*(?: [A-Za-z]*)?$/, '@');
+  input.value = before + input.value.slice(input.selectionStart);
+  input.focus();
+  input.setSelectionRange(before.length, before.length);
+  renderMention();
+}
+function confirmMention() {
+  const people = _mentionPicked.map(k => peopleData.find(p => p.key === k));
+  if (!people.length) return;
+  const isGroup = dmData[activeDm].isGroup;
+  closeMention(true);
+  isGroup ? _addToGroup(people) : _startGroupWith(people);
+}
+function _mentionKeydown(e) {
+  if (!_mentionOpen) return false;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!_mentionHits.length) return true;
+    _mentionIdx = (_mentionIdx + (e.key === 'ArrowDown' ? 1 : -1) + _mentionHits.length) % _mentionHits.length;
+    renderMention();
+    return true;
+  }
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); confirmMention(); return true; }
+  if (e.key === 'Enter' || e.key === 'Tab') {
+    e.preventDefault();
+    if (_mentionHits[_mentionIdx]) toggleMention(_mentionHits[_mentionIdx].key);
+    else confirmMention();
+    return true;
+  }
+  if (e.key === 'Escape') { closeMention(true); return true; }
+  return false;
+}
+document.getElementById('dmInput').addEventListener('input', () => { _mentionIdx = 0; renderMention(); });
+document.getElementById('dmInput').addEventListener('blur', () => setTimeout(() => {
+  if (document.activeElement !== document.getElementById('dmInput')) closeMention(true);
+}, 150));
+document.getElementById('dmMention').addEventListener('mousedown', e => {
+  e.preventDefault();
+  if (e.target.closest('#dmnGo')) return confirmMention();
+  const row = e.target.closest('[data-pick]');
+  if (row) toggleMention(row.dataset.pick);
+});
 
 // ── SEARCH INSIDE A DM ──
 let _dmHits = [], _dmHitIdx = -1;
@@ -3117,6 +3272,7 @@ document.getElementById('dmSendBtn').addEventListener('click', () => {
 document.getElementById('dmRecCancel').addEventListener('click', () => stopDmRecording(false));
 document.getElementById('dmRecSend').addEventListener('click',   () => stopDmRecording(true));
 document.getElementById('dmInput').addEventListener('keydown', e => {
+  if (_mentionKeydown(e)) return;
   if (e.key === 'Enter') {
     sendDmMessage(e.target.value);
     e.target.value = '';
