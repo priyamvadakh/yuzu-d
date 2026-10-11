@@ -1,4 +1,4 @@
-const { app, BrowserWindow, systemPreferences } = require('electron');
+const { app, BrowserWindow, systemPreferences, desktopCapturer } = require('electron');
 const path = require('path');
 
 async function createWindow() {
@@ -26,6 +26,13 @@ async function createWindow() {
     const allowed = ['media', 'microphone', 'audioCapture', 'camera', 'video'];
     callback(allowed.includes(permission));
   });
+
+  // getDisplayMedia needs this in Electron; useSystemPicker shows the macOS share picker where available.
+  win.webContents.session.setDisplayMediaRequestHandler((request, callback) => {
+    desktopCapturer.getSources({ types: ['screen', 'window'] })
+      .then(sources => callback(sources.length ? { video: sources[0] } : {}))
+      .catch(() => callback({}));
+  }, { useSystemPicker: true });
 
   win.loadFile('index.html');
 }

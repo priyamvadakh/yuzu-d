@@ -27,6 +27,7 @@ document.getElementById('obNextBtn').addEventListener('click', () => {
   else goTo('screen-login');
 });
 document.getElementById('obSkipBtn').addEventListener('click', showHome);
+document.getElementById('obV2Btn').addEventListener('click', () => { enableCallsV2(); showHome(); });
 
 // ── Screen navigation ──
 let userEmail = '';
@@ -1747,7 +1748,8 @@ function showMeetingDetail(id, pop = true) {
 window.joinMeeting = function(id) {
   const m = meetingsData.find(x => x.id === id);
   if (!m) return;
-  startGroupCall(m.participants, m.type === 'video', m.participants.length > 1 ? m.title : null);
+  _joiningMeeting = true;
+  try { startGroupCall(m.participants, m.type === 'video', m.participants.length > 1 ? m.title : null); } finally { _joiningMeeting = false; }
 };
 
 function mvShiftWeek(delta) {
@@ -3584,6 +3586,9 @@ function _fmtClock(n, padMin) {
 function _paintTimers() {
   const c = document.getElementById('csTimer');
   if (c) c.textContent = _fmtClock(callSeconds, true);
+  if (!document.getElementById('navCallBtn').classList.contains('hidden')) _paintNavCall();
+  if (callsV2) _paintMeetInfo();
+  if (callsV2 && _pipOpen()) document.getElementById('pipTime').textContent = _fmtClock(callSeconds, true);
   _paintCallerSub();
   _paintCwStatus();
 }
@@ -3636,6 +3641,7 @@ function _paintCallStatus() {
   document.getElementById('callScreen').classList.toggle('on-hold', callHeld);
   _paintWidget();
   document.getElementById('callWidget').classList.toggle('on-hold', callHeld);
+  if (callsV2) _syncMeetChrome();
 }
 const CALL_SVG = {
   mic: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`,
@@ -3690,6 +3696,7 @@ function _syncCallChrome() {
 
 // 1:1 voice calls open in the phone-style call widget.
 function startCall(personKey) {
+  if (callsV2) return startGroupCall([personKey], false);
   endCall();
   const p = peopleData.find(x => x.key === personKey) || dmData[personKey];
   if (!p) return;
@@ -3703,6 +3710,7 @@ function _isGroupCall() {
 }
 function showCallWidget() {
   if (!callParticipants.length) return;
+  if (callsV2) return _showPip();
   const w = document.getElementById('callWidget');
   document.getElementById('csAddPanel').classList.add('hidden');
   _closeReactPanel();
@@ -3768,6 +3776,8 @@ function _closeCwAdd() {
 }
 
 function endCall() {
+  if (callsV2) _resetMeet();
+  document.getElementById('navCallBtn').classList.add('hidden');
   _closeCallConvo();
   _stopCallTimer();
   stopScreenShare(true);
@@ -3985,7 +3995,7 @@ document.addEventListener('click', e => {
   const footer = document.getElementById('ddmFooter');
   const nameIn = document.getElementById('ddmGroupName');
   const go = document.getElementById('ddmGo');
-  const CHECK = `<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const CHECK = `<svg width="16" height="16" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const picked = [];
 
   const person = k => peopleData.find(p => p.key === k);
@@ -3996,9 +4006,10 @@ document.addEventListener('click', e => {
       .filter(p => !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q))
       .map(p => `
         <div class="cd-item${picked.includes(p.key) ? ' selected' : ''}" data-key="${p.key}">
-          <button type="button" class="cd-select" aria-label="Select ${p.name}"><div class="cd-check">${picked.includes(p.key) ? CHECK : ''}</div></button>
-          <div class="cd-av" style="background:${p.color}">${p.initials}${p.online ? '<span class="cd-online"></span>' : ''}</div>
-          <div class="cd-info"><span>${p.name}</span><small>${p.role}</small></div>
+          <button type="button" class="cd-pick" aria-pressed="${picked.includes(p.key)}" aria-label="${picked.includes(p.key) ? 'Remove' : 'Add'} ${p.name}">
+            <span class="cd-av" style="background:${p.color}">${p.initials}<span class="cd-av-check" aria-hidden="true">${CHECK}</span>${p.online ? '<span class="cd-online"></span>' : ''}</span>
+            <span class="cd-info"><span>${p.name}</span><small>${p.role}</small></span>
+          </button>
         </div>`).join('') || '<div class="nd-empty">No one matches that search</div>';
     chips.classList.toggle('hidden', !picked.length);
     chips.innerHTML = picked.map(k => { const p = person(k); return `<span class="nd-chip"><span class="nd-chip-av" style="background:${p.color}">${p.initials}</span>${p.name.split(' ')[0]}<button type="button" data-rm="${k}" aria-label="Remove ${p.name}">×</button></span>`; }).join('');
@@ -4139,11 +4150,18 @@ const RTC_CONFIG = {
 async function startVideoStream() {
   vcCameraOn = true;
   try {
-    vcStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    vcStream = await navigator.mediaDevices.getUserMedia(_mediaConstraints(true, true));
     const localEl = document.getElementById('localVideo');
     localEl.srcObject = vcStream;
     document.getElementById('csSelfFallback').classList.add('hidden');
     vcCameraOn = true;
+    if (_joinCamOff) {
+      _joinCamOff = false;
+      vcStream.getVideoTracks().forEach(t => { t.enabled = false; });
+      vcCameraOn = false;
+      document.getElementById('csSelfFallback').classList.remove('hidden');
+    }
+    if (bgEffect !== 'none') _applyBg();
     if (callMuted) vcStream.getAudioTracks().forEach(t => { t.enabled = false; });
     _syncCallChrome();
 
@@ -4181,6 +4199,7 @@ async function startVideoStream() {
 }
 
 function stopVideoStream() {
+  _stopBg();
   if (vcStream) { vcStream.getTracks().forEach(t => t.stop()); vcStream = null; }
   if (vcPc1) { vcPc1.close(); vcPc1 = null; }
   if (vcPc2) { vcPc2.close(); vcPc2 = null; }
@@ -4284,7 +4303,8 @@ async function toggleScreenShare() {
     });
   }
   const screen = document.getElementById('callScreen');
-  if (screen.classList.contains('hidden')) {
+  // v2 keeps presenting inside the minimized window, like Meet's picture-in-picture.
+  if (screen.classList.contains('hidden') && !_pipOpen()) {
     expandMiniCall();
   }
   _syncShareTile();
@@ -4303,6 +4323,7 @@ function hexToRgb(hex) {
 }
 
 function startCallWith(name, role, color, initials, video = false, startSecs = null) {
+  _hideRejoin();
   _closeCallConvo();
   _stopCallTimer();
   if (startSecs == null) {
@@ -4398,11 +4419,13 @@ function startGroupCall(people, video = false, title = null, convo = null) {
     .filter(Boolean)
     .map(p => ({ key: p.key, name: p.name, color: p.color, initials: p.initials }));
   if (!list.length) return;
+  // Direct calls ring right away; only joining a scheduled meeting gets the pre-join check.
+  if (callsV2 && _joiningMeeting && !_pjBypass) return _openPreJoin(list, video, title, convo);
   if (list.length === 1 && !title) {
     const p = list[0];
     startCallWith(p.name, '', p.color, p.initials, video);
     _linkCall(convo || _adHocConvo([p.key]));
-    if (!video) showCallWidget();
+    if (!video && !callsV2) showCallWidget();
     return;
   }
   startCallWith(list[0].name, '', list[0].color, list[0].initials, video);
@@ -4411,6 +4434,7 @@ function startGroupCall(people, video = false, title = null, convo = null) {
   callParticipants.forEach((p, i) => _joinAfter(p, 1400 + i * 700));
   _linkCall(convo || _adHocConvo(list.map(p => p.key)));
   renderCallLayout();
+  if (callsV2) _simulateKnock();
 }
 
 let _toastTimer = null;
@@ -4421,6 +4445,7 @@ function callToast(text, action = null) {
   if (!action && _toastHasAction && !toast.classList.contains('hidden')) return;
   _toastHasAction = !!action;
   document.getElementById('csToastText').textContent = text;
+  document.getElementById('csLive').textContent = text;
   const act = document.getElementById('csToastAction');
   act.classList.toggle('hidden', !action);
   act.textContent = action ? action.label : '';
@@ -4465,7 +4490,7 @@ function renderCallLayout() {
   const screen = document.getElementById('callScreen');
   const grid = document.getElementById('csGroupGrid');
   const countEl = document.getElementById('csCount');
-  const isGroup = callParticipants.length > 1 || (callTitle && callParticipants.length > 0);
+  const isGroup = callParticipants.length > 1 || (callTitle && callParticipants.length > 0) || (callsV2 && callParticipants.length > 0);
 
   screen.classList.toggle('group-call', !!isGroup);
   grid.classList.toggle('hidden', !isGroup);
@@ -4494,9 +4519,10 @@ function renderCallLayout() {
   const myInitials = userEmail ? myName.slice(0, 2).toUpperCase() : 'ME';
   const isVideo = screen.classList.contains('video-mode');
   grid.innerHTML = callParticipants.map(p => `
-    <div class="cs-gtile${p.joined ? '' : ' ringing'}${p.muted ? ' muted' : ''}${_photoOf(p.key) ? ' has-bg' : ''}" data-key="${p.key}" title="Pin to main screen" style="--tile-rgb:${hexToRgb(p.color)}">
+    <div class="cs-gtile${p.joined ? '' : ' ringing'}${p.muted ? ' muted' : ''}${p.hand ? ' hand' : ''}${_photoOf(p.key) ? ' has-bg' : ''}" data-key="${p.key}" title="Pin to main screen" style="--tile-rgb:${hexToRgb(p.color)}">
       ${_photoOf(p.key) ? `<div class="cs-gtile-bg" style="background-image:url('${_photoOf(p.key)}')"></div>` : ''}
       <div class="cs-gtile-av${_photoOf(p.key) ? ' has-photo' : ''}" style="${_avStyle(p)}">${p.initials}</div>
+      <span class="cs-gtile-hand">✋</span>
       <span class="cs-gtile-status">Ringing…</span>
       <div class="cs-gtile-name">${p.name}<span class="cs-gtile-mic">${MIC_OFF_ICON}</span></div>
       <button class="cs-gtile-remove" title="Remove from call" data-remove="${p.key}">
@@ -4528,6 +4554,8 @@ function renderCallLayout() {
       if (Math.random() < 0.12) _showReaction(['👍', '👏', '😂', '❤️'][Math.floor(Math.random() * 4)], callStageKey);
     }
     _renderStage();
+    if (callsV2) _meetTick(speaker?.dataset.key);
+    if (_pipOpen()) _paintPip();
   }, 1800);
 }
 
@@ -4611,22 +4639,31 @@ function _openDeviceMenu(btn, kinds) {
   if (!menu.classList.contains('hidden') && menu.dataset.for === btn.dataset.device) { menu.classList.add('hidden'); return; }
   menu.dataset.for = btn.dataset.device;
   menu.innerHTML = kinds.map(k => `<div class="cs-dm-title">${CALL_DEVICES[k].title}</div>` + CALL_DEVICES[k].list.map((n, i) =>
-    `<button type="button" class="call-more-item cs-dm-item${i === CALL_DEVICES[k].pick ? ' active' : ''}" data-kind="${k}" data-i="${i}"><span class="cs-dm-check">${i === CALL_DEVICES[k].pick ? '✓' : ''}</span>${n}</button>`).join('')).join('<div class="cs-dm-sep"></div>');
+    `<button type="button" class="call-more-item cs-dm-item${i === CALL_DEVICES[k].pick ? ' active' : ''}" data-kind="${k}" data-i="${i}"><span class="cs-dm-check">${i === CALL_DEVICES[k].pick ? '✓' : ''}</span>${n}</button>`).join('')).join('<div class="cs-dm-sep"></div>')
+    + (kinds.includes('camera') ? _bgMenuHtml() : '');
   menu.classList.remove('hidden');
   _placeCallPopover(menu, btn.closest('.cs-ctl-split'));
 }
-document.querySelectorAll('.cs-ctl-caret').forEach(btn => btn.addEventListener('click', e => {
+document.querySelectorAll('.cs-ctl-caret').forEach(btn => btn.addEventListener('click', async e => {
   e.stopPropagation();
+  if (callsV2) await _loadRealDevices();
   _openDeviceMenu(btn, btn.dataset.device === 'mic' ? ['mic', 'speaker'] : ['camera']);
 }));
 document.getElementById('csDeviceMenu').addEventListener('click', e => {
   e.stopPropagation();
+  const bg = e.target.closest('[data-bg]');
+  if (bg) {
+    if (bg.dataset.bg === 'upload') document.getElementById('bgUpload').click();
+    else setBackgroundEffect(bg.dataset.bg);
+    return;
+  }
   const item = e.target.closest('[data-kind]');
   if (!item) return;
   const d = CALL_DEVICES[item.dataset.kind];
   d.pick = Number(item.dataset.i);
   document.getElementById('csDeviceMenu').classList.add('hidden');
   callToast(d.toast(d.list[d.pick]));
+  if (callsV2) _useDevice(item.dataset.kind, d.ids?.[d.pick]);
 });
 document.addEventListener('click', e => {
   if (!e.target.closest('#csDeviceMenu, .cs-ctl-caret')) document.getElementById('csDeviceMenu').classList.add('hidden');
@@ -4683,6 +4720,7 @@ function _paintHand() {
   cwRaise.classList.toggle('on', myHandRaised);
   cwRaise.title = myHandRaised ? 'Lower hand' : 'Raise hand';
   _renderStage();
+  if (callsV2) _syncMeetChrome();
 }
 function toggleHand() {
   myHandRaised = !myHandRaised;
@@ -4714,7 +4752,8 @@ document.addEventListener('click', e => {
 
 // Switching screens shrinks an open call: 1:1 voice to the call card, everything else to the mini card.
 function minimizeCallForNav() {
-  if (!document.getElementById('callWidget').classList.contains('hidden')) return;
+  if (!document.getElementById('callWidget').classList.contains('hidden') || _pipOpen()) return;
+  if (!document.getElementById('navCallBtn').classList.contains('hidden')) return;
   const screen = document.getElementById('callScreen');
   if (screen.classList.contains('hidden') || screen.classList.contains('fullscreen')) return;
   if (!callParticipants.length) return;
@@ -5055,6 +5094,7 @@ function sendCallChat(text) {
 function _callChatOpen() { return document.getElementById('callScreen').classList.contains('chat-open'); }
 function _setCallChatOpen(open) {
   const screen = document.getElementById('callScreen');
+  if (open && callsV2) _setPeopleOpen(false);
   screen.classList.toggle('chat-open', open && !!callConvo);
   document.getElementById('csChat').classList.toggle('hidden', !(open && callConvo));
   if (open && callConvo) {
@@ -5074,7 +5114,15 @@ function _paintCallChat() {
   const dot = document.getElementById('csChatDot');
   dot.textContent = callChatUnread || '';
   dot.classList.toggle('hidden', !callChatUnread);
+  // The minimized views get chat too, so messages aren't missed while the call is small.
+  ['pip', 'cw'].forEach(pre => {
+    document.getElementById(pre === 'pip' ? 'pipChat' : 'cwChatBtn').classList.toggle('hidden', !callConvo);
+    const d = document.getElementById(pre + 'ChatDot');
+    d.textContent = callChatUnread || '';
+    d.classList.toggle('hidden', !callChatUnread);
+  });
   if (_callChatOpen()) renderCallChat();
+  if (callsV2) _syncMeetChrome();
 }
 
 function renderCallChat() {
@@ -5161,7 +5209,44 @@ function _hideCallScreen() {
   document.getElementById('csSpeakerBtn').querySelector('.cs-ctl-icon').classList.remove('cs-ctl-icon-active');
 }
 
-function endCallScreen() { endCall(); }
+// Every "leave" the user chooses goes through here, so they get a Rejoin offer afterwards.
+function endCallScreen() {
+  const snap = callParticipants.length ? {
+    people: callParticipants.map(p => p.key),
+    video: document.getElementById('callScreen').classList.contains('video-mode'),
+    title: callTitle,
+    convo: callConvo && callConvo.kind !== 'pending' ? { ...callConvo } : null,
+    label: _callLabel(),
+  } : null;
+  endCall();
+  if (snap) _offerRejoin(snap);
+}
+
+let _rejoinSnap = null;
+let _rejoinTimer = null;
+function _offerRejoin(snap) {
+  _rejoinSnap = snap;
+  document.getElementById('rejoinText').textContent = snap.title ? `${snap.title} ended` : `Call with ${snap.label} ended`;
+  const bar = document.getElementById('rejoinBar');
+  bar.classList.remove('hidden');
+  clearTimeout(_rejoinTimer);
+  _rejoinTimer = setTimeout(_hideRejoin, 15000);
+}
+function _hideRejoin() {
+  clearTimeout(_rejoinTimer);
+  document.getElementById('rejoinBar').classList.add('hidden');
+  _rejoinSnap = null;
+}
+document.getElementById('rejoinBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const s = _rejoinSnap;
+  _hideRejoin();
+  if (!s) return;
+  if (s.people.length === 1 && !s.title && !s.video) startCall(s.people[0]);
+  else startGroupCall(s.people, s.video, s.title, s.convo);
+});
+document.getElementById('rejoinClose').addEventListener('click', e => { e.stopPropagation(); _hideRejoin(); });
+
 
 // Hides the call screen but keeps its video and share state, so maximizing restores it as it was.
 function _stashCallScreen() {
@@ -5183,7 +5268,9 @@ function minimizeCallScreen() {
 function expandMiniCall() {
   if (!callParticipants.length) return;
   _closeCwAdd();
+  _paintNavCall(false);
   document.getElementById('callWidget').classList.add('hidden');
+  document.getElementById('callPip').classList.add('hidden');
   document.getElementById('callScreen').classList.remove('hidden');
   renderCallLayout();
   _paintTimers();
@@ -5191,6 +5278,12 @@ function expandMiniCall() {
 }
 
 document.getElementById('cwExpandBtn').addEventListener('click', expandMiniCall);
+['cwChatBtn', 'pipChat'].forEach(id => document.getElementById(id).addEventListener('click', e => {
+  e.stopPropagation();
+  if (callsV2) _hidePip();
+  expandMiniCall();
+  _setCallChatOpen(true);
+}));
 document.getElementById('cwAddBtn').addEventListener('click', e => { e.stopPropagation(); _openCwAdd(); });
 document.getElementById('cwAddSearch').addEventListener('input', _renderCwAdd);
 document.getElementById('cwAddList').addEventListener('click', e => {
@@ -5211,7 +5304,7 @@ document.getElementById('cwPeople').addEventListener('click', e => {
 document.addEventListener('click', e => {
   if (!e.target.closest('#cwAdd, #cwAddBtn')) _closeCwAdd();
 });
-document.getElementById('cwEndBtn').addEventListener('click', endCall);
+document.getElementById('cwEndBtn').addEventListener('click', endCallScreen);
 document.getElementById('cwMuteBtn').addEventListener('click', toggleMute);
 document.getElementById('cwSpeakerBtn').addEventListener('click', toggleSpeaker);
 document.getElementById('cwHoldBtn').addEventListener('click', toggleHold);
@@ -5293,7 +5386,15 @@ document.addEventListener('click', e => {
 });
 
 
-document.getElementById('csHangup').addEventListener('click', endCallScreen);
+// Window controls: the shrink arrows on the full call open the small call view; — hides the call
+// completely. Leaving is always the red hang-up button.
+document.getElementById('csCloseBtn').addEventListener('click', e => { e.stopPropagation(); minimizeCallScreen(); });
+['pipHide', 'cwHideBtn'].forEach(id => document.getElementById(id).addEventListener('click', e => { e.stopPropagation(); hideCallToBackground(); }));
+
+document.getElementById('csHangup').addEventListener('click', e => {
+  if (callsV2 && _isGroupCall()) _openLeaveMenu(e);
+  else endCallScreen();
+});
 
 // ── FULL SCREEN (ZOOM IN) ──
 function setCallFullscreen(on) {
@@ -5322,6 +5423,7 @@ document.addEventListener('keydown', e => {
   if (document.getElementById('callScreen').classList.contains('hidden')) return;
   if (e.target.closest('input, textarea, [contenteditable]')) return;
   if (e.key === 'Escape') {
+    if (callsV2 && _meetEsc()) return;
     const react = document.getElementById('csReactPanel');
     const add = document.getElementById('csAddPanel');
     if (!react.classList.contains('hidden')) _closeReactPanel();
@@ -5350,7 +5452,27 @@ document.getElementById('csCameraBtn').addEventListener('click', toggleCamera);
 document.getElementById('csMuteBtn').addEventListener('click', toggleMute);
 document.getElementById('csSpeakerBtn').addEventListener('click', toggleSpeaker);
 document.getElementById('csShareBtn').addEventListener('click', toggleScreenShare);
-document.getElementById('csMinBtn').addEventListener('click', () => minimizeCallScreen());
+document.getElementById('csMinBtn').addEventListener('click', () => hideCallToBackground());
+
+// The — button tucks the whole call away, like minimizing a Teams call window. The call keeps
+// running; the timer in the left nav brings it back.
+function hideCallToBackground() {
+  if (!callParticipants.length) return;
+  document.getElementById('csAddPanel').classList.add('hidden');
+  _closeReactPanel();
+  if (callsV2) { _closeMeetMenus(); _hidePip(); }
+  _stashCallScreen();
+  document.getElementById('callWidget').classList.add('hidden');
+  _paintNavCall(true);
+}
+function _paintNavCall(show) {
+  const btn = document.getElementById('navCallBtn');
+  if (show !== undefined) btn.classList.toggle('hidden', !show);
+  document.getElementById('navCallTime').textContent = _fmtClock(callSeconds, true);
+  btn.setAttribute('aria-label', `Back to call with ${_callLabel()}, ${_fmtClock(callSeconds, false)}`);
+  btn.title = `Back to call · ${_callLabel()}`;
+}
+document.getElementById('navCallBtn').addEventListener('click', e => { e.stopPropagation(); expandMiniCall(); });
 document.getElementById('csHoldBtn').addEventListener('click', toggleHold);
 
 
@@ -5442,24 +5564,48 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
 
   const PHONE = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
   const VIDEO = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>`;
-  const CHECK = `<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const CHECK = `<svg width="16" height="16" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-  function renderList(filter) {
+  function matches(filter) {
     const q = (filter || '').toLowerCase();
-    list.innerHTML = peopleData
-      .filter(p => !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q))
-      .map(p => `
-        <div class="cd-item${selected.has(p.key) ? ' selected' : ''}" data-key="${p.key}">
-          <button type="button" class="cd-select" aria-label="Select ${p.name}"><div class="cd-check">${selected.has(p.key) ? CHECK : ''}</div></button>
-          <div class="cd-av" style="background:${p.color}">${p.initials}${p.online ? '<span class="cd-online"></span>' : ''}</div>
-          <div class="cd-info"><span>${p.name}</span><small>${p.role}</small></div>
-          <button class="cd-act cd-voice" title="Voice call">${PHONE}</button>
-          <button class="cd-act cd-video" title="Video call">${VIDEO}</button>
-        </div>`).join('');
+    return peopleData.filter(p => !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q));
+  }
+
+  // No checkbox column: tapping a person picks them, their avatar flips to a check,
+  // and they show up as a chip in the search box.
+  function renderList(filter) {
+    list.innerHTML = matches(filter)
+      .map(p => {
+        const on = selected.has(p.key);
+        return `
+        <div class="cd-item${on ? ' selected' : ''}" data-key="${p.key}">
+          <button type="button" class="cd-pick" aria-pressed="${on}" aria-label="${on ? 'Remove' : 'Add'} ${p.name} ${on ? 'from' : 'to'} group call">
+            <span class="cd-av" style="background:${p.color}">${p.initials}<span class="cd-av-check" aria-hidden="true">${CHECK}</span>${p.online ? '<span class="cd-online"></span>' : ''}</span>
+            <span class="cd-info"><span>${p.name}</span><small>${p.role}</small></span>
+          </button>
+          <button type="button" class="cd-act cd-voice" title="Voice call ${p.name}" aria-label="Voice call ${p.name}">${PHONE}</button>
+          <button type="button" class="cd-act cd-video" title="Video call ${p.name}" aria-label="Video call ${p.name}">${VIDEO}</button>
+        </div>`;
+      }).join('');
+  }
+
+  function renderChips() {
+    document.getElementById('cdChips').innerHTML = selectedPeople().map(p =>
+      `<span class="cd-chip"><span class="cd-chip-av" style="background:${p.color}">${p.initials}</span>${p.name.split(' ')[0]}<button type="button" data-unpick="${p.key}" aria-label="Remove ${p.name}">×</button></span>`).join('');
+    search.placeholder = selected.size ? 'Add more…' : 'Search people…';
+  }
+
+  function toggle(key) {
+    selected.has(key) ? selected.delete(key) : selected.add(key);
+    renderList(search.value);
+    renderChips();
+    syncFooter();
   }
 
   function syncFooter() {
     const n = selected.size;
+    dd.classList.toggle('picking', n > 0);
+    document.getElementById('cdHint').textContent = n ? 'Tap more people, or start the call below' : 'Tap a person to add them to a group call';
     footer.classList.toggle('hidden', n === 0);
     countEl.textContent = n === 1 ? '1 person selected' : `${n} people selected`;
     const ps = selectedPeople();
@@ -5476,6 +5622,7 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
     search.value = '';
     selected.clear();
     renderList();
+    renderChips();
     syncFooter();
     positionDropdown(dd, btn);
     dd.classList.remove('hidden');
@@ -5488,6 +5635,26 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
   });
 
   search.addEventListener('input', function() { renderList(this.value); });
+  search.addEventListener('keydown', e => {
+    // Enter picks the top match and clears the search, so a group can be typed name by name.
+    if (e.key === 'Enter') {
+      const top = matches(search.value)[0];
+      if (!search.value.trim() || !top) { if (selected.size) startSelected(e.shiftKey); return; }
+      e.preventDefault();
+      if (!selected.has(top.key)) toggle(top.key);
+      search.value = '';
+      renderList();
+    } else if (e.key === 'Backspace' && !search.value && selected.size) {
+      toggle([...selected].pop());
+    }
+  });
+  document.getElementById('cdChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-unpick]');
+    if (!b) return;
+    e.stopPropagation();
+    toggle(b.dataset.unpick);
+    search.focus();
+  });
 
   list.addEventListener('click', e => {
     const item = e.target.closest('.cd-item');
@@ -5501,11 +5668,8 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
       return;
     }
     e.stopPropagation();
-    selected.has(person.key) ? selected.delete(person.key) : selected.add(person.key);
-    item.classList.toggle('selected', selected.has(person.key));
-    const check = item.querySelector('.cd-check');
-    if (check) check.innerHTML = selected.has(person.key) ? CHECK : '';
-    syncFooter();
+    toggle(person.key);
+    list.querySelector(`.cd-item[data-key="${person.key}"] .cd-pick`)?.focus();
   });
 
   function startSelected(video) {
@@ -5518,6 +5682,7 @@ document.getElementById('cpmVideoBtn').addEventListener('click', () => {
     e.stopPropagation();
     selected.clear();
     renderList(search.value);
+    renderChips();
     syncFooter();
   });
   document.getElementById('cdStartVoice').addEventListener('click', e => { e.stopPropagation(); startSelected(false); });
@@ -5961,4 +6126,1145 @@ document.getElementById('scSubmit').addEventListener('click', () => {
       }
     }
   });
+})();
+
+// ── CALLS V2 (Google Meet model) ──
+// Turned on from the login screen's "v2" link. See .claude/skills/video-meetings/SKILL.md.
+let callsV2 = false;
+let callLayout = 'auto';        // 'auto' | 'tiled' | 'spotlight'
+let captionsOn = false;
+let _pjBypass = false;
+let _joiningMeeting = false;
+let _joinCamOff = false;
+let _pickedDevice = { mic: '', cam: '', speaker: '' };
+let _pttActive = false;
+
+function enableCallsV2() {
+  if (callsV2) return;
+  callsV2 = true;
+  document.body.classList.add('calls-v2');
+  // Meet keeps Raise and React in the bottom bar, after Captions.
+  const anchor = document.getElementById('csCaptionsBtn');
+  ['csReactBtn', 'csRaiseBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    btn.className = 'cs-ctl';
+    btn.type = 'button';
+    anchor.after(btn);
+  });
+  const raise = document.getElementById('csRaiseBtn');
+  raise.title = 'Raise hand (⌃⌘H)';
+  document.getElementById('csReactBtn').setAttribute('aria-label', 'Send a reaction');
+  document.getElementById('csShareBtn').type = 'button';
+  document.getElementById('csMuteBtn').type = 'button';
+  document.getElementById('csCameraBtn').type = 'button';
+  document.getElementById('csHangup').type = 'button';
+  // Minimized calls become a compact Meet-style bar: mic, camera, leave.
+  document.querySelector('#callWidget .cw-grid').append(document.getElementById('cwEndBtn'));
+  document.querySelectorAll('.cs-ctl-caret').forEach(c => { c.setAttribute('aria-haspopup', 'menu'); c.setAttribute('aria-expanded', 'false'); });
+}
+
+function _mediaConstraints(audio, video) {
+  return {
+    audio: audio ? (_pickedDevice.mic ? { deviceId: _pickedDevice.mic } : true) : false,
+    video: video ? (_pickedDevice.cam ? { deviceId: _pickedDevice.cam } : true) : false,
+  };
+}
+
+function _setPressed(btn, on, label) {
+  btn.setAttribute('aria-pressed', String(on));
+  btn.setAttribute('aria-label', label);
+}
+
+function _paintMeetInfo() {
+  const now = new Date();
+  document.getElementById('csMeetTime').textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  document.getElementById('csMeetName').textContent = _callLabel();
+}
+
+function _syncMeetChrome() {
+  const mic = document.getElementById('csMuteBtn');
+  _setPressed(mic, !callMuted, callMuted ? 'Turn on microphone' : 'Turn off microphone');
+  mic.title = (callMuted ? 'Turn on microphone' : 'Turn off microphone') + ' (⌘D)';
+  const cam = document.getElementById('csCameraBtn');
+  _setPressed(cam, !!vcCameraOn, vcCameraOn ? 'Turn off camera' : 'Turn on camera');
+  cam.title = (vcCameraOn ? 'Turn off camera' : 'Turn on camera') + ' (⌘E)';
+  const share = document.getElementById('csShareBtn');
+  document.getElementById('csShareLabel').textContent = screenShareStream ? 'Stop' : 'Present';
+  share.title = screenShareStream ? 'Stop presenting' : 'Present now';
+  _setPressed(share, !!screenShareStream, share.title);
+  const cap = document.getElementById('csCaptionsBtn');
+  _setPressed(cap, captionsOn, captionsOn ? 'Turn off captions' : 'Turn on captions');
+  cap.title = (captionsOn ? 'Turn off captions' : 'Turn on captions') + ' (C)';
+  cap.querySelector('.cs-ctl-icon').classList.toggle('cs-ctl-icon-blue', captionsOn);
+  _setPressed(document.getElementById('csRaiseBtn'), myHandRaised, myHandRaised ? 'Lower hand' : 'Raise hand');
+  document.getElementById('csPeopleBadge').textContent = callParticipants.length + 1;
+  const people = document.getElementById('csPeopleBtn');
+  people.setAttribute('aria-pressed', String(_peopleOpen()));
+  people.setAttribute('aria-label', `Show everyone, ${callParticipants.length + 1} in call`);
+  const chat = document.getElementById('csChatBtn2');
+  chat.classList.toggle('hidden', !callConvo);
+  chat.setAttribute('aria-pressed', String(_callChatOpen()));
+  document.getElementById('csChatDot2').classList.toggle('hidden', !callChatUnread || _callChatOpen());
+  chat.setAttribute('aria-label', callChatUnread ? `Chat with everyone, ${callChatUnread} unread` : 'Chat with everyone');
+  _paintMeetInfo();
+  if (_peopleOpen()) _renderPeoplePanel();
+  if (_pipOpen()) _paintPip();
+}
+
+// ── Pre-join ──
+let _pj = null;
+
+async function _openPreJoin(list, video, title, convo) {
+  _closePreJoin();
+  _pj = { list, video, title, convo, mic: true, cam: video, stream: null, ctx: null, raf: 0 };
+  const names = list.map(p => p.name.split(' ')[0]);
+  document.getElementById('pjMeeting').textContent = title || (names.length === 1 ? list[0].name : names.slice(0, -1).join(', ') + ' & ' + names[names.length - 1]);
+  document.getElementById('pjWho').innerHTML = `<div class="pj-avs">${list.slice(0, 4).map(p => `<span class="pj-av" style="${_avStyle(p)}">${p.initials}</span>`).join('')}</div>
+    <span>${list.length === 1 ? `Will ring ${names[0]}` : `Will ring ${names.slice(0, 2).join(', ')}${list.length > 2 ? ` and ${list.length - 2} more` : ''}`}</span>`;
+  document.getElementById('pjError').classList.add('hidden');
+  document.getElementById('preJoin').classList.remove('hidden');
+  _paintPreJoin();
+  document.getElementById('pjJoin').focus({ preventScroll: true });
+  await _pjStart();
+  _fillPreJoinDevices();
+}
+
+async function _pjStart() {
+  if (!_pj) return;
+  _pjStop();
+  const err = document.getElementById('pjError');
+  if (!_pj.mic && !_pj.cam) { _paintPreJoin(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(_mediaConstraints(_pj.mic, _pj.cam));
+    if (!_pj) { stream.getTracks().forEach(t => t.stop()); return; }
+    _pj.stream = stream;
+    document.getElementById('pjVideo').srcObject = stream;
+    err.classList.add('hidden');
+    if (_pj.mic && stream.getAudioTracks().length) _pjMeter(stream);
+  } catch (e) {
+    err.innerHTML = 'Yuzu can\'t use your camera or microphone. Check your system permissions. <button type="button" id="pjRetry">Try again</button>';
+    err.classList.remove('hidden');
+    document.getElementById('pjRetry').onclick = _pjStart;
+  }
+  _paintPreJoin();
+}
+
+function _pjMeter(stream) {
+  try {
+    _pj.ctx = new AudioContext();
+    const an = _pj.ctx.createAnalyser();
+    an.fftSize = 256;
+    _pj.ctx.createMediaStreamSource(stream).connect(an);
+    const buf = new Uint8Array(an.frequencyBinCount);
+    const bar = document.getElementById('pjMeter');
+    const tick = () => {
+      if (!_pj || !_pj.ctx) return;
+      an.getByteFrequencyData(buf);
+      const level = buf.reduce((a, b) => a + b, 0) / buf.length / 128;
+      bar.style.transform = `scaleX(${Math.min(1, level * 1.6)})`;
+      _pj.raf = requestAnimationFrame(tick);
+    };
+    tick();
+  } catch (_) {}
+}
+
+function _pjStop() {
+  if (!_pj) return;
+  cancelAnimationFrame(_pj.raf);
+  if (_pj.ctx) { _pj.ctx.close().catch(() => {}); _pj.ctx = null; }
+  if (_pj.stream) { _pj.stream.getTracks().forEach(t => t.stop()); _pj.stream = null; }
+  document.getElementById('pjVideo').srcObject = null;
+  document.getElementById('pjMeter').style.transform = 'scaleX(0)';
+}
+
+function _paintPreJoin() {
+  if (!_pj) return;
+  const mic = document.getElementById('pjMic');
+  const cam = document.getElementById('pjCam');
+  mic.innerHTML = _pj.mic ? CALL_SVG.mic : CALL_SVG.micOff;
+  cam.innerHTML = _pj.cam ? CALL_SVG.video : CALL_SVG.videoOff;
+  mic.classList.toggle('off', !_pj.mic);
+  cam.classList.toggle('off', !_pj.cam);
+  _setPressed(mic, _pj.mic, _pj.mic ? 'Turn off microphone' : 'Turn on microphone');
+  _setPressed(cam, _pj.cam, _pj.cam ? 'Turn off camera' : 'Turn on camera');
+  mic.title = mic.getAttribute('aria-label') + ' (⌘D)';
+  cam.title = cam.getAttribute('aria-label') + ' (⌘E)';
+  const live = !!_pj.stream?.getVideoTracks().length;
+  document.getElementById('pjCamOff').classList.toggle('hidden', live);
+  document.getElementById('pjCamOff').textContent = _pj.cam ? 'Starting camera…' : 'Camera is off';
+}
+
+async function _fillPreJoinDevices() {
+  let devices = [];
+  try { devices = await navigator.mediaDevices.enumerateDevices(); } catch (_) {}
+  const fill = (id, kind, key) => {
+    const sel = document.getElementById(id);
+    const list = devices.filter(d => d.kind === kind);
+    sel.innerHTML = list.length
+      ? list.map((d, i) => `<option value="${d.deviceId}"${d.deviceId === _pickedDevice[key] ? ' selected' : ''}>${d.label || (kind === 'audioinput' ? 'Microphone ' : 'Camera ') + (i + 1)}</option>`).join('')
+      : '<option value="">None found</option>';
+    sel.disabled = !list.length;
+  };
+  fill('pjMicSel', 'audioinput', 'mic');
+  fill('pjCamSel', 'videoinput', 'cam');
+}
+
+function _closePreJoin() {
+  _pjStop();
+  _pj = null;
+  document.getElementById('preJoin').classList.add('hidden');
+}
+
+function _joinFromPreJoin() {
+  if (!_pj) return;
+  const { list, video, title, convo, mic, cam } = _pj;
+  _closePreJoin();
+  const withVideo = video || cam;
+  _joinCamOff = withVideo && !cam;
+  _pjBypass = true;
+  try { startGroupCall(list, withVideo, title, convo); } finally { _pjBypass = false; }
+  if (!mic) toggleMute();
+  _setCallLayout(callLayout);
+}
+
+document.getElementById('pjMic').addEventListener('click', () => { _pj.mic = !_pj.mic; _pjStart(); });
+document.getElementById('pjCam').addEventListener('click', () => { _pj.cam = !_pj.cam; _pjStart(); });
+document.getElementById('pjMicSel').addEventListener('change', e => { _pickedDevice.mic = e.target.value; _pjStart(); });
+document.getElementById('pjCamSel').addEventListener('change', e => { _pickedDevice.cam = e.target.value; _pjStart(); });
+document.getElementById('pjJoin').addEventListener('click', _joinFromPreJoin);
+document.getElementById('pjCancel').addEventListener('click', _closePreJoin);
+document.getElementById('preJoin').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.stopPropagation(); _closePreJoin(); return; }
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && !e.altKey && e.key.toLowerCase() === 'd') { e.preventDefault(); document.getElementById('pjMic').click(); }
+  else if (mod && !e.altKey && e.key.toLowerCase() === 'e') { e.preventDefault(); document.getElementById('pjCam').click(); }
+});
+
+// ── Devices ──
+async function _loadRealDevices() {
+  let devices = [];
+  try { devices = await navigator.mediaDevices.enumerateDevices(); } catch (_) { return; }
+  const kinds = { mic: 'audioinput', speaker: 'audiooutput', camera: 'videoinput' };
+  Object.entries(kinds).forEach(([k, kind]) => {
+    const list = devices.filter(d => d.kind === kind && d.label);
+    if (!list.length) return;
+    const cur = CALL_DEVICES[k].ids?.[CALL_DEVICES[k].pick];
+    CALL_DEVICES[k].list = list.map(d => d.label);
+    CALL_DEVICES[k].ids = list.map(d => d.deviceId);
+    CALL_DEVICES[k].pick = Math.max(0, CALL_DEVICES[k].ids.indexOf(cur));
+  });
+}
+
+function _useDevice(kind, id) {
+  if (!id) return;
+  if (kind === 'speaker') {
+    _pickedDevice.speaker = id;
+    document.querySelectorAll('#callScreen video').forEach(v => v.setSinkId?.(id).catch(() => {}));
+    return;
+  }
+  _pickedDevice[kind === 'camera' ? 'cam' : 'mic'] = id;
+  if (!vcStream) return;
+  const camWasOff = !vcCameraOn;
+  stopVideoStream();
+  _joinCamOff = camWasOff;
+  startVideoStream();
+}
+if (navigator.mediaDevices) {
+  navigator.mediaDevices.addEventListener?.('devicechange', () => {
+    if (!callsV2) return;
+    _loadRealDevices();
+    if (_pj) _fillPreJoinDevices();
+  });
+}
+
+// ── Layouts ──
+function _setCallLayout(layout) {
+  callLayout = layout;
+  if (layout === 'tiled') setCallView('gallery');
+  else if (layout === 'spotlight') setCallView('speaker');
+  else setCallView(callPinnedKey || screenShareStream ? 'speaker' : 'gallery');
+}
+
+// ── Menus (More, Leave) ──
+function _openMeetMenu(menu, btn) {
+  _closeMeetMenus();
+  menu.classList.remove('hidden');
+  menu.style.position = 'absolute';
+  _placeCallPopover(menu, btn);
+  btn.setAttribute('aria-expanded', 'true');
+  menu._opener = btn;
+  menu.querySelector('[role="menuitem"]:not([disabled]), [role="menuitemradio"]')?.focus({ preventScroll: true });
+}
+function _closeMeetMenus(restoreFocus) {
+  ['csMoreMenu', 'csLeaveMenu'].forEach(id => {
+    const m = document.getElementById(id);
+    if (m.classList.contains('hidden')) return;
+    m.classList.add('hidden');
+    m._opener?.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) m._opener?.focus({ preventScroll: true });
+  });
+}
+function _menuOpen() {
+  return ['csMoreMenu', 'csLeaveMenu'].some(id => !document.getElementById(id).classList.contains('hidden'));
+}
+
+function _openMoreMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('csMoreMenu');
+  if (!menu.classList.contains('hidden')) return _closeMeetMenus();
+  const item = (layout, label) => `<button type="button" class="call-more-item${callLayout === layout ? ' active' : ''}" role="menuitemradio" aria-checked="${callLayout === layout}" data-layout="${layout}"><span class="cs-dm-check">${callLayout === layout ? '✓' : ''}</span>${label}</button>`;
+  menu.innerHTML = `<div class="cs-dm-title">Layout</div>
+    ${item('auto', 'Auto')}${item('tiled', 'Tiled')}${item('spotlight', 'Spotlight')}
+    <div class="cs-dm-sep"></div>
+    <button type="button" class="call-more-item" role="menuitem" data-act="add">Add people</button>
+    <button type="button" class="call-more-item" role="menuitem" data-act="full">${callIsFullscreen ? 'Exit full screen' : 'Full screen'}<span class="cs-kbd">F</span></button>
+    <button type="button" class="call-more-item" role="menuitem" data-act="min">Minimize call</button>`;
+  _openMeetMenu(menu, e.currentTarget);
+}
+document.getElementById('csMoreBtn').addEventListener('click', _openMoreMenu);
+document.getElementById('csMoreMenu').addEventListener('click', e => {
+  e.stopPropagation();
+  const b = e.target.closest('button');
+  if (!b) return;
+  _closeMeetMenus(true);
+  if (b.dataset.layout) { _setCallLayout(b.dataset.layout); callToast(`Layout: ${b.textContent.replace('✓', '').trim()}`); }
+  else if (b.dataset.act === 'add') { _setPeopleOpen(true); _openAddPeople(document.getElementById('csPeopleBtn')); }
+  else if (b.dataset.act === 'full') setCallFullscreen(!callIsFullscreen);
+  else if (b.dataset.act === 'min') minimizeCallScreen();
+});
+
+function _openLeaveMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('csLeaveMenu');
+  if (!menu.classList.contains('hidden')) return _closeMeetMenus();
+  _openMeetMenu(menu, e.currentTarget);
+}
+document.getElementById('csLeaveOnly').addEventListener('click', () => { _closeMeetMenus(); endCallScreen(); });
+document.getElementById('csEndAll').addEventListener('click', () => {
+  _closeMeetMenus();
+  if (callConvo && callConvo.kind !== 'pending') _pushToConvo(callConvo, { type: 'system', text: 'You ended the call for everyone' });
+  endCallScreen();
+});
+
+// Arrow keys move between menu items, Esc closes and returns focus.
+['csMoreMenu', 'csLeaveMenu'].forEach(id => document.getElementById(id).addEventListener('keydown', e => {
+  const items = [...e.currentTarget.querySelectorAll('button')];
+  const i = items.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus({ preventScroll: true }); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus({ preventScroll: true }); }
+  else if (e.key === 'Tab') _closeMeetMenus();
+}));
+document.addEventListener('click', e => {
+  if (!e.target.closest('#csMoreMenu, #csLeaveMenu, #csMoreBtn, #csHangup')) _closeMeetMenus();
+});
+
+function _meetEsc() {
+  if (_menuOpen()) { _closeMeetMenus(true); return true; }
+  if (_peopleOpen()) { _setPeopleOpen(false); document.getElementById('csPeopleBtn').focus({ preventScroll: true }); return true; }
+  return false;
+}
+
+// ── People panel ──
+function _peopleOpen() { return document.getElementById('callScreen').classList.contains('people-open'); }
+function _setPeopleOpen(open) {
+  const screen = document.getElementById('callScreen');
+  if (open && _callChatOpen()) _setCallChatOpen(false);
+  screen.classList.toggle('people-open', open);
+  document.getElementById('csPeople').classList.toggle('hidden', !open);
+  if (open) {
+    _renderPeoplePanel();
+    document.getElementById('csPeopleTitle').focus({ preventScroll: true });
+  }
+  _syncMeetChrome();
+  _sizeCallGrid();
+}
+
+const _PP_MIC_OFF = MIC_OFF_ICON.replace(/width="12" height="12"/, 'width="16" height="16"');
+function _renderPeoplePanel() {
+  const body = document.getElementById('csPeopleBody');
+  const focused = document.activeElement?.closest?.('#csPeopleBody [data-act]');
+  const refocus = focused && `[data-act="${focused.dataset.act}"][data-key="${focused.dataset.key || ''}"]`;
+  const hands = callParticipants.filter(p => p.hand).sort((a, b) => a.hand - b.hand);
+  const me = userEmail ? userEmail.split('@')[0] : 'You';
+  const myInitials = userEmail ? me.slice(0, 2).toUpperCase() : 'ME';
+  const row = p => `<li class="pp-row">
+      <span class="pp-av" style="${_avStyle(p)}">${p.initials}</span>
+      <span class="pp-info"><span class="pp-name">${p.name}</span><span class="pp-sub">${p.joined ? (p.muted ? 'Muted' : 'In the call') : 'Ringing…'}</span></span>
+      ${p.muted ? `<span class="pp-mic" aria-label="Muted">${_PP_MIC_OFF}</span>` : ''}
+      <button type="button" class="pp-act" data-act="pin" data-key="${p.key}" aria-label="Pin ${p.name}" title="Pin to main screen"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+      <button type="button" class="pp-act" data-act="mute" data-key="${p.key}" aria-label="Mute ${p.name}" title="Mute"${p.muted || !p.joined ? ' disabled' : ''}>${_PP_MIC_OFF}</button>
+      <button type="button" class="pp-act" data-act="remove" data-key="${p.key}" aria-label="Remove ${p.name} from the call" title="Remove from call"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="22" x2="16" y1="11" y2="11"/></svg></button>
+    </li>`;
+  body.innerHTML = `
+    <button type="button" class="pp-add" data-act="add"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>Add people</button>
+    ${hands.length || myHandRaised ? `<h3 class="pp-h">Raised hands</h3><ol class="pp-list">
+      ${myHandRaised ? `<li class="pp-row"><span class="pp-hand">✋</span><span class="pp-info"><span class="pp-name">You</span></span><button type="button" class="pp-lower" data-act="lower" data-key="self">Lower</button></li>` : ''}
+      ${hands.map(p => `<li class="pp-row"><span class="pp-hand">✋</span><span class="pp-info"><span class="pp-name">${p.name}</span></span><button type="button" class="pp-lower" data-act="lower" data-key="${p.key}" aria-label="Lower ${p.name}'s hand">Lower</button></li>`).join('')}
+    </ol>` : ''}
+    <div class="pp-h-row"><h3 class="pp-h">In the call · ${callParticipants.length + 1}</h3>
+      <button type="button" class="pp-muteall" data-act="muteall"${callParticipants.some(p => p.joined && !p.muted) ? '' : ' disabled'}>Mute everyone</button></div>
+    <ul class="pp-list">
+      <li class="pp-row"><span class="pp-av" style="background:var(--amber);color:var(--maroon-dark)">${myInitials}</span>
+        <span class="pp-info"><span class="pp-name">${userEmail ? me + ' (You)' : 'You'}</span><span class="pp-sub">Meeting host</span></span>
+        ${callMuted ? `<span class="pp-mic" aria-label="Muted">${_PP_MIC_OFF}</span>` : ''}</li>
+      ${callParticipants.map(row).join('')}
+    </ul>`;
+  if (refocus) (body.querySelector(refocus) || body.querySelector('.pp-add'))?.focus({ preventScroll: true });
+}
+
+document.getElementById('csPeople').addEventListener('click', e => {
+  e.stopPropagation();
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const p = callParticipants.find(x => x.key === b.dataset.key);
+  const act = b.dataset.act;
+  if (act === 'add') _openAddPeople(b);
+  else if (act === 'pin' && p) { callPinnedKey = p.key; callView = 'speaker'; document.getElementById('csStage').dataset.key = ''; _applyCallView(); callToast(`Pinned ${p.name}`); }
+  else if (act === 'mute' && p) { p.muted = true; renderCallLayout(); callToast(`You muted ${p.name}`); }
+  else if (act === 'muteall') { callParticipants.forEach(x => { if (x.joined) x.muted = true; }); renderCallLayout(); callToast('You muted everyone'); }
+  else if (act === 'remove' && p) { removeCallParticipant(p.key); callToast(`You removed ${p.name}`); }
+  else if (act === 'lower') {
+    if (b.dataset.key === 'self') toggleHand();
+    else if (p) { p.hand = 0; document.querySelector(`#csGroupGrid .cs-gtile[data-key="${p.key}"]`)?.classList.remove('hand'); callToast(`You lowered ${p.name}'s hand`); }
+  }
+  _syncMeetChrome();
+});
+document.getElementById('csPeopleClose').addEventListener('click', () => { _setPeopleOpen(false); document.getElementById('csPeopleBtn').focus({ preventScroll: true }); });
+document.getElementById('csPeopleBtn').addEventListener('click', e => { e.stopPropagation(); _setPeopleOpen(!_peopleOpen()); });
+document.getElementById('csChatBtn2').addEventListener('click', e => { e.stopPropagation(); _setCallChatOpen(!_callChatOpen()); });
+
+function _openAddPeople(anchor) {
+  const panel = document.getElementById('csAddPanel');
+  panel.classList.remove('hidden');
+  refreshAddPanel();
+  _placeCallPopover(panel, anchor);
+  document.getElementById('csApSearch').value = '';
+  document.getElementById('csApSearch').focus({ preventScroll: true });
+}
+
+// ── Captions and simulated room activity ──
+const _CAPTION_LINES = [
+  'I think we can ship the first part this week.',
+  'Can everyone see my notes?',
+  'Let\'s come back to that after the demo.',
+  'The numbers look better than last month.',
+  'I\'ll follow up in the channel after this.',
+  'Sounds good to me.',
+  'Who\'s taking the action items?',
+];
+let _captionTimer = null;
+function toggleCaptions() {
+  captionsOn = !captionsOn;
+  if (!captionsOn) document.getElementById('csCaptions').classList.add('hidden');
+  callToast(captionsOn ? 'Captions are on' : 'Captions are off');
+  _syncMeetChrome();
+}
+document.getElementById('csCaptionsBtn').addEventListener('click', e => { e.stopPropagation(); toggleCaptions(); });
+
+// Stands in for real speech, hand raises and join requests until there's a transport.
+function _meetTick(speakerKey) {
+  const p = callParticipants.find(x => x.key === speakerKey);
+  if (captionsOn && p) {
+    document.getElementById('csCaptionsWho').textContent = p.name;
+    document.getElementById('csCaptionsText').textContent = _CAPTION_LINES[Math.floor(Math.random() * _CAPTION_LINES.length)];
+    document.getElementById('csCaptions').classList.remove('hidden');
+    clearTimeout(_captionTimer);
+    _captionTimer = setTimeout(() => document.getElementById('csCaptions').classList.add('hidden'), 3000);
+  }
+  const idle = callParticipants.filter(x => x.joined && !x.hand);
+  if (idle.length && Math.random() < 0.03) {
+    const who = idle[Math.floor(Math.random() * idle.length)];
+    who.hand = Date.now();
+    document.querySelector(`#csGroupGrid .cs-gtile[data-key="${who.key}"]`)?.classList.add('hand');
+    callToast(`${who.name} raised their hand`, { label: 'View', run: () => _setPeopleOpen(true) });
+    if (_peopleOpen()) _renderPeoplePanel();
+  }
+}
+
+let _knockTimer = null;
+function _simulateKnock() {
+  clearTimeout(_knockTimer);
+  _knockTimer = setTimeout(() => {
+    if (!callsV2 || !_isGroupCall()) return;
+    const guest = peopleData.find(p => !callParticipants.some(c => c.key === p.key));
+    if (!guest) return;
+    callToast(`${guest.name} wants to join this call`, { label: 'Admit', run: () => {
+      addCallParticipant(guest);
+      const entry = callParticipants.find(c => c.key === guest.key);
+      if (entry) entry.joined = true;
+      renderCallLayout();
+    } });
+  }, 15000);
+}
+
+// ── Shortcuts ──
+document.addEventListener('keydown', e => {
+  if (!callsV2 || document.getElementById('callScreen').classList.contains('hidden')) return;
+  const k = e.key.toLowerCase();
+  const cmd = e.metaKey || e.ctrlKey;
+  // Modifier shortcuts work while typing in chat; bare keys don't.
+  if (!cmd && e.target.closest('input, textarea, select, [contenteditable]')) return;
+  const both = e.metaKey && e.ctrlKey;
+  if (both && k === 'h') { e.preventDefault(); toggleHand(); }
+  else if (both && k === 'c') { e.preventDefault(); _setCallChatOpen(!_callChatOpen()); }
+  else if (both && k === 'p') { e.preventDefault(); _setPeopleOpen(!_peopleOpen()); }
+  else if (cmd && !e.altKey && !e.shiftKey && k === 'd') { e.preventDefault(); toggleMute(); callToast(callMuted ? 'Microphone off' : 'Microphone on'); }
+  else if (cmd && !e.altKey && !e.shiftKey && k === 'e') { e.preventDefault(); toggleCamera(); }
+  else if (!cmd && !e.altKey && k === 'c') toggleCaptions();
+  else if (k === ' ' && !cmd && !e.repeat && callMuted && !e.target.closest('button')) {
+    e.preventDefault();
+    _pttActive = true;
+    toggleMute();
+  }
+});
+document.addEventListener('keyup', e => {
+  if (e.key === ' ' && _pttActive) { _pttActive = false; if (!callMuted) toggleMute(); }
+});
+
+function _resetMeet() {
+  clearTimeout(_knockTimer);
+  clearTimeout(_captionTimer);
+  _closeMeetMenus();
+  document.getElementById('csCaptions').classList.add('hidden');
+  _hidePip();
+  document.getElementById('callScreen').classList.remove('people-open');
+  document.getElementById('csPeople').classList.add('hidden');
+  _pttActive = false;
+}
+
+// ── Minimized call window (v2) ──
+// Meet-style picture-in-picture: drag the header to move, drag a bottom corner to resize.
+// Dragging it to the top edge or resizing it to nearly full size maximizes the call again.
+const PIP_MIN = { w: 260, h: 260 };
+let _pipSig = '';
+
+function _pipOpen() { return !document.getElementById('callPip').classList.contains('hidden'); }
+
+function _showPip(at) {
+  const pip = document.getElementById('callPip');
+  document.getElementById('csAddPanel').classList.add('hidden');
+  _closeReactPanel();
+  _closeMeetMenus();
+  _stashCallScreen();
+  document.getElementById('callWidget').classList.add('hidden');
+  pip.classList.remove('hidden');
+  _pipSig = '';
+  if (at) _placePip(at.x, at.y);
+  _paintPip();
+  document.getElementById('pipTime').textContent = _fmtClock(callSeconds, true);
+}
+
+function _hidePip() {
+  const pip = document.getElementById('callPip');
+  pip.classList.add('hidden');
+  document.getElementById('pipMenu').classList.add('hidden');
+  pip.querySelectorAll('video').forEach(v => { v.srcObject = null; });
+  _pipSig = '';
+}
+
+function _maximizePip() {
+  _hidePip();
+  expandMiniCall();
+}
+
+function _pipBounds() {
+  const pip = document.getElementById('callPip');
+  return (pip.offsetParent || pip.parentElement).getBoundingClientRect();
+}
+// Puts the window's header under the pointer (used when dragging the full call down into it).
+function _placePip(clientX, clientY) {
+  const pip = document.getElementById('callPip');
+  const cr = _pipBounds();
+  pip.style.right = pip.style.bottom = 'auto';
+  pip.style.left = Math.max(0, Math.min(clientX - cr.left - pip.offsetWidth / 2, cr.width - pip.offsetWidth)) + 'px';
+  pip.style.top = Math.max(0, Math.min(clientY - cr.top - 18, cr.height - pip.offsetHeight)) + 'px';
+}
+
+function _pipTileHtml(t) {
+  return `<div class="pip-tile${t.share ? ' pip-share' : ''}" data-key="${t.key}" style="--tile-rgb:${t.rgb || '0,0,0'}">
+    ${t.video ? '<video autoplay muted playsinline></video>' : `<span class="pip-av" style="${t.av}">${t.initials}</span>`}
+    <span class="pip-hand">✋</span>
+    <span class="pip-mic" aria-label="Muted">${MIC_OFF_ICON}</span>
+    <span class="pip-name">${t.name}</span>
+  </div>`;
+}
+
+function _paintPip() {
+  if (!_pipOpen()) return;
+  const isVideo = document.getElementById('callScreen').classList.contains('video-mode');
+  const selfVideo = isVideo && vcCameraOn && vcStream;
+  const tiles = callParticipants.map(p => ({ key: p.key, name: p.name.split(' ')[0], initials: p.initials, av: _avStyle(p), rgb: hexToRgb(p.color) }));
+  tiles.push({ key: 'self', name: 'You', initials: (userEmail ? userEmail.split('@')[0].slice(0, 2).toUpperCase() : 'ME'), av: 'background:var(--amber);color:var(--maroon-dark)', rgb: '246, 196, 83', video: !!selfVideo });
+  if (screenShareStream) tiles.push({ key: 'share', share: true, name: 'Your screen', video: true });
+  const box = document.getElementById('pipTiles');
+  const sig = tiles.map(t => t.key + (t.video ? 'v' : '')).join('|');
+  if (sig !== _pipSig) {
+    _pipSig = sig;
+    box.innerHTML = tiles.map(_pipTileHtml).join('');
+    const sv = box.querySelector('[data-key="self"] video');
+    if (sv) sv.srcObject = vcStream;
+    const sh = box.querySelector('[data-key="share"] video');
+    if (sh) sh.srcObject = screenShareStream;
+  }
+  box.classList.toggle('has-share', !!screenShareStream);
+  _fitPipTiles();
+  box.querySelectorAll('.pip-tile').forEach(el => {
+    const src = document.querySelector(`#csGroupGrid .cs-gtile[data-key="${el.dataset.key}"]`);
+    const p = callParticipants.find(x => x.key === el.dataset.key);
+    el.classList.toggle('speaking', !!src?.classList.contains('speaking'));
+    el.classList.toggle('ringing', !!p && !p.joined);
+    el.classList.toggle('muted', el.dataset.key === 'self' ? callMuted : !!p?.muted);
+    el.classList.toggle('hand', el.dataset.key === 'self' ? myHandRaised : !!p?.hand);
+  });
+  document.getElementById('pipTitle').textContent = _callLabel();
+  document.getElementById('pipPresent').classList.toggle('hidden', !screenShareStream);
+  const mic = document.getElementById('pipMic');
+  mic.innerHTML = callMuted ? CALL_SVG.micOff : CALL_SVG.mic;
+  mic.classList.toggle('off', callMuted);
+  _setPressed(mic, !callMuted, callMuted ? 'Turn on microphone' : 'Turn off microphone');
+  mic.title = mic.getAttribute('aria-label') + ' (⌘D)';
+  const cam = document.getElementById('pipCam');
+  const camLive = isVideo && vcCameraOn;
+  cam.innerHTML = camLive ? CALL_SVG.video : CALL_SVG.videoOff;
+  cam.classList.toggle('off', !camLive);
+  _setPressed(cam, camLive, camLive ? 'Turn off camera' : 'Turn on camera');
+  cam.title = cam.getAttribute('aria-label') + ' (⌘E)';
+  const share = document.getElementById('pipShare');
+  share.classList.toggle('on', !!screenShareStream);
+  _setPressed(share, !!screenShareStream, screenShareStream ? 'Stop presenting' : 'Present now');
+  share.title = share.getAttribute('aria-label');
+}
+
+document.getElementById('pipMax').addEventListener('click', e => { e.stopPropagation(); _maximizePip(); });
+document.getElementById('pipHead').addEventListener('dblclick', e => { if (!e.target.closest('button')) _maximizePip(); });
+document.getElementById('pipMic').addEventListener('click', () => { toggleMute(); _paintPip(); });
+document.getElementById('pipCam').addEventListener('click', () => { toggleCamera(); setTimeout(() => { _pipSig = ''; _paintPip(); }, 400); });
+document.getElementById('pipShare').addEventListener('click', async () => { await toggleScreenShare(); _pipSig = ''; _paintPip(); });
+document.getElementById('pipStopPresent').addEventListener('click', () => { stopScreenShare(); _pipSig = ''; _paintPip(); });
+document.getElementById('pipLeave').addEventListener('click', () => endCallScreen());
+
+document.getElementById('pipReactRow').innerHTML = document.querySelector('#csReactPanel .cs-react-row').innerHTML;
+document.getElementById('pipMore').addEventListener('click', e => {
+  e.stopPropagation();
+  const menu = document.getElementById('pipMenu');
+  const open = menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', !open);
+  e.currentTarget.setAttribute('aria-expanded', String(open));
+  if (!open) return;
+  menu.querySelector('[data-act="hand"]').textContent = myHandRaised ? 'Lower hand' : 'Raise hand';
+  menu.querySelector('[data-act="captions"]').textContent = captionsOn ? 'Turn off captions' : 'Turn on captions';
+  menu.querySelector('.pip-menu-item').focus({ preventScroll: true });
+});
+document.getElementById('pipMenu').addEventListener('click', e => {
+  e.stopPropagation();
+  const b = e.target.closest('button');
+  if (!b) return;
+  _closePipMenu();
+  if (b.dataset.react) {
+    _showReaction(b.dataset.react, 'self');
+    const pop = document.createElement('div');
+    pop.className = 'cw-react-pop';
+    pop.textContent = b.dataset.react;
+    document.getElementById('callPip').appendChild(pop);
+    setTimeout(() => pop.remove(), 1600);
+  }
+  else if (b.dataset.act === 'hand') toggleHand();
+  else if (b.dataset.act === 'captions') toggleCaptions();
+  else if (b.dataset.act === 'chat') { _maximizePip(); _setCallChatOpen(true); }
+  else if (b.dataset.act === 'people') { _maximizePip(); _setPeopleOpen(true); }
+  _paintPip();
+});
+function _closePipMenu(restoreFocus) {
+  const menu = document.getElementById('pipMenu');
+  if (menu.classList.contains('hidden')) return;
+  menu.classList.add('hidden');
+  document.getElementById('pipMore').setAttribute('aria-expanded', 'false');
+  if (restoreFocus) document.getElementById('pipMore').focus({ preventScroll: true });
+}
+document.getElementById('pipMenu').addEventListener('keydown', e => {
+  const items = [...e.currentTarget.querySelectorAll('button')];
+  const i = items.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  else if (e.key === 'Escape') { e.stopPropagation(); _closePipMenu(true); }
+});
+document.addEventListener('click', e => { if (!e.target.closest('#pipMenu, #pipMore')) _closePipMenu(); });
+
+// One drag at a time, tracked on the document so it survives the call screen hiding mid-drag.
+let _pipDrag = null;
+function _pipDragTo(e) {
+  const d = _pipDrag;
+  if (!d) return;
+  const pip = document.getElementById('callPip');
+  if (d.mode === 'pending') {
+    if (e.clientY - d.y0 < 60) return;
+    _showPip({ x: e.clientX, y: e.clientY });
+    const r = pip.getBoundingClientRect();
+    Object.assign(d, { mode: 'move', ox: e.clientX - r.left, oy: e.clientY - r.top });
+    pip.classList.add('dragging');
+  }
+  const cr = _pipBounds();
+  if (d.mode === 'move') {
+    pip.style.left = Math.max(0, Math.min(e.clientX - cr.left - d.ox, cr.width - pip.offsetWidth)) + 'px';
+    pip.style.top = Math.max(0, Math.min(e.clientY - cr.top - d.oy, cr.height - pip.offsetHeight)) + 'px';
+    pip.classList.toggle('will-max', e.clientY - cr.top < 12);
+  } else if (d.mode === 'resize') {
+    const dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+    let { w, h } = d;
+    if (d.dir.includes('l')) w = Math.max(PIP_MIN.w, Math.min(d.w - dx, d.left + d.w));
+    if (d.dir.includes('r')) w = Math.max(PIP_MIN.w, Math.min(d.w + dx, cr.width - d.left));
+    if (d.dir.includes('t')) h = Math.max(PIP_MIN.h, Math.min(d.h - dy, d.top + d.h));
+    if (d.dir.includes('b')) h = Math.max(PIP_MIN.h, Math.min(d.h + dy, cr.height - d.top));
+    pip.style.width = w + 'px';
+    pip.style.height = h + 'px';
+    if (d.dir.includes('l')) pip.style.left = (d.left + d.w - w) + 'px';
+    if (d.dir.includes('t')) pip.style.top = (d.top + d.h - h) + 'px';
+    pip.classList.toggle('will-max', w > cr.width * 0.8 && h > cr.height * 0.8);
+    _fitPipTiles();
+  }
+}
+function _pipDragEnd() {
+  const d = _pipDrag;
+  _pipDrag = null;
+  document.removeEventListener('pointermove', _pipDragTo);
+  document.removeEventListener('pointerup', _pipDragEnd);
+  document.removeEventListener('pointercancel', _pipDragEnd);
+  const pip = document.getElementById('callPip');
+  pip.classList.remove('dragging', 'resizing');
+  if (d && d.mode !== 'pending' && pip.classList.contains('will-max')) {
+    pip.classList.remove('will-max');
+    pip.style.width = pip.style.height = '';
+    _maximizePip();
+  }
+}
+function _startPipDrag(state) {
+  _pipDrag = state;
+  document.addEventListener('pointermove', _pipDragTo);
+  document.addEventListener('pointerup', _pipDragEnd);
+  document.addEventListener('pointercancel', _pipDragEnd);
+}
+document.getElementById('pipHead').addEventListener('pointerdown', e => {
+  if (e.button !== 0 || e.target.closest('button')) return;
+  e.preventDefault();
+  const pip = document.getElementById('callPip');
+  const r = pip.getBoundingClientRect();
+  const cr = _pipBounds();
+  pip.style.right = pip.style.bottom = 'auto';
+  pip.style.left = (r.left - cr.left) + 'px';
+  pip.style.top = (r.top - cr.top) + 'px';
+  pip.classList.add('dragging');
+  _startPipDrag({ mode: 'move', ox: e.clientX - r.left, oy: e.clientY - r.top });
+});
+document.querySelectorAll('#callPip .pip-grip').forEach(g => g.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  const pip = document.getElementById('callPip');
+  const r = pip.getBoundingClientRect();
+  const cr = _pipBounds();
+  pip.style.right = pip.style.bottom = 'auto';
+  pip.style.left = (r.left - cr.left) + 'px';
+  pip.style.top = (r.top - cr.top) + 'px';
+  pip.classList.add('resizing');
+  _startPipDrag({ mode: 'resize', dir: g.dataset.dir, x0: e.clientX, y0: e.clientY, w: r.width, h: r.height, left: r.left - cr.left, top: r.top - cr.top });
+}));
+// Pull the full call down by its header to shrink it into the window.
+document.getElementById('csHeader').addEventListener('pointerdown', e => {
+  if (!callsV2 || e.button !== 0 || e.target.closest('button') || !callParticipants.length) return;
+  _startPipDrag({ mode: 'pending', y0: e.clientY });
+});
+
+// Keep tiles near video proportions as the window is resized: pick the column count that gives
+// the largest 16:10 tiles, like the full call grid does.
+function _fitPipTiles() {
+  const box = document.getElementById('pipTiles');
+  const n = box.querySelectorAll('.pip-tile:not(.pip-share)').length;
+  const W = box.clientWidth, H = box.clientHeight * (screenShareStream ? 0.38 : 1), GAP = 6, RATIO = 1.6;
+  if (!n || !W || !H) return;
+  let best = { w: 0, cols: 1 };
+  for (let cols = 1; cols <= n; cols++) {
+    const rows = Math.ceil(n / cols);
+    const w = Math.min((W - GAP * (cols - 1)) / cols, ((H - GAP * (rows - 1)) / rows) * RATIO);
+    if (w > best.w) best = { w, cols };
+  }
+  box.style.setProperty('--pip-tile-w', Math.floor(best.w) + 'px');
+}
+new ResizeObserver(_fitPipTiles).observe(document.getElementById('pipTiles'));
+
+// ── BACKGROUND EFFECTS ──
+// Blur or replace what's behind you. MediaPipe's selfie segmenter finds the person in each
+// camera frame; the result is composited on a canvas whose stream stands in for the camera track,
+// both in our own tiles and on the peer connection.
+const MP_VERSION = '0.10.14';
+// Scene backgrounds are painted in code (no image files to ship or license), then softened
+// with a depth-of-field blur so they read like a photo behind you.
+function _rng(seed) {
+  return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function _grad(c, x0, y0, x1, y1, stops) {
+  const g = c.createLinearGradient(x0, y0, x1, y1);
+  stops.forEach(([at, col]) => g.addColorStop(at, col));
+  return g;
+}
+function _books(c, x, y, w, h, rnd, palette) {
+  let bx = x;
+  while (bx < x + w - 6) {
+    const bw = 8 + rnd() * 14, bh = h * (0.7 + rnd() * 0.28);
+    c.fillStyle = palette[Math.floor(rnd() * palette.length)];
+    if (rnd() < 0.08 && bx > x + 20) {
+      c.save(); c.translate(bx, y + h); c.rotate(-0.25); c.fillRect(0, -bh, bw, bh); c.restore(); bx += bw + 10;
+    } else { c.fillRect(bx, y + h - bh, bw, bh); bx += bw + 1.5; }
+  }
+}
+function _plant(c, x, y, s, potCol) {
+  c.fillStyle = potCol;
+  c.beginPath(); c.moveTo(x - 26 * s, y); c.lineTo(x + 26 * s, y); c.lineTo(x + 20 * s, y + 46 * s); c.lineTo(x - 20 * s, y + 46 * s); c.closePath(); c.fill();
+  const leaves = ['#2f6b3a', '#3d8a4a', '#4f9e58', '#2a5c33'];
+  for (let i = 0; i < 14; i++) {
+    const a = -Math.PI / 2 + (i - 6.5) * 0.2, len = (60 + (i * 37) % 50) * s;
+    c.strokeStyle = leaves[i % 4]; c.lineWidth = 9 * s; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + Math.cos(a) * len * 0.5 - 10 * s, y + Math.sin(a) * len * 0.6, x + Math.cos(a) * len, y + Math.sin(a) * len); c.stroke();
+  }
+}
+const BG_SCENES = {
+  beach(c, W, H) {
+    c.fillStyle = _grad(c, 0, 0, 0, H * 0.56, [[0, '#4aa6e0'], [0.7, '#9fd6f2'], [1, '#e3f4fb']]); c.fillRect(0, 0, W, H);
+    const sun = c.createRadialGradient(W * 0.8, H * 0.18, 0, W * 0.8, H * 0.18, H * 0.35);
+    sun.addColorStop(0, 'rgba(255,250,220,1)'); sun.addColorStop(0.12, 'rgba(255,244,200,.9)'); sun.addColorStop(1, 'rgba(255,244,200,0)');
+    c.fillStyle = sun; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(255,255,255,.85)';
+    [[0.2, 0.16, 1], [0.45, 0.1, 0.8], [0.62, 0.26, 0.6]].forEach(([x, y, k]) => { for (let i = 0; i < 5; i++) { c.beginPath(); c.ellipse(W * x + i * 34 * k, H * y + (i % 2) * 8, 46 * k, 20 * k, 0, 0, 7); c.fill(); } });
+    c.fillStyle = _grad(c, 0, H * 0.55, 0, H * 0.74, [[0, '#1d7fb0'], [0.6, '#2fa3c4'], [1, '#6fd0d8']]); c.fillRect(0, H * 0.55, W, H * 0.2);
+    c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 2;
+    const r = _rng(7);
+    for (let i = 0; i < 26; i++) { const y = H * (0.57 + r() * 0.15), x = r() * W; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 30 + r() * 60, y); c.stroke(); }
+    c.fillStyle = _grad(c, 0, H * 0.72, 0, H, [[0, '#f4e3bb'], [1, '#dcb985']]);
+    c.beginPath(); c.moveTo(0, H * 0.74);
+    for (let x = 0; x <= W; x += 20) c.lineTo(x, H * 0.735 + Math.sin(x / 70) * 6);
+    c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.8)'; c.lineWidth = 4;
+    c.beginPath(); for (let x = 0; x <= W; x += 20) c.lineTo(x, H * 0.737 + Math.sin(x / 70) * 6); c.stroke();
+    // Palm on the left
+    c.strokeStyle = '#7a5532'; c.lineWidth = 20; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(W * 0.1, H); c.quadraticCurveTo(W * 0.04, H * 0.55, W * 0.13, H * 0.22); c.stroke();
+    ['#2e7d32', '#388e3c', '#1b5e20', '#43a047', '#2e7d32', '#388e3c'].forEach((col, i) => {
+      const a = -2.9 + i * 0.55; c.strokeStyle = col; c.lineWidth = 16;
+      c.beginPath(); c.moveTo(W * 0.13, H * 0.22); c.quadraticCurveTo(W * 0.13 + Math.cos(a) * 120, H * 0.22 + Math.sin(a) * 70 - 40, W * 0.13 + Math.cos(a) * 210, H * 0.22 + Math.sin(a) * 90 + 40); c.stroke();
+    });
+  },
+  office(c, W, H) {
+    c.fillStyle = _grad(c, 0, 0, 0, H, [[0, '#efebe5'], [1, '#e2dcd2']]); c.fillRect(0, 0, W, H);
+    const wx = W * 0.52, wy = H * 0.08, ww = W * 0.44, wh = H * 0.66;
+    c.fillStyle = _grad(c, 0, wy, 0, wy + wh, [[0, '#9cc9ea'], [1, '#dcecf5']]); c.fillRect(wx, wy, ww, wh);
+    const r = _rng(3);
+    for (let i = 0; i < 12; i++) { const bw = 30 + r() * 60, bh = wh * (0.2 + r() * 0.55), bx = wx + i * ww / 11 - 10; c.fillStyle = `rgba(${90 + r() * 40},${110 + r() * 30},${140 + r() * 30},.75)`; c.fillRect(bx, wy + wh - bh, bw, bh); }
+    c.fillStyle = '#5a5550'; [0, 1 / 3, 2 / 3, 1].forEach(t => c.fillRect(wx + ww * t - 4, wy, 8, wh)); c.fillRect(wx, wy - 4, ww, 8); c.fillRect(wx, wy + wh * 0.55, ww, 6); c.fillRect(wx - 4, wy + wh - 2, ww + 8, 10);
+    c.fillStyle = '#c4b49c'; c.fillRect(0, H * 0.8, W, H * 0.2);
+    // Shelf on the left
+    c.fillStyle = '#8a6a4a'; c.fillRect(W * 0.03, H * 0.18, W * 0.24, H * 0.6);
+    c.fillStyle = '#efe9e1'; for (let i = 0; i < 3; i++) c.fillRect(W * 0.04, H * (0.2 + i * 0.19), W * 0.22, H * 0.165);
+    const br = _rng(11);
+    for (let i = 0; i < 3; i++) _books(c, W * 0.045, H * (0.2 + i * 0.19), W * 0.15, H * 0.16, br, ['#4c1515', '#f6c453', '#2f4f6f', '#7a8c6e', '#c9a27e', '#3e3f40']);
+    _plant(c, W * 0.38, H * 0.72, 1.1, '#f2f0ec');
+    c.strokeStyle = '#3e3f40'; c.lineWidth = 2; c.beginPath(); c.moveTo(W * 0.4, 0); c.lineTo(W * 0.4, H * 0.12); c.stroke();
+    c.fillStyle = '#3e3f40'; c.beginPath(); c.moveTo(W * 0.37, H * 0.16); c.lineTo(W * 0.43, H * 0.16); c.lineTo(W * 0.415, H * 0.12); c.lineTo(W * 0.385, H * 0.12); c.closePath(); c.fill();
+    const glow = c.createRadialGradient(W * 0.4, H * 0.17, 0, W * 0.4, H * 0.17, 90); glow.addColorStop(0, 'rgba(255,230,170,.7)'); glow.addColorStop(1, 'rgba(255,230,170,0)'); c.fillStyle = glow; c.fillRect(W * 0.3, H * 0.1, 200, 160);
+  },
+  living(c, W, H) {
+    c.fillStyle = _grad(c, 0, 0, W, H, [[0, '#e6d5bf'], [1, '#d4bea3']]); c.fillRect(0, 0, W, H);
+    c.fillStyle = '#a07e5c'; c.fillRect(0, H * 0.82, W, H * 0.18);
+    // Framed art
+    c.fillStyle = '#3e2a1e'; c.fillRect(W * 0.62, H * 0.12, W * 0.26, H * 0.3);
+    c.fillStyle = '#f5efe6'; c.fillRect(W * 0.63, H * 0.14, W * 0.24, H * 0.26);
+    c.fillStyle = '#f6c453'; c.beginPath(); c.arc(W * 0.72, H * 0.26, H * 0.07, 0, 7); c.fill();
+    c.fillStyle = '#4c1515'; c.fillRect(W * 0.77, H * 0.2, W * 0.06, H * 0.16);
+    c.fillStyle = '#7fa8a0'; c.fillRect(W * 0.66, H * 0.33, W * 0.17, H * 0.04);
+    // Sofa
+    c.fillStyle = '#4f7f86';
+    c.beginPath(); c.roundRect(W * 0.08, H * 0.56, W * 0.84, H * 0.2, 24); c.fill();
+    c.fillStyle = '#5f939a'; c.beginPath(); c.roundRect(W * 0.05, H * 0.62, W * 0.1, H * 0.2, 18); c.roundRect(W * 0.85, H * 0.62, W * 0.1, H * 0.2, 18); c.fill();
+    c.fillStyle = '#6aa1a8'; c.beginPath(); c.roundRect(W * 0.13, H * 0.68, W * 0.74, H * 0.12, 16); c.fill();
+    c.fillStyle = '#f6c453'; c.beginPath(); c.roundRect(W * 0.17, H * 0.6, W * 0.08, H * 0.1, 10); c.fill();
+    c.fillStyle = '#e8ded0'; c.beginPath(); c.roundRect(W * 0.75, H * 0.6, W * 0.08, H * 0.1, 10); c.fill();
+    // Floor lamp
+    c.strokeStyle = '#2d2a26'; c.lineWidth = 5; c.beginPath(); c.moveTo(W * 0.04, H * 0.85); c.lineTo(W * 0.04, H * 0.2); c.stroke();
+    c.fillStyle = '#f3e7d0'; c.beginPath(); c.moveTo(W * 0.0, H * 0.24); c.lineTo(W * 0.08, H * 0.24); c.lineTo(W * 0.065, H * 0.13); c.lineTo(W * 0.015, H * 0.13); c.closePath(); c.fill();
+    _plant(c, W * 0.96, H * 0.78, 1.2, '#c06a3c');
+  },
+  library(c, W, H) {
+    c.fillStyle = '#3b2617'; c.fillRect(0, 0, W, H);
+    const rows = 5, rh = H / rows, r = _rng(21);
+    const palette = ['#7a1f1f', '#2f4f6f', '#3c5a3a', '#8a6a2f', '#5a3a5f', '#c9a27e', '#1f2f3f', '#9a4a2a'];
+    for (let i = 0; i < rows; i++) {
+      c.fillStyle = '#2a1a0f'; c.fillRect(0, i * rh + rh * 0.08, W, rh * 0.86);
+      _books(c, 6, i * rh + rh * 0.1, W - 12, rh * 0.82, r, palette);
+      c.fillStyle = '#5a3a22'; c.fillRect(0, i * rh + rh * 0.92, W, rh * 0.1);
+    }
+    for (let x = 0; x < W; x += W / 4) { c.fillStyle = '#4a2e1b'; c.fillRect(x - 6, 0, 12, H); }
+    const warm = c.createRadialGradient(W * 0.5, H * 0.3, 0, W * 0.5, H * 0.3, W * 0.7); warm.addColorStop(0, 'rgba(255,200,120,.18)'); warm.addColorStop(1, 'rgba(0,0,0,.35)'); c.fillStyle = warm; c.fillRect(0, 0, W, H);
+  },
+  city(c, W, H) {
+    c.fillStyle = _grad(c, 0, 0, 0, H, [[0, '#2a2f5c'], [0.5, '#8a5a86'], [0.8, '#f0a070'], [1, '#f6c453']]); c.fillRect(0, 0, W, H);
+    const r = _rng(5);
+    [[0.55, '#3a3558'], [0.7, '#24213b']].forEach(([top, col], layer) => {
+      let x = 0;
+      while (x < W) {
+        const bw = 40 + r() * 90, bh = H * (0.25 + r() * (layer ? 0.45 : 0.35));
+        c.fillStyle = col; c.fillRect(x, H - bh, bw, bh);
+        if (layer) for (let wy = H - bh + 10; wy < H - 10; wy += 16) for (let wx = x + 8; wx < x + bw - 8; wx += 14) if (r() < 0.35) { c.fillStyle = r() < 0.5 ? '#ffd27a' : '#fff0c0'; c.fillRect(wx, wy, 6, 8); }
+        x += bw + 2;
+      }
+    });
+    c.fillStyle = '#1a1814'; c.fillRect(0, 0, W, 14); c.fillRect(0, H - 14, W, 14); c.fillRect(0, 0, 14, H); c.fillRect(W - 14, 0, 14, H); c.fillRect(W / 2 - 6, 0, 12, H);
+  },
+  mountains(c, W, H) {
+    c.fillStyle = _grad(c, 0, 0, 0, H * 0.6, [[0, '#6fa9d8'], [1, '#e9f1f4']]); c.fillRect(0, 0, W, H);
+    const r = _rng(13);
+    [['#9fb4c7', 0.42, 0.25], ['#6f8aa3', 0.5, 0.22], ['#45627a', 0.6, 0.18]].forEach(([col, base, amp]) => {
+      c.fillStyle = col; c.beginPath(); c.moveTo(0, H);
+      let y = H * base;
+      for (let x = 0; x <= W; x += 40) { y = Math.min(H * (base + 0.12), Math.max(H * (base - amp), y + (r() - 0.5) * 70)); c.lineTo(x, y); }
+      c.lineTo(W, H); c.closePath(); c.fill();
+    });
+    c.fillStyle = _grad(c, 0, H * 0.7, 0, H, [[0, '#5d8fae'], [1, '#2f5d78']]); c.fillRect(0, H * 0.72, W, H * 0.28);
+    c.fillStyle = '#2d4a2f';
+    for (let i = 0; i < 40; i++) { const x = r() * W, h = 30 + r() * 50, y = H * 0.73; c.beginPath(); c.moveTo(x, y - h); c.lineTo(x - h * 0.3, y); c.lineTo(x + h * 0.3, y); c.closePath(); c.fill(); }
+  },
+};
+const _sceneCache = {};
+function _sceneCanvas(key, W = 1280, H = 720) {
+  const id = `${key}:${W}x${H}`;
+  if (_sceneCache[id]) return _sceneCache[id];
+  const raw = document.createElement('canvas'); raw.width = W; raw.height = H;
+  BG_SCENES[key](raw.getContext('2d'), W, H);
+  const out = document.createElement('canvas'); out.width = W; out.height = H;
+  const o = out.getContext('2d');
+  o.filter = `blur(${Math.max(1, W / 420)}px)`;
+  o.drawImage(raw, 0, 0);
+  return (_sceneCache[id] = out);
+}
+const _sceneThumbs = {};
+function _sceneThumb(key) {
+  return _sceneThumbs[key] || (_sceneThumbs[key] = _sceneCanvas(key, 320, 180).toDataURL('image/jpeg', 0.8));
+}
+
+const BG_PRESETS = {
+  none:   { label: 'Off' },
+  blur1:  { label: 'Slight blur', blur: 6 },
+  blur2:  { label: 'Blur', blur: 16 },
+  beach:  { label: 'Beach', scene: true },
+  office: { label: 'Office', scene: true },
+  living: { label: 'Living room', scene: true },
+  library:{ label: 'Library', scene: true },
+  city:   { label: 'City at dusk', scene: true },
+  mountains: { label: 'Mountains', scene: true },
+  yuzu:   { label: 'Yuzu', stops: ['#f6c453', '#e08a3c', '#4c1515'] },
+  dusk:   { label: 'Dusk', stops: ['#2b2d5c', '#7a4a8c', '#e7a07a'] },
+  mint:   { label: 'Mint', stops: ['#d9f2e6', '#8fd1b5', '#2f6f5e'] },
+};
+let bgEffect = 'none';
+let _bgUploadImg = null;
+let _bgProc = null;
+let _segmenterPromise = null;
+
+function _bgSwatchStyle(key) {
+  const p = BG_PRESETS[key];
+  if (key === 'upload' && _bgUploadImg) return `background:center/cover url('${_bgUploadImg.src}')`;
+  if (p?.scene) return `background:center/cover url('${_sceneThumb(key)}')`;
+  if (p?.stops) return `background:linear-gradient(160deg, ${p.stops.join(', ')})`;
+  return '';
+}
+function _bgMenuHtml() {
+  const icon = {
+    none: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/></svg>',
+    blur1: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2"/><circle cx="6" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/><circle cx="12" cy="6" r="1.3"/><circle cx="12" cy="18" r="1.3"/></svg>',
+    blur2: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2.2"/><circle cx="6" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="12" cy="18" r="1.6"/><circle cx="7.5" cy="7.5" r="1.2"/><circle cx="16.5" cy="7.5" r="1.2"/><circle cx="7.5" cy="16.5" r="1.2"/><circle cx="16.5" cy="16.5" r="1.2"/></svg>',
+    upload: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>',
+  };
+  const keys = [...Object.keys(BG_PRESETS), 'upload'];
+  return `<div class="cs-dm-sep"></div><div class="cs-dm-title">Background</div>
+    <div class="bg-swatches" role="group" aria-label="Background effects">${keys.map(k => {
+      const label = k === 'upload' ? (_bgUploadImg ? 'Your image' : 'Upload image') : BG_PRESETS[k].label;
+      const on = bgEffect === k;
+      return `<button type="button" class="bg-swatch${on ? ' on' : ''}" data-bg="${k}" aria-pressed="${on}" aria-label="${label}" title="${label}" style="${_bgSwatchStyle(k)}">${icon[k] && !(k === 'upload' && _bgUploadImg) ? icon[k] : ''}</button>`;
+    }).join('')}</div>`;
+}
+
+function _loadSegmenter() {
+  if (!_segmenterPromise) {
+    _segmenterPromise = import(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/vision_bundle.mjs`)
+      .then(async ({ FilesetResolver, ImageSegmenter }) => {
+        const files = await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`);
+        return ImageSegmenter.createFromOptions(files, {
+          baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite', delegate: 'GPU' },
+          runningMode: 'VIDEO',
+          outputCategoryMask: false,
+          outputConfidenceMasks: true,
+        });
+      })
+      .catch(err => { _segmenterPromise = null; throw err; });
+  }
+  return _segmenterPromise;
+}
+
+async function setBackgroundEffect(effect) {
+  bgEffect = effect;
+  _repaintBgMenu();
+  if (!vcStream) { callToast(effect === 'none' ? 'Background effects off' : `${_bgLabel()} will apply when your camera is on`); return; }
+  await _applyBg();
+}
+function _bgLabel() { return bgEffect === 'upload' ? 'Your background' : BG_PRESETS[bgEffect]?.label; }
+function _repaintBgMenu() {
+  const menu = document.getElementById('csDeviceMenu');
+  menu.querySelectorAll('.bg-swatch').forEach(b => {
+    const on = b.dataset.bg === bgEffect;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
+}
+
+async function _applyBg() {
+  if (bgEffect === 'none') { _stopBg(); callToast('Background effects off'); return; }
+  if (_bgProc) return;   // already running; the draw loop reads bgEffect each frame
+  if (!vcStream) return;
+  const raw = vcStream.getVideoTracks()[0];
+  if (!raw) return;
+  const proc = { raw, stopped: false };
+  _bgProc = proc;
+  let segmenter;
+  try {
+    segmenter = await _loadSegmenter();
+  } catch (_) {
+    if (_bgProc === proc) _bgProc = null;
+    bgEffect = 'none';
+    _repaintBgMenu();
+    callToast('Couldn\'t load background effects. Check your connection and try again.');
+    return;
+  }
+  if (proc.stopped || !vcStream) return;
+
+  const { width = 1280, height = 720 } = raw.getSettings();
+  const src = document.createElement('video');
+  src.muted = true;
+  src.playsInline = true;
+  src.srcObject = new MediaStream([raw]);
+  await src.play().catch(() => {});
+  const out = document.createElement('canvas');
+  out.width = width; out.height = height;
+  const ctx = out.getContext('2d');
+  const maskCanvas = document.createElement('canvas');
+  const mctx = maskCanvas.getContext('2d');
+  let lastTs = -1;
+
+  const drawBackground = () => {
+    const p = BG_PRESETS[bgEffect];
+    if (p?.blur) { ctx.filter = `blur(${p.blur}px)`; ctx.drawImage(src, 0, 0, width, height); ctx.filter = 'none'; }
+    else if ((bgEffect === 'upload' && _bgUploadImg) || p?.scene) {
+      const img = p?.scene ? _sceneCanvas(bgEffect) : _bgUploadImg;
+      const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+      const s = Math.max(width / iw, height / ih);
+      const w = iw * s, h = ih * s;
+      // Self view is mirrored, so mirror the image too and it reads the right way round.
+      ctx.save(); ctx.translate(width, 0); ctx.scale(-1, 1);
+      ctx.drawImage(img, (width - w) / 2, (height - h) / 2, w, h);
+      ctx.restore();
+    } else if (p?.stops) {
+      const g = ctx.createLinearGradient(0, 0, width * 0.4, height);
+      p.stops.forEach((c, i) => g.addColorStop(i / (p.stops.length - 1), c));
+      ctx.fillStyle = g; ctx.fillRect(0, 0, width, height);
+    }
+  };
+
+  const frame = () => {
+    if (proc.stopped) return;
+    if (src.readyState >= 2 && src.currentTime !== lastTs) {
+      lastTs = src.currentTime;
+      segmenter.segmentForVideo(src, performance.now(), result => {
+        const mask = result.confidenceMasks?.[0];
+        if (!mask) return;
+        const mw = mask.width, mh = mask.height, conf = mask.getAsFloat32Array();
+        if (maskCanvas.width !== mw) { maskCanvas.width = mw; maskCanvas.height = mh; }
+        const img = mctx.createImageData(mw, mh);
+        for (let i = 0; i < conf.length; i++) img.data[i * 4 + 3] = conf[i] * 255;
+        mctx.putImageData(img, 0, 0);
+        mask.close();
+        // Person: mask (softened) keeps the camera frame; background goes behind it.
+        ctx.save();
+        ctx.globalCompositeOperation = 'copy';
+        ctx.filter = 'blur(3px)';
+        ctx.drawImage(maskCanvas, 0, 0, width, height);
+        ctx.filter = 'none';
+        ctx.globalCompositeOperation = 'source-in';
+        ctx.drawImage(src, 0, 0, width, height);
+        ctx.globalCompositeOperation = 'destination-over';
+        drawBackground();
+        ctx.restore();
+      });
+    }
+    proc.raf = src.requestVideoFrameCallback ? src.requestVideoFrameCallback(frame) : requestAnimationFrame(frame);
+  };
+  frame();
+
+  const track = out.captureStream(30).getVideoTracks()[0];
+  track.enabled = raw.enabled;
+  proc.track = track;
+  proc.src = src;
+  vcStream.removeTrack(raw);
+  vcStream.addTrack(track);
+  vcPc1?.getSenders().find(s => s.track === raw)?.replaceTrack(track);
+  _refreshSelfVideos();
+  callToast(`Background: ${_bgLabel()}`);
+}
+
+function _stopBg() {
+  const proc = _bgProc;
+  _bgProc = null;
+  if (!proc) return;
+  proc.stopped = true;
+  if (proc.src) {
+    proc.src.cancelVideoFrameCallback?.(proc.raf);
+    proc.src.srcObject = null;
+  }
+  cancelAnimationFrame(proc.raf);
+  if (proc.track && vcStream) {
+    proc.raw.enabled = proc.track.enabled;
+    vcStream.removeTrack(proc.track);
+    vcStream.addTrack(proc.raw);
+    vcPc1?.getSenders().find(s => s.track === proc.track)?.replaceTrack(proc.raw);
+    _refreshSelfVideos();
+  }
+  proc.track?.stop();
+}
+
+// Video elements don't always pick up a track swapped inside the same MediaStream, so rebind them.
+function _refreshSelfVideos() {
+  ['localVideo', 'csGroupSelfVideo', 'csStageVideo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.srcObject === vcStream) { el.srcObject = null; el.srcObject = vcStream; }
+  });
+  document.querySelectorAll('#pipTiles [data-key="self"] video').forEach(el => { el.srcObject = null; el.srcObject = vcStream; });
+}
+
+document.getElementById('bgUpload').addEventListener('change', e => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (!file || !file.type.startsWith('image/')) return;
+  const img = new Image();
+  img.onload = () => {
+    _bgUploadImg = img;
+    const menu = document.getElementById('csDeviceMenu');
+    const sw = menu.querySelector('.bg-swatch[data-bg="upload"]');
+    if (sw) { sw.style.cssText = _bgSwatchStyle('upload'); sw.innerHTML = ''; sw.title = sw.ariaLabel = 'Your image'; }
+    setBackgroundEffect('upload');
+  };
+  img.src = URL.createObjectURL(file);
+});
+
+
+// /v1 and /v2 (see v1/ and v2/) open straight to home with that calling version, for side-by-side comparison.
+(function() {
+  const v = new URLSearchParams(location.search).get('calls');
+  if (v !== 'v1' && v !== 'v2') return;
+  if (v === 'v2') enableCallsV2();
+  document.title = `Yuzu · calls ${v}`;
+  showHome();
 })();

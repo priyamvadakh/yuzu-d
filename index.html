@@ -255,6 +255,7 @@
 
     </div>
     <div class="ob-right">
+      <button class="ob-skip-btn ob-v2-btn" id="obV2Btn" title="Skip and use Meet-style calls">v2</button>
       <button class="ob-skip-btn" id="obSkipBtn">Skip</button>
       <div class="ob-right-inner">
         <div class="auth-logo-small">
@@ -419,6 +420,10 @@
       </div>
       <div class="nav-items-wrapper">
         <div class="nav-items">
+          <button type="button" class="nav-call hidden" id="navCallBtn" title="Back to call" aria-label="Back to call">
+            <span class="nav-call-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+            <span class="nav-call-time" id="navCallTime">00:00</span>
+          </button>
           <button class="nav-item active" data-tab="home">
             <div class="nav-item-inner"><svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3L21 9.5V20C21 20.5523 20.5523 21 20 21H15V15H9V21H4C3.44772 21 3 20.5523 3 20V9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="13" r="1.5" fill="currentColor"/></svg></div>
             <span class="nav-label">Home</span>
@@ -962,15 +967,19 @@
             <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg></div>
             <span>Raise</span>
           </button>
-          <button class="cs-hdr-btn cs-view-btn hidden" id="csViewBtn" title="Switch to speaker view">
+          <button class="cs-hdr-btn cs-view-btn v1-only hidden" id="csViewBtn" title="Switch to speaker view">
             <svg class="cs-view-gallery" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg><svg class="cs-view-speaker" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="14" height="16" rx="2"/><rect x="18" y="4" width="4" height="4.5" rx="1"/><rect x="18" y="9.75" width="4" height="4.5" rx="1"/><rect x="18" y="15.5" width="4" height="4.5" rx="1"/></svg><span class="cs-view-label">Speaker</span>
           </button>
-          <button class="cs-hdr-btn" id="csMinBtn" title="Minimise">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="m3 21 7-7"/><path d="M20 10h-6V4"/><path d="m21 3-7 7"/></svg>
+          <span class="cs-win-sep" aria-hidden="true"></span>
+          <button type="button" class="cs-hdr-btn cs-win-btn" id="csMinBtn" title="Minimize (keeps the call going)" aria-label="Minimize call">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
           </button>
-          <button class="cs-hdr-btn" id="csZoomBtn" title="Full screen (F)">
+          <button type="button" class="cs-hdr-btn cs-win-btn" id="csZoomBtn" title="Full screen (F)">
             <svg class="cs-zoom-in" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
             <svg class="cs-zoom-out" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+          </button>
+          <button type="button" class="cs-hdr-btn cs-win-btn cs-win-close" id="csCloseBtn" title="Small window (the call keeps going)" aria-label="Shrink to small call window">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="m3 21 7-7"/><path d="M20 10h-6V4"/><path d="m21 3-7 7"/></svg>
           </button>
         </div>
       </div>
@@ -987,20 +996,24 @@
           <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg></div>
           <span>Video</span>
         </button><button type="button" class="cs-ctl-caret" data-device="camera" title="Camera settings"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-          <button class="cs-ctl" id="csSpeakerBtn" title="Speaker">
+          <button type="button" class="cs-ctl v2-only" id="csCaptionsBtn" title="Turn on captions (C)" aria-label="Turn on captions" aria-pressed="false">
+            <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 10.5a2 2 0 1 0 0 3"/><path d="M17 10.5a2 2 0 1 0 0 3"/></svg></div>
+            <span>Captions</span>
+          </button>
+          <button class="cs-ctl v1-only" id="csSpeakerBtn" title="Speaker">
           <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg></div>
           <span id="csSpeakerLabel">Speaker</span>
         </button>
-          <button class="cs-ctl" id="csHoldBtn" title="Hold">
+          <button class="cs-ctl v1-only" id="csHoldBtn" title="Hold">
             <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="6" y="4" width="4" height="16" rx="2"/><rect x="14" y="4" width="4" height="16" rx="2"/></svg></div>
             <span id="csHoldLabel">Hold</span>
           </button>
-          <button class="cs-ctl" id="csAddCallerBtn" title="Add caller">
+          <button class="cs-ctl v1-only" id="csAddCallerBtn" title="Add caller">
           <div class="cs-ctl-icon"><span class="cs-ctl-badge" id="csPeopleCount"></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg></div>
           <span>Add caller</span>
         </button>
-          <div class="cs-ctl-divider"></div>
-          <button class="cs-ctl hidden" id="csChatBtn" title="Chat">
+          <div class="cs-ctl-divider v1-only"></div>
+          <button class="cs-ctl v1-only hidden" id="csChatBtn" title="Chat">
           <div class="cs-ctl-icon"><span class="cs-chat-dot hidden" id="csChatDot"></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
           <span>Chat</span>
         </button>
@@ -1008,12 +1021,47 @@
           <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg></div>
           <span id="csShareLabel">Share</span>
         </button>
+          <button type="button" class="cs-ctl v2-only" id="csMoreBtn" title="More options" aria-label="More options" aria-haspopup="menu" aria-expanded="false">
+            <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></div>
+            <span>More</span>
+          </button>
         </div>
         <button class="cs-ctl cs-ctl-end" id="csHangup" title="Leave">
           <div class="cs-ctl-icon cs-ctl-icon-red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) rotate(135) scale(0.7) translate(-12 -12)"><path stroke-width="2.7" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg></div>
           <span>Leave</span>
         </button>
       </div>
+      <div class="cs-meet-info v2-only" aria-hidden="true"><span id="csMeetTime"></span><span class="cs-meet-sep">|</span><span id="csMeetName"></span></div>
+      <div class="cs-meet-side v2-only">
+        <button type="button" class="cs-side-btn" id="csPeopleBtn" title="People (⌃⌘P)" aria-label="Show everyone" aria-pressed="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="cs-side-count" id="csPeopleBadge"></span>
+        </button>
+        <button type="button" class="cs-side-btn" id="csChatBtn2" title="Chat with everyone (⌃⌘C)" aria-label="Chat with everyone" aria-pressed="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="cs-side-dot hidden" id="csChatDot2"></span>
+        </button>
+      </div>
+      <div class="cs-captions hidden" id="csCaptions" aria-hidden="true"><span class="cs-captions-who" id="csCaptionsWho"></span><span id="csCaptionsText"></span></div>
+      <div class="cs-live" id="csLive" aria-live="polite"></div>
+      <div class="cs-live" id="csLiveUrgent" aria-live="assertive"></div>
+      <div class="call-more cs-meet-menu hidden" id="csMoreMenu" role="menu" aria-label="More options"></div>
+      <div class="call-more cs-meet-menu hidden" id="csLeaveMenu" role="menu" aria-label="Leave options">
+        <button type="button" class="call-more-item" role="menuitem" id="csLeaveOnly">Leave call</button>
+        <button type="button" class="call-more-item cs-danger" role="menuitem" id="csEndAll">End call for everyone</button>
+      </div>
+
+      <!-- People panel (v2) -->
+      <aside class="cs-chat cs-people hidden" id="csPeople" aria-labelledby="csPeopleTitle">
+        <div class="cs-chat-head">
+          <div class="cs-chat-titles"><h2 class="cs-chat-name" id="csPeopleTitle" tabindex="-1">People</h2></div>
+          <button type="button" class="cs-chat-icon-btn" id="csPeopleClose" aria-label="Close people">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="cs-people-body" id="csPeopleBody"></div>
+      </aside>
+
       <div class="cs-toast hidden" id="csToast"><span id="csToastText"></span><button type="button" class="cs-toast-action hidden" id="csToastAction"></button><button type="button" id="csToastClose" aria-label="Dismiss">×</button></div>
 
       <!-- In-call chat: the conversation this call belongs to -->
@@ -1039,6 +1087,7 @@
         </form>
       </aside>
       <div class="call-more cs-device-menu hidden" id="csDeviceMenu"></div>
+      <input type="file" id="bgUpload" accept="image/*" hidden />
 
       <div class="cs-share-stage hidden" id="csShareStage">
         <video id="csShareVideo" class="cs-share-video" autoplay playsinline></video>
@@ -1055,13 +1104,39 @@
 
     </div>
 
+    <!-- PRE-JOIN (v2) -->
+    <div class="prejoin hidden" id="preJoin" role="dialog" aria-modal="true" aria-labelledby="pjTitle">
+      <div class="pj-preview">
+        <video id="pjVideo" autoplay muted playsinline></video>
+        <div class="pj-cam-off" id="pjCamOff">Camera is off</div>
+        <div class="pj-meter" aria-hidden="true"><i id="pjMeter"></i></div>
+        <div class="pj-toggles">
+          <button type="button" class="pj-toggle" id="pjMic" aria-pressed="true" aria-label="Turn off microphone" title="Turn off microphone (⌘D)"></button>
+          <button type="button" class="pj-toggle" id="pjCam" aria-pressed="true" aria-label="Turn off camera" title="Turn off camera (⌘E)"></button>
+        </div>
+      </div>
+      <div class="pj-side">
+        <h2 class="pj-title" id="pjTitle">Ready to join?</h2>
+        <div class="pj-meeting" id="pjMeeting"></div>
+        <div class="pj-who" id="pjWho"></div>
+        <label class="pj-field"><span>Microphone</span><select id="pjMicSel"></select></label>
+        <label class="pj-field"><span>Camera</span><select id="pjCamSel"></select></label>
+        <div class="pj-error hidden" id="pjError" role="alert"></div>
+        <div class="pj-actions">
+          <button type="button" class="pj-join" id="pjJoin">Join now</button>
+          <button type="button" class="pj-cancel" id="pjCancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <!-- CALL DROPDOWN -->
     <div class="call-dropdown hidden" id="callDropdown">
       <div class="cd-search-row">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input type="text" class="cd-search" id="cdSearch" placeholder="Search people…" />
+        <div class="cd-chips" id="cdChips"></div>
+        <input type="text" class="cd-search" id="cdSearch" placeholder="Search people…" aria-describedby="cdHint" />
       </div>
-      <div class="cd-hint">Select people for a group call</div>
+      <div class="cd-hint" id="cdHint">Tap a person to add them to a group call</div>
       <div class="cd-list" id="cdList"></div>
       <div class="cd-footer hidden" id="cdFooter">
         <div class="cd-footer-top">
@@ -1159,6 +1234,52 @@
       </div>
     </div>
 
+    <!-- After leaving: a short-lived way back in -->
+    <div class="rejoin-bar hidden" id="rejoinBar" role="status">
+      <span class="rj-dot" aria-hidden="true"></span>
+      <span class="rj-text" id="rejoinText"></span>
+      <button type="button" class="rj-btn" id="rejoinBtn">Rejoin</button>
+      <button type="button" class="rj-x" id="rejoinClose" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- MINIMIZED CALL WINDOW (v2): draggable, resizable picture-in-picture -->
+    <div class="call-pip hidden" id="callPip" role="region" aria-label="Call window">
+      <div class="pip-head" id="pipHead" title="Drag to move · drag a corner to resize · double-click for full screen">
+        <span class="pip-title" id="pipTitle"></span>
+        <span class="pip-time" id="pipTime"></span>
+        <button type="button" class="pip-icon" id="pipHide" aria-label="Hide call" title="Hide (the call keeps going; use the timer in the sidebar to come back)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+        <button type="button" class="pip-icon" id="pipMax" aria-label="Back to full call" title="Back to full call">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+        </button>
+      </div>
+      <div class="pip-present hidden" id="pipPresent"><span>You're presenting</span><button type="button" id="pipStopPresent">Stop</button></div>
+      <div class="pip-tiles" id="pipTiles"></div>
+      <div class="pip-bar">
+        <button type="button" class="pip-btn" id="pipMic"></button>
+        <button type="button" class="pip-btn" id="pipCam"></button>
+        <button type="button" class="pip-btn" id="pipShare" aria-label="Present now" title="Present now"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg></button>
+        <button type="button" class="pip-btn" id="pipChat" aria-label="Open chat" title="Open chat (⌃⌘C)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="mini-dot hidden" id="pipChatDot"></span></button>
+        <button type="button" class="pip-btn pip-btn-slim" id="pipMore" aria-label="More options" aria-haspopup="menu" aria-expanded="false" title="More options"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+        <button type="button" class="pip-btn pip-leave" id="pipLeave" aria-label="Leave call" title="Leave call"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) rotate(135) scale(0.7) translate(-12 -12)"><path stroke-width="2.7" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg></button>
+      </div>
+      <div class="pip-menu hidden" id="pipMenu" role="menu" aria-label="More options">
+        <div class="pip-react-row" id="pipReactRow"></div>
+        <button type="button" class="pip-menu-item" role="menuitem" data-act="hand">Raise hand</button>
+        <button type="button" class="pip-menu-item" role="menuitem" data-act="captions">Turn on captions</button>
+        <button type="button" class="pip-menu-item" role="menuitem" data-act="chat">Open chat</button>
+        <button type="button" class="pip-menu-item" role="menuitem" data-act="people">Show everyone</button>
+      </div>
+      <div class="pip-maxhint" aria-hidden="true">Release to go full screen</div>
+      <div class="pip-grip" data-dir="t" aria-hidden="true"></div>
+      <div class="pip-grip" data-dir="b" aria-hidden="true"></div>
+      <div class="pip-grip" data-dir="l" aria-hidden="true"></div>
+      <div class="pip-grip" data-dir="r" aria-hidden="true"></div>
+      <div class="pip-grip" data-dir="tl" aria-hidden="true"></div>
+      <div class="pip-grip" data-dir="tr" aria-hidden="true"></div>
+      <div class="pip-grip" data-dir="bl" aria-hidden="true"></div>
+      <div class="pip-grip" data-dir="br" aria-hidden="true"></div>
+    </div>
+
     <!-- 1:1 VOICE CALL CARD (group/video calls use the call screen) -->
     <div class="call-widget hidden" id="callWidget">
       <div class="cw-corner">
@@ -1168,6 +1289,8 @@
         <button class="cw-icon" id="cwRaiseBtn" title="Raise hand">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
         </button>
+        <button type="button" class="cw-icon" id="cwChatBtn" aria-label="Open chat" title="Open chat"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="mini-dot hidden" id="cwChatDot"></span></button>
+        <button type="button" class="cw-icon" id="cwHideBtn" aria-label="Hide call" title="Hide (the call keeps going; use the timer in the sidebar to come back)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
         <button class="cw-icon" id="cwExpandBtn" title="Expand to full screen">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg>
         </button>
