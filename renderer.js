@@ -199,7 +199,8 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('navActionBtn').classList.toggle('inactive', btn.dataset.tab === 'home' && !isMobile());
     switchMiddleView(btn.dataset.tab);
-    if (isMobile()) mobOpenHome();
+    // A tab shows its list; switching views loads a panel that would otherwise push the detail open.
+    if (isMobile()) { mobCloseDetail(); mobOpenHome(); }
   });
 });
 
@@ -2169,6 +2170,7 @@ const STATUS_DOTS = { 'To Do': '#9ca3af', 'In Progress': '#2563eb', 'Done': '#16
 
 function showTaskStatusDd(chipEl, t) {
   const dd = document.getElementById('taskStatusDd');
+  closePopovers(dd);
   const rect = chipEl.getBoundingClientRect();
   dd.style.top = (rect.bottom + 4) + 'px';
   dd.style.left = rect.left + 'px';
@@ -2461,6 +2463,8 @@ document.getElementById('resultConfirmBtn').addEventListener('click', () => {
 document.getElementById('tryAgainBtn').addEventListener('click', () => showIdle());
 
 // ── HOME PAGE CONVO / CHANNEL CLICKS ──
+document.getElementById('homeSeeAllDms').addEventListener('click', e => { e.stopPropagation(); navigateTo('dms'); });
+document.getElementById('homeSeeAllTasks').addEventListener('click', e => { e.stopPropagation(); navigateTo('tasks'); });
 document.getElementById('homeContent').addEventListener('click', e => {
   const convo = e.target.closest('.convo-item[data-dm], .convo-item[data-channel]');
   const ch    = e.target.closest('.channel-item[data-channel]');
@@ -2698,6 +2702,75 @@ function switchSettingsSection(section) {
 
 document.getElementById('navSettingsBtn').addEventListener('click', () => openSettings('profile'));
 document.getElementById('navSearchBtn').addEventListener('click', () => openGlobalSearch());
+
+// ── PHONE TAB BAR ── Home · DMs · Tasks · People, your avatar, and the Yuzu button.
+// It drives the desktop nav buttons, so both stay in sync.
+(function() {
+  const tabs = [...document.querySelectorAll('#mobTabBar .mtb-tab')];
+  const paint = () => {
+    const active = document.querySelector('.nav-items .nav-item.active')?.dataset.tab;
+    tabs.forEach(t => {
+      const on = t.dataset.tab === active;
+      t.classList.toggle('active', on);
+      on ? t.setAttribute('aria-current', 'page') : t.removeAttribute('aria-current');
+    });
+    document.getElementById('mtbMeInitial').textContent = document.getElementById('homeGreetingAvatar').textContent || 'U';
+  };
+  tabs.forEach(t => t.addEventListener('click', () => document.querySelector(`.nav-item[data-tab="${t.dataset.tab}"]`).click()));
+  document.getElementById('mtbYuzu').addEventListener('click', () => document.getElementById('navActionBtn').click());
+  new MutationObserver(paint).observe(document.querySelector('.nav-items'), { attributes: true, subtree: true, attributeFilter: ['class'] });
+  new MutationObserver(paint).observe(document.getElementById('homeGreetingAvatar'), { childList: true });
+  paint();
+
+  const callBtn = document.getElementById('navCallBtn');
+  const chip = document.getElementById('mtbCall');
+  const paintCall = () => {
+    chip.classList.toggle('hidden', callBtn.classList.contains('hidden'));
+    chip.querySelector('span').textContent = document.getElementById('navCallTime').textContent;
+  };
+  new MutationObserver(paintCall).observe(callBtn, { attributes: true, childList: true, subtree: true, characterData: true });
+  chip.addEventListener('click', () => callBtn.click());
+})();
+
+// Phones show menus and pickers as bottom sheets over a scrim; tapping the scrim closes them.
+(function() {
+  const scrim = document.getElementById('mobScrim');
+  const SHEETS = ['callDropdown', 'dmDropdown', 'channelDropdown', 'scheduleDropdown', 'taskDropdown', 'dmFilterDd', 'dmSortDd', 'taskStatusDd', 'emojiPicker', 'profilePopup', 'navMoreSheet'];
+  const paint = () => scrim.classList.toggle('hidden', !SHEETS.some(id => !document.getElementById(id).classList.contains('hidden')));
+  const mo = new MutationObserver(paint);
+  SHEETS.forEach(id => mo.observe(document.getElementById(id), { attributes: true, attributeFilter: ['class'] }));
+  // The click still reaches the document, so each menu's own outside-click handler closes it too.
+  scrim.addEventListener('click', () => {
+    closePopovers();
+    document.getElementById('profilePopup').classList.add('hidden');
+  });
+})();
+
+// The avatar opens this sheet: everything that isn't a tab.
+(function() {
+  const btn = document.getElementById('mtbMe');
+  const sheet = document.getElementById('navMoreSheet');
+  const setOpen = open => {
+    sheet.classList.toggle('hidden', !open);
+    btn.classList.toggle('active', open);
+    btn.setAttribute('aria-expanded', String(open));
+    if (open) sheet.querySelector('button').focus({ preventScroll: true });
+  };
+  btn.addEventListener('click', e => { e.stopPropagation(); setOpen(sheet.classList.contains('hidden')); });
+  sheet.addEventListener('click', e => {
+    const b = e.target.closest('[data-go]');
+    if (!b) return;
+    e.stopPropagation();
+    setOpen(false);
+    const go = b.dataset.go;
+    if (go === 'aigroup' || go === 'meetings') document.querySelector(`.nav-item[data-tab="${go}"]`).click();
+    else if (go === 'search') openGlobalSearch();
+    else if (go === 'settings') openSettings('profile');
+    else if (go === 'profile') { updateProfileDisplay(); document.getElementById('profilePopup').classList.remove('hidden'); }
+  });
+  sheet.addEventListener('keydown', e => { if (e.key === 'Escape') { setOpen(false); btn.focus(); } });
+  document.addEventListener('click', e => { if (!sheet.classList.contains('hidden') && !sheet.contains(e.target)) setOpen(false); });
+})();
 
 // "New" button inside DM list header → opens the same DM dropdown as the quick action
 document.getElementById('dmListNewBtn').addEventListener('click', e => {
@@ -3148,6 +3221,8 @@ document.getElementById('dmAfClear').addEventListener('click', () => {
 document.getElementById('dmFilterBtn').addEventListener('click', e => {
   e.stopPropagation();
   const dd = document.getElementById('dmFilterDd');
+  if (!dd.classList.contains('hidden')) { dd.classList.add('hidden'); return; }
+  closePopovers(dd);
   const rect = e.currentTarget.getBoundingClientRect();
   dd.style.top = (rect.bottom + 6) + 'px';
   dd.style.left = rect.left + 'px';
@@ -3184,6 +3259,8 @@ document.getElementById('dmFilterDd').addEventListener('click', e => {
 document.getElementById('dmSortBtn').addEventListener('click', e => {
   e.stopPropagation();
   const dd = document.getElementById('dmSortDd');
+  if (!dd.classList.contains('hidden')) { dd.classList.add('hidden'); return; }
+  closePopovers(dd);
   const rect = e.currentTarget.getBoundingClientRect();
   dd.style.top = (rect.bottom + 6) + 'px';
   dd.style.left = rect.left + 'px';
@@ -3192,7 +3269,9 @@ document.getElementById('dmSortBtn').addEventListener('click', e => {
     opt.onclick = ev => {
       ev.stopPropagation();
       _dmSort = opt.dataset.sort;
-      document.getElementById('dmSortLabel').textContent = { newest: 'Newest', oldest: 'Oldest', az: 'A–Z' }[_dmSort];
+      const sortLabel = 'Sort: ' + { newest: 'Newest', oldest: 'Oldest', az: 'A–Z' }[_dmSort];
+      document.getElementById('dmSortBtn').title = sortLabel;
+      document.getElementById('dmSortBtn').setAttribute('aria-label', sortLabel);
       document.getElementById('dmSortBtn').classList.toggle('active', _dmSort !== 'newest');
       dd.classList.add('hidden');
       renderDmList();
@@ -3224,7 +3303,8 @@ function toggleAttachPopup(popupId, e) {
   e.stopPropagation();
   const popup = document.getElementById(popupId);
   const wasHidden = popup.classList.contains('hidden');
-  document.querySelectorAll('.composer-attach-popup').forEach(p => p.classList.add('hidden'));
+  closePopovers(popup);
+  popup.classList.add('hidden');
   if (wasHidden) popup.classList.remove('hidden');
 }
 document.getElementById('dmPlusBtn').addEventListener('click', e => toggleAttachPopup('dmAttachPopup', e));
@@ -3534,7 +3614,7 @@ function toggleEmojiPicker(inputEl, btnEl, e) {
   e.stopPropagation();
   const picker = document.getElementById('emojiPicker');
   const wasHidden = picker.classList.contains('hidden');
-  document.querySelectorAll('.composer-attach-popup').forEach(p => p.classList.add('hidden'));
+  closePopovers(picker);
   if (wasHidden) {
     activeEmojiTarget = inputEl;
     const rect = btnEl.getBoundingClientRect();
@@ -3681,6 +3761,8 @@ function _syncCallChrome() {
   document.getElementById('csShareBtn').title = sharing ? 'Stop sharing' : 'Share screen';
   const addOpen = !document.getElementById('csAddPanel').classList.contains('hidden');
   document.getElementById('csAddCallerBtn').classList.toggle('is-open', addOpen);
+  document.getElementById('csAddHdrBtn').classList.toggle('is-open', addOpen);
+  document.getElementById('csAddHdrBtn').setAttribute('aria-expanded', addOpen);
   _syncSelfTile();
   _paintCallStatus();
 }
@@ -3914,7 +3996,10 @@ function mobOpenDetail() {
     const btn = document.createElement('button');
     btn.id = 'mobBackBtn';
     btn.className = 'mob-back-btn';
-    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Back`;
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Back');
+    btn.title = 'Back';
+    btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     btn.addEventListener('click', mobCloseDetail);
     document.querySelector('.right-panel').prepend(btn);
   }
@@ -3955,17 +4040,22 @@ function positionDropdown(ddEl, triggerBtn) {
   ddEl.style.top  = (bRect.bottom - aRect.top + 8) + 'px';
 }
 
+// Triggers stop propagation, so outside-click closers never see the click that opens the next dropdown.
+const POPOVER_IDS = ['dmDropdown','channelDropdown','scheduleDropdown','taskDropdown','callDropdown','dmFilterDd','dmSortDd','taskStatusDd','emojiPicker'];
+function closePopovers(keep) {
+  POPOVER_IDS.forEach(id => { const el = document.getElementById(id); if (el && el !== keep) el.classList.add('hidden'); });
+  document.querySelectorAll('.composer-attach-popup').forEach(p => { if (p !== keep) p.classList.add('hidden'); });
+}
+
 function openQuickDd(ddEl, triggerBtn, onOpen) {
-  closeAllQuickDds();
+  closePopovers(ddEl);
   positionDropdown(ddEl, triggerBtn);
   ddEl.classList.remove('hidden');
   if (onOpen) onOpen();
 }
 
 function closeAllQuickDds() {
-  ['dmDropdown','channelDropdown','scheduleDropdown','taskDropdown','callDropdown'].forEach(id => {
-    document.getElementById(id).classList.add('hidden');
-  });
+  closePopovers();
 }
 
 document.addEventListener('click', e => {
@@ -4638,11 +4728,14 @@ function _applyCallView() {
   const isGroup = screen.classList.contains('group-call');
   const speaker = isGroup && callView === 'speaker';
   screen.classList.toggle('speaker-view', speaker);
+  if (speaker) document.getElementById('csGroupGrid').classList.remove('one-to-one');
   document.getElementById('csStage').classList.toggle('hidden', !speaker);
   const btn = document.getElementById('csViewBtn');
   btn.classList.toggle('is-speaker', speaker);
   btn.title = speaker ? 'Switch to gallery view' : 'Switch to speaker view';
+  btn.setAttribute('aria-label', btn.title);
   btn.querySelector('.cs-view-label').textContent = speaker ? 'Gallery' : 'Speaker';
+  if (callsV2) _paintLayoutBtn();
   const grid = document.getElementById('csGroupGrid');
   if (speaker) grid.style.paddingInline = '';
   _renderStage();
@@ -4737,7 +4830,8 @@ document.addEventListener('click', e => {
 
 document.getElementById('csViewBtn').addEventListener('click', e => {
   e.stopPropagation();
-  setCallView(callView === 'speaker' ? 'gallery' : 'speaker');
+  if (callsV2) _openLayoutMenu(e);
+  else setCallView(callView === 'speaker' ? 'gallery' : 'speaker');
 });
 document.getElementById('csStage').addEventListener('click', e => {
   if (!e.target.closest('#csUnpin')) return;
@@ -4851,17 +4945,25 @@ function _sizeCallGrid() {
   const grid = document.getElementById('csGroupGrid');
   if (grid.classList.contains('hidden') || document.getElementById('callScreen').classList.contains('speaker-view')) return;
   const n = grid.children.length;
-  const W = grid.clientWidth, H = grid.clientHeight, GAP = 12, RATIO = 1.6;
+  const phone = window.innerWidth <= 520;
+  // Phones show a 1:1 call like Meet: the other person fills the screen, you float in a corner.
+  grid.classList.toggle('one-to-one', phone && n === 2 && !!grid.querySelector('[data-key="self"]'));
+  if (grid.classList.contains('one-to-one')) return;
+  const W = grid.clientWidth, H = grid.clientHeight, GAP = phone ? 8 : 12;
   if (!n || !W || !H) return;
-  let best = { w: 0, cols: 1 };
-  const maxCols = window.innerWidth <= 520 ? 1 : window.innerWidth <= 768 ? 2 : n;
-  for (let cols = 1; cols <= Math.min(n, maxCols); cols++) {
+  let best = { w: 0, cols: 1, ratio: 1.6 };
+  const maxCols = phone ? (n <= 2 ? 1 : 2) : window.innerWidth <= 768 ? 2 : n;
+  for (let cols = phone ? maxCols : 1; cols <= Math.min(n, maxCols); cols++) {
     const rows = Math.ceil(n / cols);
-    const w = Math.min((W - GAP * (cols - 1)) / cols, ((H - GAP * (rows - 1)) / rows) * RATIO);
-    if (w > best.w) best = { w, cols };
+    // Phones fill the screen with taller tiles instead of letterboxed 16:10 ones.
+    const ratio = !phone ? 1.6 : Math.max(0.62, Math.min(1.6, ((W - GAP * (cols - 1)) / cols) / ((H - GAP * (rows - 1)) / rows)));
+    const w = Math.min((W - GAP * (cols - 1)) / cols, ((H - GAP * (rows - 1)) / rows) * ratio);
+    if (w > best.w) best = { w, cols, ratio };
   }
+  grid.style.setProperty('--tile-ar', best.ratio);
   // Flex-wrap with side padding so exactly best.cols fit per row and a short last row stays centered.
-  const tw = Math.floor(best.w);
+  // A pixel of slack: subpixel grid widths otherwise wrap the last column.
+  const tw = Math.floor(best.w - 1);
   grid.style.setProperty('--tile-w', tw + 'px');
   grid.style.paddingInline = Math.max(0, (W - best.cols * tw - (best.cols - 1) * GAP) / 2 - 1) + 'px';
 }
@@ -4933,6 +5035,7 @@ function _placeCallPopover(panel, btn) {
 
 function toggleAddPanel(e) {
   e.stopPropagation();
+  _returnAddPanel();
   const panel = document.getElementById('csAddPanel');
   const isHidden = panel.classList.contains('hidden');
   panel.classList.toggle('hidden', !isHidden);
@@ -4945,6 +5048,13 @@ function toggleAddPanel(e) {
   _syncCallChrome();
 }
 document.getElementById('csAddCallerBtn').addEventListener('click', toggleAddPanel);
+document.getElementById('csAddHdrBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const panel = document.getElementById('csAddPanel');
+  if (panel.classList.contains('hidden')) _openAddPeople(e.currentTarget);
+  else panel.classList.add('hidden');
+  _syncCallChrome();
+});
 
 document.getElementById('csApSearch').addEventListener('input', function() {
   refreshAddPanel(this.value);
@@ -4953,10 +5063,13 @@ document.getElementById('csApSearch').addEventListener('input', function() {
 document.addEventListener('click', e => {
   const panel = document.getElementById('csAddPanel');
   if (!panel.contains(e.target) &&
-      !document.getElementById('csAddCallerBtn').contains(e.target)) {
+      !document.getElementById('csAddCallerBtn').contains(e.target) &&
+      !document.getElementById('csAddHdrBtn').contains(e.target) &&
+      !e.target.closest('#pipAdd, #pipMenu')) {
     if (!panel.classList.contains('hidden')) {
       panel.classList.add('hidden');
       _syncCallChrome();
+      _paintPipAdd();
     }
   }
 });
@@ -6444,12 +6557,41 @@ if (navigator.mediaDevices) {
 }
 
 // ── Layouts ──
+const LAYOUT_LABEL = { auto: 'Auto', tiled: 'Tiled', spotlight: 'Spotlight' };
 function _setCallLayout(layout) {
   callLayout = layout;
   if (layout === 'tiled') setCallView('gallery');
   else if (layout === 'spotlight') setCallView('speaker');
   else setCallView(callPinnedKey || screenShareStream ? 'speaker' : 'gallery');
+  _paintLayoutBtn();
+  if (_pipOpen()) { _pipSig = ''; _paintPip(); }
 }
+function _layoutItems() {
+  return Object.entries(LAYOUT_LABEL).map(([layout, label]) => `<button type="button" class="call-more-item${callLayout === layout ? ' active' : ''}" role="menuitemradio" aria-checked="${callLayout === layout}" data-layout="${layout}"><span class="cs-dm-check">${callLayout === layout ? '✓' : ''}</span>${label}</button>`).join('');
+}
+function _paintLayoutBtn() {
+  const btn = document.getElementById('csViewBtn');
+  if (!callsV2) return;
+  btn.querySelector('.cs-view-label').textContent = LAYOUT_LABEL[callLayout];
+  btn.title = `Layout: ${LAYOUT_LABEL[callLayout]}`;
+  btn.setAttribute('aria-label', btn.title);
+  btn.setAttribute('aria-haspopup', 'menu');
+}
+function _openLayoutMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('csLayoutMenu');
+  if (!menu.classList.contains('hidden')) return _closeMeetMenus();
+  menu.innerHTML = `<div class="cs-dm-title">Layout</div>${_layoutItems()}`;
+  _openMeetMenu(menu, e.currentTarget);
+}
+document.getElementById('csLayoutMenu').addEventListener('click', e => {
+  e.stopPropagation();
+  const b = e.target.closest('[data-layout]');
+  if (!b) return;
+  _closeMeetMenus(true);
+  _setCallLayout(b.dataset.layout);
+  callToast(`Layout: ${LAYOUT_LABEL[b.dataset.layout]}`);
+});
 
 // ── Menus (More, Leave) ──
 function _openMeetMenu(menu, btn) {
@@ -6462,7 +6604,7 @@ function _openMeetMenu(menu, btn) {
   menu.querySelector('[role="menuitem"]:not([disabled]), [role="menuitemradio"]')?.focus({ preventScroll: true });
 }
 function _closeMeetMenus(restoreFocus) {
-  ['csMoreMenu', 'csLeaveMenu'].forEach(id => {
+  ['csMoreMenu', 'csLeaveMenu', 'csLayoutMenu'].forEach(id => {
     const m = document.getElementById(id);
     if (m.classList.contains('hidden')) return;
     m.classList.add('hidden');
@@ -6471,20 +6613,28 @@ function _closeMeetMenus(restoreFocus) {
   });
 }
 function _menuOpen() {
-  return ['csMoreMenu', 'csLeaveMenu'].some(id => !document.getElementById(id).classList.contains('hidden'));
+  return ['csMoreMenu', 'csLeaveMenu', 'csLayoutMenu'].some(id => !document.getElementById(id).classList.contains('hidden'));
 }
 
 function _openMoreMenu(e) {
   e.stopPropagation();
   const menu = document.getElementById('csMoreMenu');
   if (!menu.classList.contains('hidden')) return _closeMeetMenus();
-  const item = (layout, label) => `<button type="button" class="call-more-item${callLayout === layout ? ' active' : ''}" role="menuitemradio" aria-checked="${callLayout === layout}" data-layout="${layout}"><span class="cs-dm-check">${callLayout === layout ? '✓' : ''}</span>${label}</button>`;
-  menu.innerHTML = `<div class="cs-dm-title">Layout</div>
-    ${item('auto', 'Auto')}${item('tiled', 'Tiled')}${item('spotlight', 'Spotlight')}
+  const phone = window.innerWidth <= 520;
+  const act = (a, label) => `<button type="button" class="call-more-item" role="menuitem" data-act="${a}">${label}</button>`;
+  menu.classList.toggle('cs-sheet', phone);
+  menu.innerHTML = (phone ? `<div class="cs-sheet-grab" aria-hidden="true"></div>
+    <div class="cs-sheet-reacts">${['👍', '❤️', '👏', '😂', '😮', '🎉'].map(r => `<button type="button" role="menuitem" data-react="${r}" aria-label="React ${r}">${r}</button>`).join('')}</div>
+    ${act('captions', captionsOn ? 'Turn off captions' : 'Turn on captions')}
+    ${act('share', screenShareStream ? 'Stop presenting' : 'Present screen')}
+    ${act('add', 'Add people')}
+    ${act('people', `People · ${callParticipants.length + 1}`)}
+    ${act('chat', 'Chat with everyone')}
+    <div class="cs-dm-sep"></div>` : '') + `<div class="cs-dm-title">Layout</div>
+    ${_layoutItems()}
     <div class="cs-dm-sep"></div>
-    <button type="button" class="call-more-item" role="menuitem" data-act="add">Add people</button>
-    <button type="button" class="call-more-item" role="menuitem" data-act="full">${callIsFullscreen ? 'Exit full screen' : 'Full screen'}<span class="cs-kbd">F</span></button>
-    <button type="button" class="call-more-item" role="menuitem" data-act="min">Minimize call</button>`;
+    ${phone ? '' : `<button type="button" class="call-more-item" role="menuitem" data-act="full">${callIsFullscreen ? 'Exit full screen' : 'Full screen'}<span class="cs-kbd">F</span></button>`}
+    ${act('min', phone ? 'Small window' : 'Minimize call')}`;
   _openMeetMenu(menu, e.currentTarget);
 }
 document.getElementById('csMoreBtn').addEventListener('click', _openMoreMenu);
@@ -6493,8 +6643,13 @@ document.getElementById('csMoreMenu').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
   _closeMeetMenus(true);
-  if (b.dataset.layout) { _setCallLayout(b.dataset.layout); callToast(`Layout: ${b.textContent.replace('✓', '').trim()}`); }
-  else if (b.dataset.act === 'add') { _setPeopleOpen(true); _openAddPeople(document.getElementById('csPeopleBtn')); }
+  if (b.dataset.react) _showReaction(b.dataset.react, 'self');
+  else if (b.dataset.layout) { _setCallLayout(b.dataset.layout); callToast(`Layout: ${b.textContent.replace('✓', '').trim()}`); }
+  else if (b.dataset.act === 'add') _openAddPeople(document.getElementById('csMoreBtn'));
+  else if (b.dataset.act === 'captions') toggleCaptions();
+  else if (b.dataset.act === 'share') toggleScreenShare();
+  else if (b.dataset.act === 'people') _setPeopleOpen(true);
+  else if (b.dataset.act === 'chat') _setCallChatOpen(true);
   else if (b.dataset.act === 'full') setCallFullscreen(!callIsFullscreen);
   else if (b.dataset.act === 'min') minimizeCallScreen();
 });
@@ -6513,7 +6668,7 @@ document.getElementById('csEndAll').addEventListener('click', () => {
 });
 
 // Arrow keys move between menu items, Esc closes and returns focus.
-['csMoreMenu', 'csLeaveMenu'].forEach(id => document.getElementById(id).addEventListener('keydown', e => {
+['csMoreMenu', 'csLeaveMenu', 'csLayoutMenu'].forEach(id => document.getElementById(id).addEventListener('keydown', e => {
   const items = [...e.currentTarget.querySelectorAll('button')];
   const i = items.indexOf(document.activeElement);
   if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus({ preventScroll: true }); }
@@ -6521,7 +6676,7 @@ document.getElementById('csEndAll').addEventListener('click', () => {
   else if (e.key === 'Tab') _closeMeetMenus();
 }));
 document.addEventListener('click', e => {
-  if (!e.target.closest('#csMoreMenu, #csLeaveMenu, #csMoreBtn, #csHangup')) _closeMeetMenus();
+  if (!e.target.closest('#csMoreMenu, #csLeaveMenu, #csLayoutMenu, #csMoreBtn, #csHangup, #csViewBtn')) _closeMeetMenus();
 });
 
 function _meetEsc() {
@@ -6600,6 +6755,7 @@ document.getElementById('csPeopleBtn').addEventListener('click', e => { e.stopPr
 document.getElementById('csChatBtn2').addEventListener('click', e => { e.stopPropagation(); _setCallChatOpen(!_callChatOpen()); });
 
 function _openAddPeople(anchor) {
+  _returnAddPanel();
   const panel = document.getElementById('csAddPanel');
   panel.classList.remove('hidden');
   refreshAddPanel();
@@ -6714,6 +6870,7 @@ function _showPip(at) {
   _stashCallScreen();
   document.getElementById('callWidget').classList.add('hidden');
   pip.classList.remove('hidden');
+  document.body.classList.add('call-bar');
   _pipSig = '';
   if (at) _placePip(at.x, at.y);
   _paintPip();
@@ -6723,7 +6880,9 @@ function _showPip(at) {
 function _hidePip() {
   const pip = document.getElementById('callPip');
   pip.classList.add('hidden');
+  document.body.classList.remove('call-bar');
   document.getElementById('pipMenu').classList.add('hidden');
+  _returnAddPanel();
   pip.querySelectorAll('video').forEach(v => { v.srcObject = null; });
   _pipSig = '';
 }
@@ -6763,6 +6922,7 @@ function _paintPip() {
   tiles.push({ key: 'self', name: 'You', initials: (userEmail ? userEmail.split('@')[0].slice(0, 2).toUpperCase() : 'ME'), av: 'background:var(--amber);color:var(--maroon-dark)', rgb: '246, 196, 83', video: !!selfVideo });
   if (screenShareStream) tiles.push({ key: 'share', share: true, name: 'Your screen', video: true });
   const box = document.getElementById('pipTiles');
+  const stageKey = callView === 'speaker' && tiles.length > 1 ? _stagePerson()?.key : null;
   const sig = tiles.map(t => t.key + (t.video ? 'v' : '')).join('|');
   if (sig !== _pipSig) {
     _pipSig = sig;
@@ -6773,6 +6933,8 @@ function _paintPip() {
     if (sh) sh.srcObject = screenShareStream;
   }
   box.classList.toggle('has-share', !!screenShareStream);
+  box.classList.toggle('has-stage', !!stageKey);
+  box.querySelectorAll('.pip-tile').forEach(el => el.classList.toggle('pip-stage', el.dataset.key === stageKey));
   _fitPipTiles();
   box.querySelectorAll('.pip-tile').forEach(el => {
     const src = document.querySelector(`#csGroupGrid .cs-gtile[data-key="${el.dataset.key}"]`);
@@ -6792,13 +6954,16 @@ function _paintPip() {
   const cam = document.getElementById('pipCam');
   const camLive = isVideo && vcCameraOn;
   cam.innerHTML = camLive ? CALL_SVG.video : CALL_SVG.videoOff;
-  cam.classList.toggle('off', !camLive);
   _setPressed(cam, camLive, camLive ? 'Turn off camera' : 'Turn on camera');
   cam.title = cam.getAttribute('aria-label') + ' (⌘E)';
   const share = document.getElementById('pipShare');
   share.classList.toggle('on', !!screenShareStream);
   _setPressed(share, !!screenShareStream, screenShareStream ? 'Stop presenting' : 'Present now');
   share.title = share.getAttribute('aria-label');
+  const hand = document.getElementById('pipHand');
+  hand.classList.toggle('on', myHandRaised);
+  _setPressed(hand, myHandRaised, myHandRaised ? 'Lower hand' : 'Raise hand');
+  hand.title = hand.getAttribute('aria-label') + ' (⌃⌘H)';
 }
 
 document.getElementById('pipMax').addEventListener('click', e => { e.stopPropagation(); _maximizePip(); });
@@ -6808,19 +6973,55 @@ document.getElementById('pipCam').addEventListener('click', () => { toggleCamera
 document.getElementById('pipShare').addEventListener('click', async () => { await toggleScreenShare(); _pipSig = ''; _paintPip(); });
 document.getElementById('pipStopPresent').addEventListener('click', () => { stopScreenShare(); _pipSig = ''; _paintPip(); });
 document.getElementById('pipLeave').addEventListener('click', () => endCallScreen());
+document.getElementById('pipHand').addEventListener('click', () => { toggleHand(); _paintPip(); });
+document.getElementById('pipAdd').addEventListener('click', e => { e.stopPropagation(); _pipAddPeople(); });
+document.getElementById('pipReact').addEventListener('click', e => { e.stopPropagation(); _togglePipMenu(e.currentTarget); });
+// The add panel lives in the call screen; borrow it into the small window so adding doesn't expand the call.
+function _pipAddPeople() {
+  const panel = document.getElementById('csAddPanel');
+  const pip = document.getElementById('callPip');
+  if (panel.parentElement === pip && !panel.classList.contains('hidden')) { panel.classList.add('hidden'); _paintPipAdd(); return; }
+  _closePipMenu();
+  pip.appendChild(panel);
+  panel.classList.add('in-pip');
+  panel.style.cssText = '';
+  panel.classList.remove('hidden');
+  refreshAddPanel();
+  document.getElementById('csApSearch').value = '';
+  document.getElementById('csApSearch').focus({ preventScroll: true });
+  _paintPipAdd();
+}
+function _returnAddPanel() {
+  const panel = document.getElementById('csAddPanel');
+  if (!panel.classList.contains('in-pip')) return;
+  panel.classList.add('hidden');
+  panel.classList.remove('in-pip');
+  document.getElementById('callScreen').appendChild(panel);
+  _paintPipAdd();
+}
+function _paintPipAdd() {
+  const panel = document.getElementById('csAddPanel');
+  const open = panel.classList.contains('in-pip') && !panel.classList.contains('hidden');
+  const btn = document.getElementById('pipAdd');
+  btn.classList.toggle('on', open);
+  btn.setAttribute('aria-expanded', String(open));
+}
 
 document.getElementById('pipReactRow').innerHTML = document.querySelector('#csReactPanel .cs-react-row').innerHTML;
-document.getElementById('pipMore').addEventListener('click', e => {
-  e.stopPropagation();
+document.getElementById('pipMore').addEventListener('click', e => { e.stopPropagation(); _togglePipMenu(e.currentTarget); });
+function _togglePipMenu(opener) {
   const menu = document.getElementById('pipMenu');
-  const open = menu.classList.contains('hidden');
-  menu.classList.toggle('hidden', !open);
-  e.currentTarget.setAttribute('aria-expanded', String(open));
-  if (!open) return;
+  const open = menu.classList.contains('hidden') || menu._opener !== opener;
+  if (!open) { _closePipMenu(); return; }
+  _closePipMenu();
+  menu.classList.remove('hidden');
+  menu._opener = opener;
+  opener.setAttribute('aria-expanded', 'true');
   menu.querySelector('[data-act="hand"]').textContent = myHandRaised ? 'Lower hand' : 'Raise hand';
   menu.querySelector('[data-act="captions"]').textContent = captionsOn ? 'Turn off captions' : 'Turn on captions';
-  menu.querySelector('.pip-menu-item').focus({ preventScroll: true });
-});
+  menu.querySelectorAll('.pip-layout').forEach(b => { const on = b.dataset.layout === callLayout; b.classList.toggle('active', on); b.setAttribute('aria-checked', String(on)); });
+  (opener.id === 'pipReact' ? menu.querySelector('[data-react]') : menu.querySelector('.pip-menu-item'))?.focus({ preventScroll: true });
+}
 document.getElementById('pipMenu').addEventListener('click', e => {
   e.stopPropagation();
   const b = e.target.closest('button');
@@ -6838,14 +7039,19 @@ document.getElementById('pipMenu').addEventListener('click', e => {
   else if (b.dataset.act === 'captions') toggleCaptions();
   else if (b.dataset.act === 'chat') { _maximizePip(); _setCallChatOpen(true); }
   else if (b.dataset.act === 'people') { _maximizePip(); _setPeopleOpen(true); }
+  else if (b.dataset.act === 'add') _pipAddPeople();
+  else if (b.dataset.layout) _setCallLayout(b.dataset.layout);
+  else if (b.dataset.act === 'full') _maximizePip();
   _paintPip();
 });
 function _closePipMenu(restoreFocus) {
   const menu = document.getElementById('pipMenu');
   if (menu.classList.contains('hidden')) return;
   menu.classList.add('hidden');
-  document.getElementById('pipMore').setAttribute('aria-expanded', 'false');
-  if (restoreFocus) document.getElementById('pipMore').focus({ preventScroll: true });
+  const opener = menu._opener || document.getElementById('pipMore');
+  opener.setAttribute('aria-expanded', 'false');
+  menu._opener = null;
+  if (restoreFocus) opener.focus({ preventScroll: true });
 }
 document.getElementById('pipMenu').addEventListener('keydown', e => {
   const items = [...e.currentTarget.querySelectorAll('button')];
@@ -6854,7 +7060,7 @@ document.getElementById('pipMenu').addEventListener('keydown', e => {
   else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
   else if (e.key === 'Escape') { e.stopPropagation(); _closePipMenu(true); }
 });
-document.addEventListener('click', e => { if (!e.target.closest('#pipMenu, #pipMore')) _closePipMenu(); });
+document.addEventListener('click', e => { if (!e.target.closest('#pipMenu, #pipMore, #pipReact')) _closePipMenu(); });
 
 // One drag at a time, tracked on the document so it survives the call screen hiding mid-drag.
 let _pipDrag = null;
@@ -6909,8 +7115,14 @@ function _startPipDrag(state) {
   document.addEventListener('pointerup', _pipDragEnd);
   document.addEventListener('pointercancel', _pipDragEnd);
 }
+// On phones the small window is a bar across the top (Meet mobile): no dragging, tap anywhere to return.
+const _pipIsBar = () => window.innerWidth <= 520;
+document.getElementById('callPip').addEventListener('click', e => {
+  // composedPath, not closest: the mic button repaints its icon mid-click, detaching e.target.
+  if (_pipIsBar() && !e.composedPath().some(el => el.tagName === 'BUTTON')) _maximizePip();
+});
 document.getElementById('pipHead').addEventListener('pointerdown', e => {
-  if (e.button !== 0 || e.target.closest('button')) return;
+  if (e.button !== 0 || e.target.closest('button') || _pipIsBar()) return;
   e.preventDefault();
   const pip = document.getElementById('callPip');
   const r = pip.getBoundingClientRect();
@@ -6943,16 +7155,19 @@ document.getElementById('csHeader').addEventListener('pointerdown', e => {
 // the largest 16:10 tiles, like the full call grid does.
 function _fitPipTiles() {
   const box = document.getElementById('pipTiles');
-  const n = box.querySelectorAll('.pip-tile:not(.pip-share)').length;
-  const W = box.clientWidth, H = box.clientHeight * (screenShareStream ? 0.38 : 1), GAP = 6, RATIO = 1.6;
+  const staged = box.classList.contains('has-stage');
+  const n = box.querySelectorAll(staged ? '.pip-tile:not(.pip-stage)' : '.pip-tile:not(.pip-share)').length;
+  const W = box.clientWidth, H = box.clientHeight * (staged ? 0.3 : 1), GAP = 6, RATIO = 1.6;
   if (!n || !W || !H) return;
   let best = { w: 0, cols: 1 };
-  for (let cols = 1; cols <= n; cols++) {
+  // In spotlight everyone else shares one strip under the stage.
+  for (let cols = staged ? n : 1; cols <= n; cols++) {
     const rows = Math.ceil(n / cols);
     const w = Math.min((W - GAP * (cols - 1)) / cols, ((H - GAP * (rows - 1)) / rows) * RATIO);
     if (w > best.w) best = { w, cols };
   }
   box.style.setProperty('--pip-tile-w', Math.floor(best.w) + 'px');
+  box.classList.toggle('tiny', best.w < 72);
 }
 new ResizeObserver(_fitPipTiles).observe(document.getElementById('pipTiles'));
 
@@ -7332,5 +7547,43 @@ document.getElementById('bgUpload').addEventListener('change', e => {
   if (v !== 'v1' && v !== 'v2') return;
   if (v === 'v2') enableCallsV2();
   document.title = `Yuzu · calls ${v}`;
+  const screen = new URLSearchParams(location.search).get('screen');
+  if (screen === 'onboarding') return;
   showHome();
+  if (screen) setTimeout(() => _openScreen(screen), 300);
 })();
+
+// ?screen=… opens one state of the app; the mobile board (mobile/) shows each in its own phone frame.
+function _openScreen(screen) {
+  // Inside the board, a focused input would scroll the whole board to that phone.
+  if (window.top !== window) {
+    const focus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function(opts) { focus.call(this, { ...opts, preventScroll: true }); };
+  }
+  const tab = t => document.querySelector(`.nav-item[data-tab="${t}"]`)?.click();
+  const group = () => startGroupCall(['sarah', 'alex', 'david', 'jessica'], false);
+  const after = (ms, fn) => setTimeout(fn, ms);
+  ({
+    home: () => tab('home'),
+    voice: () => navigateTo('home'),
+    dms: () => tab('dms'),
+    chat: () => openDmWith('sarah'),
+    channel: () => { loadChannelConversation('product-launch-q3'); mobOpenDetail(); },
+    'new-channel': () => { tab('home'); after(350, () => window.openChannelDropdown()); },
+    'new-message': () => { tab('home'); after(350, () => window.openDmDropdown()); },
+    tasks: () => tab('tasks'),
+    meetings: () => tab('meetings'),
+    people: () => tab('people'),
+    more: () => { tab('home'); after(350, () => document.getElementById('mtbMe').click()); },
+    call: () => startCall('sarah'),
+    'video-call': () => startGroupCall(['sarah'], true),
+    'group-call': group,
+    'group-video': () => startGroupCall(['sarah', 'alex', 'david', 'jessica'], true),
+    'video-spotlight': () => { startGroupCall(['sarah', 'alex', 'david', 'jessica'], true); after(2600, () => _setCallLayout('spotlight')); },
+    'call-more': () => { group(); after(2600, () => document.getElementById('csMoreBtn').click()); },
+    'call-add': () => { group(); after(2600, () => _openAddPeople(document.getElementById('csMoreBtn'))); },
+    'call-people': () => { group(); after(2600, () => _setPeopleOpen(true)); },
+    'call-chat': () => { group(); after(2600, () => _setCallChatOpen(true)); },
+    pip: () => { tab('home'); group(); after(2600, () => minimizeCallScreen()); },
+  })[screen]?.();
+}

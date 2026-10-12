@@ -255,6 +255,7 @@
 
     </div>
     <div class="ob-right">
+      <a class="ob-skip-btn ob-mobile-link" id="obMobileLink" href="mobile/index.html" title="Mobile app screens (390 × 780) with Meet-style calls">Mobile</a>
       <button class="ob-skip-btn ob-v2-btn" id="obV2Btn" title="Skip and use Meet-style calls">v2</button>
       <button class="ob-skip-btn" id="obSkipBtn">Skip</button>
       <div class="ob-right-inner">
@@ -471,6 +472,25 @@
         </div>
       </div>
     </nav>
+    <div class="mob-scrim hidden" id="mobScrim" aria-hidden="true"></div>
+    <nav class="mob-tabbar" id="mobTabBar" aria-label="Main">
+      <button type="button" class="mtb-call hidden" id="mtbCall" aria-label="Back to call"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Back to call · <span>00:00</span></button>
+      <div class="mtb-pill">
+        <button type="button" class="mtb-tab" data-tab="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.2 12 3.5l8.5 6.7V19a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M9 14.5c1.6 1.6 4.4 1.6 6 0"/></svg><span>Home</span></button>
+        <button type="button" class="mtb-tab" data-tab="dms"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><span>DMs</span></button>
+        <button type="button" class="mtb-tab" data-tab="tasks"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="m11.5 14.5 2 2 4-4"/></svg><span>Tasks</span></button>
+        <button type="button" class="mtb-tab" data-tab="people"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>People</span></button>
+        <button type="button" class="mtb-me" id="mtbMe" aria-label="You: profile, meetings, search, settings" aria-haspopup="menu" aria-expanded="false" aria-controls="navMoreSheet"><span id="mtbMeInitial">U</span><i class="mtb-dot" aria-hidden="true"></i></button>
+      </div>
+      <button type="button" class="mtb-yuzu" id="mtbYuzu" aria-label="Ask Yuzu" title="Ask Yuzu"><img src="logo.svg" alt="" /></button>
+    </nav>
+    <div class="nav-more-sheet hidden" id="navMoreSheet" role="menu" aria-label="You">
+      <button type="button" role="menuitem" data-go="aigroup"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>Ask Yuzu</button>
+      <button type="button" role="menuitem" data-go="meetings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Meetings</button>
+      <button type="button" role="menuitem" data-go="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search</button>
+      <button type="button" role="menuitem" data-go="settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+      <button type="button" role="menuitem" data-go="profile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>Profile &amp; status</button>
+    </div>
 
     <!-- SETTINGS OVERLAY -->
     <div class="settings-overlay hidden" id="settingsContent">
@@ -967,8 +987,9 @@
             <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg></div>
             <span>Raise</span>
           </button>
-          <button class="cs-hdr-btn cs-view-btn v1-only hidden" id="csViewBtn" title="Switch to speaker view">
+          <button type="button" class="cs-hdr-btn cs-view-btn hidden" id="csViewBtn" title="Switch to speaker view">
             <svg class="cs-view-gallery" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg><svg class="cs-view-speaker" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="14" height="16" rx="2"/><rect x="18" y="4" width="4" height="4.5" rx="1"/><rect x="18" y="9.75" width="4" height="4.5" rx="1"/><rect x="18" y="15.5" width="4" height="4.5" rx="1"/></svg><span class="cs-view-label">Speaker</span>
+            <svg class="cs-view-caret v2-only" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           <span class="cs-win-sep" aria-hidden="true"></span>
           <button type="button" class="cs-hdr-btn cs-win-btn" id="csMinBtn" title="Minimize (keeps the call going)" aria-label="Minimize call">
@@ -1021,6 +1042,10 @@
           <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg></div>
           <span id="csShareLabel">Share</span>
         </button>
+          <button type="button" class="cs-ctl v2-only" id="csAddHdrBtn" title="Add people" aria-label="Add people" aria-haspopup="dialog" aria-expanded="false">
+            <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg></div>
+            <span>Add</span>
+          </button>
           <button type="button" class="cs-ctl v2-only" id="csMoreBtn" title="More options" aria-label="More options" aria-haspopup="menu" aria-expanded="false">
             <div class="cs-ctl-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></div>
             <span>More</span>
@@ -1046,6 +1071,7 @@
       <div class="cs-live" id="csLive" aria-live="polite"></div>
       <div class="cs-live" id="csLiveUrgent" aria-live="assertive"></div>
       <div class="call-more cs-meet-menu hidden" id="csMoreMenu" role="menu" aria-label="More options"></div>
+      <div class="call-more cs-meet-menu hidden" id="csLayoutMenu" role="menu" aria-label="Layout"></div>
       <div class="call-more cs-meet-menu hidden" id="csLeaveMenu" role="menu" aria-label="Leave options">
         <button type="button" class="call-more-item" role="menuitem" id="csLeaveOnly">Leave call</button>
         <button type="button" class="call-more-item cs-danger" role="menuitem" id="csEndAll">End call for everyone</button>
@@ -1246,8 +1272,9 @@
     <!-- MINIMIZED CALL WINDOW (v2): draggable, resizable picture-in-picture -->
     <div class="call-pip hidden" id="callPip" role="region" aria-label="Call window">
       <div class="pip-head" id="pipHead" title="Drag to move · drag a corner to resize · double-click for full screen">
+        <svg class="pip-phone" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>
         <span class="pip-title" id="pipTitle"></span>
-        <span class="pip-time" id="pipTime"></span>
+        <span class="pip-meta"><span class="pip-return" aria-hidden="true">–</span><span class="pip-time" id="pipTime"></span></span>
         <button type="button" class="pip-icon" id="pipHide" aria-label="Hide call" title="Hide (the call keeps going; use the timer in the sidebar to come back)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
         <button type="button" class="pip-icon" id="pipMax" aria-label="Back to full call" title="Back to full call">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
@@ -1258,7 +1285,10 @@
       <div class="pip-bar">
         <button type="button" class="pip-btn" id="pipMic"></button>
         <button type="button" class="pip-btn" id="pipCam"></button>
+        <button type="button" class="pip-btn pip-mid" id="pipHand" aria-label="Raise hand" aria-pressed="false" title="Raise hand (⌃⌘H)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg></button>
+        <button type="button" class="pip-btn pip-wide" id="pipReact" aria-label="Send a reaction" aria-haspopup="menu" title="React"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 14.5s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9.5" y2="9.5"/><line x1="15" x2="15.01" y1="9.5" y2="9.5"/></svg></button>
         <button type="button" class="pip-btn" id="pipShare" aria-label="Present now" title="Present now"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg></button>
+        <button type="button" class="pip-btn pip-wide" id="pipAdd" aria-label="Add people" aria-haspopup="dialog" aria-expanded="false" title="Add people"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg></button>
         <button type="button" class="pip-btn" id="pipChat" aria-label="Open chat" title="Open chat (⌃⌘C)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="mini-dot hidden" id="pipChatDot"></span></button>
         <button type="button" class="pip-btn pip-btn-slim" id="pipMore" aria-label="More options" aria-haspopup="menu" aria-expanded="false" title="More options"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
         <button type="button" class="pip-btn pip-leave" id="pipLeave" aria-label="Leave call" title="Leave call"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) rotate(135) scale(0.7) translate(-12 -12)"><path stroke-width="2.7" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg></button>
@@ -1268,7 +1298,13 @@
         <button type="button" class="pip-menu-item" role="menuitem" data-act="hand">Raise hand</button>
         <button type="button" class="pip-menu-item" role="menuitem" data-act="captions">Turn on captions</button>
         <button type="button" class="pip-menu-item" role="menuitem" data-act="chat">Open chat</button>
+        <button type="button" class="pip-menu-item" role="menuitem" data-act="add">Add people</button>
         <button type="button" class="pip-menu-item" role="menuitem" data-act="people">Show everyone</button>
+        <div class="pip-menu-title">Layout</div>
+        <button type="button" class="pip-menu-item pip-layout" role="menuitemradio" aria-checked="false" data-layout="auto">Auto</button>
+        <button type="button" class="pip-menu-item pip-layout" role="menuitemradio" aria-checked="false" data-layout="tiled">Tiled</button>
+        <button type="button" class="pip-menu-item pip-layout" role="menuitemradio" aria-checked="false" data-layout="spotlight">Spotlight</button>
+        <button type="button" class="pip-menu-item" role="menuitem" data-act="full">Back to full call</button>
       </div>
       <div class="pip-maxhint" aria-hidden="true">Release to go full screen</div>
       <div class="pip-grip" data-dir="t" aria-hidden="true"></div>
@@ -1361,17 +1397,14 @@
         <div class="dm-list-header">
           <span class="section-title">DIRECT MESSAGES</span>
           <div class="dm-header-actions">
-            <button class="dm-hdr-btn" id="dmFilterBtn" title="Filter">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 3H14L9.5 8.5V13L6.5 11.5V8.5L2 3Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-              Filter
+            <button class="dm-hdr-btn" id="dmFilterBtn" title="Filter" aria-label="Filter">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 3H14L9.5 8.5V13L6.5 11.5V8.5L2 3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
             </button>
-            <button class="dm-hdr-btn" id="dmSortBtn" title="Sort">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-              <span id="dmSortLabel">Sort</span>
+            <button class="dm-hdr-btn" id="dmSortBtn" title="Sort: Newest" aria-label="Sort: Newest">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             </button>
-            <button class="new-dm-btn" id="dmListNewBtn">
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              New
+            <button class="new-dm-btn" id="dmListNewBtn" title="New message" aria-label="New message">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             </button>
           </div>
         </div>
@@ -1455,9 +1488,8 @@
       <div class="aigroup-view hidden" id="aigroupContent">
         <div class="aigroup-header">
           <span class="section-title">ASK YUZU</span>
-          <button class="new-dm-btn" id="aigroupNewBtn">
-            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            New Room
+          <button class="new-dm-btn" id="aigroupNewBtn" title="New room" aria-label="New room">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </button>
         </div>
         <div class="aigroup-list" id="aigroupList">
@@ -1525,7 +1557,7 @@
       <div class="middle-content" id="homeContent">
 
         <div class="section">
-          <div class="section-header"><span class="section-title">RECENT CONVERSATIONS</span><button class="see-all">See All</button></div>
+          <div class="section-header"><span class="section-title">RECENT CONVERSATIONS</span><button class="see-all" id="homeSeeAllDms">See All</button></div>
           <div class="card">
             <div class="convo-item" data-channel="product-launch-q3">
               <div class="avatar group-avatar"><img src="https://randomuser.me/api/portraits/women/32.jpg" alt="" /><div class="avatar-overlay"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 3C7.5 3 6 5 6 7C6 9 7.5 11 10 11C12.5 11 14 9 14 7C14 5 12.5 3 10 3ZM3 17C3 14 6 12 10 12C14 12 17 14 17 17" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></div></div>
@@ -1561,7 +1593,7 @@
         </div>
 
         <div class="section">
-          <div class="section-header"><span class="section-title">MY TASKS</span><button class="see-all green">See All ›</button></div>
+          <div class="section-header"><span class="section-title">MY TASKS</span><button class="see-all green" id="homeSeeAllTasks">See All ›</button></div>
           <div class="card" id="myTasksCard">
             <div class="task-item"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">Review brand assets from Sarah</span><div class="task-meta"><span class="task-due">⏱ Today</span><span class="task-dot">•</span><span class="task-status in-progress">In Progress</span></div></div></div>
             <div class="task-item no-border"><div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div><div class="task-body"><span class="task-name">Deploy staging environment</span><div class="task-meta"><span class="task-due">⏱ Today</span><span class="task-dot">•</span><span class="task-status todo">To Do</span></div></div></div>

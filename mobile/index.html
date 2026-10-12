@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Yuzu Mobile Screens</title>
+  <link rel="icon" href="../logo.svg" />
+  <style>
+    :root {
+      --bg: #f6f1ea; --surface: #ffffff; --text: #3e3f40; --muted: #808284; --line: rgba(76,21,21,.10);
+      --maroon: #4c1515; --maroon-dark: #2a0a0a; --amber: #f6c453; --bezel: #1c1412; --chip: #fff3c4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) { --bg: #140c0b; --surface: #1f1715; --text: #efe7e2; --muted: #a59a95; --line: rgba(255,236,214,.10); --maroon: #f6c453; --bezel: #000; --chip: rgba(246,196,83,.16); }
+    }
+    :root[data-theme="dark"] { --bg: #140c0b; --surface: #1f1715; --text: #efe7e2; --muted: #a59a95; --line: rgba(255,236,214,.10); --maroon: #f6c453; --bezel: #000; --chip: rgba(246,196,83,.16); }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, 'Inter', BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; }
+
+    .top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 32px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--maroon); text-decoration: none; }
+    .brand img { width: 28px; height: 28px; }
+    .brand small { font-weight: 600; font-size: 13px; color: var(--muted); }
+    .jump { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+    .jump a, .btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font: 600 12.5px/1 inherit; font-family: inherit; text-decoration: none; cursor: pointer; }
+    .jump a:hover, .btn:hover { border-color: var(--amber); }
+    .btn.primary { background: var(--amber); border-color: var(--amber); color: #2a0a0a; }
+
+    main { padding: 28px 32px 64px; max-width: 1840px; margin: 0 auto; }
+    .intro { max-width: 760px; margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+    section { margin-top: 36px; scroll-margin-top: 80px; }
+    h2 { margin: 0 0 4px; font-size: 20px; color: var(--maroon); }
+    .sub { margin: 0 0 18px; font-size: 13px; color: var(--muted); }
+    .row { display: flex; gap: 28px; flex-wrap: wrap; }
+
+    figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    figcaption { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; }
+    figcaption span { flex: 1; }
+    figcaption .note { display: block; font-weight: 500; font-size: 12px; color: var(--muted); }
+    .icon-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; text-decoration: none; }
+    .icon-btn:hover { border-color: var(--amber); }
+    .device { --s: 1; position: relative; width: calc(390px * var(--s) + 20px); height: calc(780px * var(--s) + 20px); padding: 10px; border-radius: 52px; background: var(--bezel); box-shadow: 0 30px 60px rgba(42,10,10,.22), inset 0 0 0 1px rgba(255,255,255,.06); }
+    .screen { width: calc(390px * var(--s)); height: calc(780px * var(--s)); border-radius: 42px; overflow: hidden; background: #fff; position: relative; }
+    .screen iframe { width: 390px; height: 780px; border: 0; display: block; transform: scale(var(--s)); transform-origin: 0 0; }
+    .size { font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+    @media (max-width: 520px) {
+      .top { padding: 12px 16px; }
+      .jump { margin-left: 0; }
+      main { padding: 20px 16px 48px; }
+      .row { gap: 24px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" id="homeLink" href="../"><img src="../logo.svg" alt="" />yuzu <small>mobile · 390 × 780</small></a>
+    <nav class="jump" aria-label="Sections">
+      <a href="#start">Start</a>
+      <a href="#messages">Messages</a>
+      <a href="#work">Work</a>
+      <a href="#calls">Calls</a>
+      <a id="desktopLink" href="../?calls=v2">Desktop app</a>
+    </nav>
+  </header>
+
+  <main>
+    <p class="intro">Every phone below is the real Yuzu app running at 390 × 780 with the new Meet-style calling, opened on a different screen. Tap around inside any of them; ↻ resets a phone and ↗ opens it on its own.</p>
+    <div id="board"></div>
+  </main>
+
+  <template id="phoneTpl">
+    <figure>
+      <figcaption><span></span><button type="button" class="icon-btn" data-reload aria-label="Reset this screen" title="Reset">↻</button><a class="icon-btn" data-open target="_blank" rel="noopener" aria-label="Open on its own" title="Open on its own">↗</a></figcaption>
+      <div class="device"><div class="screen"><iframe loading="lazy" allow="camera; microphone; display-capture; autoplay"></iframe></div></div>
+    </figure>
+  </template>
+
+  <script>
+    const SECTIONS = [
+      { id: 'start', title: 'Getting started', sub: 'Onboarding, then straight into the app.', screens: [
+        ['onboarding', 'Onboarding', 'Swipe through, or Skip'],
+        ['voice', 'Voice home', 'Tap the mic and ask Yuzu'],
+      ] },
+      { id: 'messages', title: 'Messages', sub: 'The Home list, DMs and channels push in from the tab bar; Back returns.', screens: [
+        ['home', 'Home', 'Quick actions and recents'],
+        ['dms', 'Direct messages', 'Filter · Sort · New'],
+        ['chat', 'Conversation', 'Call buttons in the header'],
+        ['channel', 'Channel', ''],
+        ['new-message', 'New message', 'One person, or several for a group'],
+        ['new-channel', 'New channel', 'Private, with people added'],
+      ] },
+      { id: 'work', title: 'Work', sub: 'Tab bar: Home · DMs · Tasks · People, your avatar for everything else, and the Yuzu button.', screens: [
+        ['tasks', 'Tasks', ''],
+        ['meetings', 'Meetings', ''],
+        ['people', 'People', ''],
+        ['more', 'You menu', 'Tap your avatar: Ask Yuzu, Meetings, Search, Settings, Profile'],
+      ] },
+      { id: 'calls', title: 'Calls', sub: 'Meet mobile layout: Mic · Camera · Raise · More · Leave. Everything else is in the More sheet. Video phones ask for your camera.', screens: [
+        ['call', '1:1 voice call', 'Rings straight in, no pre-join'],
+        ['video-call', '1:1 video call', 'Your camera in your tile'],
+        ['group-call', 'Group voice call', 'Two-column tiles'],
+        ['group-video', 'Group video call', ''],
+        ['video-spotlight', 'Spotlight', 'One big speaker, everyone else in a strip'],
+        ['call-more', 'More sheet', 'React, captions, present, add, layout'],
+        ['call-add', 'Add people', ''],
+        ['call-people', 'People', ''],
+        ['call-chat', 'In-call chat', 'Saved to the conversation'],
+        ['pip', 'Minimized call', 'Band at the top; tap it to return'],
+      ] },
+    ];
+
+    // serve maps "../" to index.html; a file:// build (Electron) needs the file name.
+    const APP = location.protocol === 'file:' ? '../index.html' : '../';
+    const urlFor = s => `${APP}?calls=v2&screen=${s}`;
+    document.getElementById('homeLink').href = APP;
+    document.getElementById('desktopLink').href = `${APP}?calls=v2`;
+
+    const board = document.getElementById('board');
+    const tpl = document.getElementById('phoneTpl');
+    SECTIONS.forEach(sec => {
+      const el = document.createElement('section');
+      el.id = sec.id;
+      el.setAttribute('aria-labelledby', sec.id + '-h');
+      el.innerHTML = `<h2 id="${sec.id}-h">${sec.title}</h2><p class="sub">${sec.sub}</p><div class="row"></div>`;
+      const row = el.querySelector('.row');
+      sec.screens.forEach(([key, label, note]) => {
+        const fig = tpl.content.firstElementChild.cloneNode(true);
+        fig.querySelector('figcaption span').innerHTML = `${label}${note ? `<span class="note">${note}</span>` : ''}`;
+        const frame = fig.querySelector('iframe');
+        frame.title = `Yuzu mobile: ${label}`;
+        frame.src = urlFor(key);
+        fig.querySelector('[data-open]').href = urlFor(key);
+        fig.querySelector('[data-reload]').addEventListener('click', () => { frame.src = 'about:blank'; requestAnimationFrame(() => { frame.src = urlFor(key); }); });
+        row.appendChild(fig);
+      });
+      board.appendChild(el);
+    });
+
+    // Shrink the phones only when the page itself is narrower than one phone.
+    function fit() {
+      const s = Math.min(1, (document.documentElement.clientWidth - 32 - 20) / 390);
+      document.querySelectorAll('.device').forEach(d => d.style.setProperty('--s', s.toFixed(3)));
+    }
+    addEventListener('resize', fit);
+    fit();
+  </script>
+</body>
+</html>

@@ -60,13 +60,16 @@ claiming screen share works in the desktop app.
 - Ringing and "waiting for others" states are visible on the tile and announced to screen readers.
 
 ### In the call
-- **Bottom bar**, centered: Mic · Camera · Captions · Raise hand · React · Present · More (⋮) · Leave
+- **Bottom bar**, centered: Mic · Camera · Captions · Raise hand · React · Present · Add people · More (⋮) · Leave
   (red). Right side of the bar: Info · People (with count) · Chat (with unread dot) · Activities.
   Left side: time and meeting name.
 - Mic and camera buttons are split buttons: the main part toggles, the caret opens the device menu.
   Fill device menus from `navigator.mediaDevices.enumerateDevices()` and listen for `devicechange`.
 - **Side panels** (People, Chat, Info, Activities) open on the right, one at a time, and close with
   `Esc` or by clicking the same button again. The video grid reflows instead of being covered.
+- **Layout** (Auto / Tiled / Spotlight) is reachable everywhere: the header Layout menu (`_openLayoutMenu`),
+  More, the small window's More menu, and the phone header. The small window draws Spotlight too.
+- **Add people** sits on the bottom bar just before More, and the **Speaker / Gallery** toggle stays in the header; don't bury either in More.
 - **Layouts** (More → Change layout): Auto, Tiled, Spotlight, Sidebar, and a max-tiles slider. Map
   Yuzu's `gallery` to Tiled and `speaker` to Spotlight; add Auto (speaker when someone presents or
   pinned, otherwise tiled) as the default.
@@ -75,13 +78,24 @@ claiming screen share works in the desktop app.
 - Self view can be minimized to a floating tile or hidden.
 - Minimizing (button, navigating away, or dragging the call screen's header down) opens the
   picture-in-picture window (`_showPip`, `#callPip`), not the phone-style card: live tiles, the
-  shared screen, and Mic · Camera · Present · More · Leave. Drag the header to move it, drag a bottom
+  shared screen, and Mic · Camera · Raise · React · Present · Add people · Chat · More · Leave (narrow windows drop Add people/React, then Raise, from the bar; More always lists every action). Drag the header to move it, drag a bottom
   corner to resize it; dragging it to the top edge, resizing it near full size, double-clicking the
   header or the expand icon maximizes the call again.
 - Raised hands are queued in order in the People panel; the host can lower anyone's hand.
 - Presenting shows a "You are presenting" bar with **Stop presenting**, and warns about the
   infinity mirror when sharing the whole screen.
 - Leaving: hosts get **Leave call** or **End call for everyone**; others just leave.
+
+### On phones (≤520px, see `mobile/` for every state at 390 × 780)
+- Header: call name + timer on the left; People, Chat and the shrink button on the right. No window
+  or full-screen buttons.
+- Bar: Mic · Camera · Raise · More · Leave, round 52px buttons. Captions, React, Present, Add people,
+  People, Chat and Layout move into More, which opens as a bottom sheet with a reaction row on top.
+- Tiles fill the screen: in a 1:1 call the other person fills it and you float in the bottom-right
+  corner (`.one-to-one`); groups use two portrait columns (`_sizeCallGrid`).
+- Minimized, the call is a maroon band across the very top (call icon, "name – time", expand icon);
+  the app sits below it as a sheet with rounded top corners. Tapping the band returns to the call.
+- `?calls=v2&screen=<name>` opens any state (`_openScreen`); add a screen there and in `mobile/index.html`.
 
 ### Host controls
 - Host management toggle; when on, only hosts and co-hosts can: mute everyone, turn off everyone's
