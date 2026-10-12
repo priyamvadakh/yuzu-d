@@ -2016,10 +2016,10 @@ function loadChannelConversation(channelKey) {
   if (!ch) return;
 
   document.getElementById('channelHeader').innerHTML = `
-    <div class="dm-convo-avatar" style="background:#0d8f82; font-size:16px; font-weight:700;">#</div>
+    <div class="dm-convo-avatar" style="background:#0d8f82; font-size:16px; font-weight:700;">${ch.isPrivate ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Private"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>' : '#'}</div>
     <div class="dm-convo-info">
       <div class="dm-convo-name">${ch.displayName}</div>
-      <div class="dm-convo-status" style="color:var(--text-muted)">${ch.members} members</div>
+      <div class="dm-convo-status" style="color:var(--text-muted)">${ch.isPrivate ? 'Private · ' : ''}${ch.members} members</div>
     </div>
     <div class="dm-header-actions">
       <div class="dm-call-group" role="group" aria-label="Start a call">
@@ -3044,16 +3044,7 @@ document.getElementById('esNewDmBtn').addEventListener('click', e => {
     ? openQuickDd(dd, e.currentTarget, () => { search.value = ''; search.dispatchEvent(new Event('input')); search.focus(); })
     : closeAllQuickDds();
 });
-document.getElementById('esNewChannelBtn').addEventListener('click', e => {
-  e.stopPropagation();
-  const dd = document.getElementById('channelDropdown');
-  const nameInput = document.getElementById('qdChannelName');
-  const publicBtn = document.getElementById('qdPublicBtn');
-  const privateBtn = document.getElementById('qdPrivateBtn');
-  dd.classList.contains('hidden')
-    ? openQuickDd(dd, e.currentTarget, () => { nameInput.value = ''; publicBtn.classList.add('active'); privateBtn.classList.remove('active'); nameInput.focus(); })
-    : closeAllQuickDds();
-});
+document.getElementById('esNewChannelBtn').addEventListener('click', e => { e.stopPropagation(); window.openChannelDropdown(e.currentTarget); });
 document.getElementById('esNewTaskBtn').addEventListener('click', e => {
   e.stopPropagation();
   const dd = document.getElementById('taskDropdown');
@@ -4088,37 +4079,112 @@ document.addEventListener('click', e => {
   dd.addEventListener('click', e => e.stopPropagation());
 })();
 
-// ── CHANNEL DROPDOWN ──
+// ── NEW CHANNEL (private only for now: name + the people you add) ──
 (function() {
   const btn = document.getElementById('quickChannelBtn');
-  const dd  = document.getElementById('channelDropdown');
-  const nameInput  = document.getElementById('qdChannelName');
-  const createBtn  = document.getElementById('qdChannelCreate');
-  const publicBtn  = document.getElementById('qdPublicBtn');
-  const privateBtn = document.getElementById('qdPrivateBtn');
+  const dd = document.getElementById('channelDropdown');
+  const nameIn = document.getElementById('qdChannelName');
+  const err = document.getElementById('qdChannelErr');
+  const search = document.getElementById('qdChannelSearch');
+  const list = document.getElementById('qdChannelList');
+  const chips = document.getElementById('qdChannelChips');
+  const go = document.getElementById('qdChannelCreate');
+  const CHECK = `<svg width="16" height="16" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const LOCK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+  const picked = [];
+  const person = k => peopleData.find(p => p.key === k);
+  const slug = v => v.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '').replace(/-{2,}/g, '-');
 
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    dd.classList.contains('hidden')
-      ? openQuickDd(dd, btn, () => { nameInput.value = ''; publicBtn.classList.add('active'); privateBtn.classList.remove('active'); nameInput.focus(); })
-      : closeAllQuickDds();
-  });
+  function paintGo() {
+    const name = slug(nameIn.value);
+    const taken = name && channelData[name];
+    err.textContent = taken ? `#${name} already exists` : '';
+    err.classList.toggle('hidden', !taken);
+    go.disabled = !name || !!taken;
+    go.innerHTML = !name ? 'Name the channel'
+      : `${LOCK}Create #${name}${picked.length ? ` · ${picked.length + 1} people` : ''}`;
+  }
 
-  publicBtn.addEventListener('click',  e => { e.stopPropagation(); publicBtn.classList.add('active'); privateBtn.classList.remove('active'); });
-  privateBtn.addEventListener('click', e => { e.stopPropagation(); privateBtn.classList.add('active'); publicBtn.classList.remove('active'); });
+  function render() {
+    const q = search.value.trim().toLowerCase();
+    list.innerHTML = peopleData
+      .filter(p => !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q))
+      .map(p => `
+        <div class="cd-item${picked.includes(p.key) ? ' selected' : ''}" data-key="${p.key}">
+          <button type="button" class="cd-pick" aria-pressed="${picked.includes(p.key)}" aria-label="${picked.includes(p.key) ? 'Remove' : 'Add'} ${p.name}">
+            <span class="cd-av" style="background:${p.color}">${p.initials}<span class="cd-av-check" aria-hidden="true">${CHECK}</span>${p.online ? '<span class="cd-online"></span>' : ''}</span>
+            <span class="cd-info"><span>${p.name}</span><small>${p.role}</small></span>
+          </button>
+        </div>`).join('') || '<div class="nd-empty">No one matches that search</div>';
+    chips.classList.toggle('hidden', !picked.length);
+    chips.innerHTML = picked.map(k => { const p = person(k); return `<span class="nd-chip"><span class="nd-chip-av" style="background:${p.color}">${p.initials}</span>${p.name.split(' ')[0]}<button type="button" data-rm="${k}" aria-label="Remove ${p.name}">×</button></span>`; }).join('');
+    paintGo();
+  }
 
-  createBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    const name = nameInput.value.trim().replace(/\s+/g, '-').toLowerCase();
-    if (!name) return;
+  function toggle(key) {
+    const i = picked.indexOf(key);
+    i === -1 ? picked.push(key) : picked.splice(i, 1);
+    render();
+  }
+
+  function create() {
+    const name = slug(nameIn.value);
+    if (!name || channelData[name]) { nameIn.focus(); return; }
+    const memberList = picked.map(k => { const p = person(k); return { key: p.key, name: p.name, color: p.color, initials: p.initials }; });
+    const added = memberList.map(m => m.name.split(' ')[0]);
+    channelData[name] = {
+      name, displayName: name, isPrivate: true, members: memberList.length + 1, memberList,
+      messages: [{ type: 'system', text: `You created this private channel${added.length ? ` and added ${added.length > 1 ? added.slice(0, -1).join(', ') + ' and ' + added.at(-1) : added[0]}` : ''}` }],
+    };
+    const recent = document.querySelector('.channel-item[data-channel]')?.parentElement;
+    recent?.insertAdjacentHTML('afterbegin', `<div class="channel-item" data-channel="${name}"><div class="channel-icon teal" style="color:#0d8f82">${LOCK}</div><div class="channel-body"><span class="channel-name">${name}</span><span class="channel-members">Private · ${memberList.length + 1} members</span></div></div>`);
     closeAllQuickDds();
-    nameInput.value = '';
-    if (!channelData[name]) {
-      channelData[name] = { name, displayName: name, members: 1, messages: [] };
-    }
     loadChannelConversation(name);
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     if (isMobile()) mobOpenDetail();
+  }
+
+  window.openChannelDropdown = function(triggerEl) {
+    if (!dd.classList.contains('hidden')) { closeAllQuickDds(); return; }
+    openQuickDd(dd, triggerEl || btn, () => {
+      picked.length = 0;
+      nameIn.value = '';
+      search.value = '';
+      render();
+      nameIn.focus();
+    });
+  };
+  btn.addEventListener('click', e => { e.stopPropagation(); window.openChannelDropdown(btn); });
+
+  nameIn.addEventListener('input', paintGo);
+  nameIn.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    slug(nameIn.value) && search.focus();
   });
+  search.addEventListener('input', render);
+  search.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !search.value && picked.length) { picked.pop(); render(); return; }
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const first = list.querySelector('.cd-item:not(.selected)');
+    if (search.value.trim() && first) { toggle(first.dataset.key); search.value = ''; render(); }
+    else create();
+  });
+  list.addEventListener('click', e => {
+    const row = e.target.closest('.cd-item');
+    if (!row) return;
+    e.stopPropagation();
+    toggle(row.dataset.key);
+  });
+  chips.addEventListener('click', e => {
+    const rm = e.target.closest('[data-rm]');
+    if (!rm) return;
+    e.stopPropagation();
+    toggle(rm.dataset.rm);
+  });
+  go.addEventListener('click', e => { e.stopPropagation(); create(); });
+  dd.addEventListener('click', e => e.stopPropagation());
 })();
 
 // Keep old modal handlers wired (modal still exists in DOM, just not opened via btn)

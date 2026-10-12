@@ -1170,23 +1170,24 @@
     </div>
 
     <!-- CHANNEL DROPDOWN -->
-    <div class="quick-dd hidden" id="channelDropdown">
-      <div class="qd-type-row">
-        <button class="qd-type-btn active" id="qdPublicBtn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="4" ry="9" stroke="currentColor" stroke-width="1.6"/><path d="M3 12H21" stroke="currentColor" stroke-width="1.6"/></svg>
-          Public
-        </button>
-        <button class="qd-type-btn" id="qdPrivateBtn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Private
-        </button>
+    <div class="quick-dd new-dm-dd hidden" id="channelDropdown">
+      <div class="nd-head">
+        <div class="nd-title">New channel</div>
+        <div class="nd-sub nc-private"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Private · only people you add can see it</div>
       </div>
-      <div class="qd-channel-input-wrap">
-        <span class="qd-hash">#</span>
-        <input type="text" class="qd-channel-input" id="qdChannelName" placeholder="channel-name" />
+      <div class="nc-name-wrap">
+        <span class="qd-hash" aria-hidden="true">#</span>
+        <input type="text" class="qd-channel-input" id="qdChannelName" placeholder="channel-name" autocomplete="off" aria-label="Channel name" />
       </div>
-      <div class="qd-footer">
-        <button class="qd-create-btn" id="qdChannelCreate">Create Channel</button>
+      <div class="nc-name-err hidden" id="qdChannelErr" role="alert"></div>
+      <div class="cd-search-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="text" class="cd-search" id="qdChannelSearch" placeholder="Add people…" autocomplete="off" aria-label="Add people" />
+      </div>
+      <div class="nd-chips hidden" id="qdChannelChips"></div>
+      <div class="cd-list nd-list nc-list" id="qdChannelList"></div>
+      <div class="nd-footer">
+        <button type="button" class="nd-go" id="qdChannelCreate" disabled>Name the channel</button>
       </div>
     </div>
 
