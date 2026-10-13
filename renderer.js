@@ -216,22 +216,22 @@ const dmData = {
     name: 'Design Team',
     isGroup: true,
     members: [
-      { key: 'sarah',   name: 'Sarah Jenkins', color: '#7c3aed', initials: 'SJ' },
-      { key: 'alex',    name: 'Alex Kim',       color: '#059669', initials: 'AK' },
-      { key: 'jessica', name: 'Jessica Park',   color: '#d97706', initials: 'JP' },
+      { key: 'sarah',   name: 'Sarah Jenkins', color: '#8b5cf6', initials: 'SJ' },
+      { key: 'alex',    name: 'Alex Kim',       color: '#008a4a', initials: 'AK' },
+      { key: 'jessica', name: 'Jessica Park',   color: '#f59e0b', initials: 'JP' },
     ],
-    color: '#7c3aed', initials: 'DT', online: true, unread: 2, lastActive: Date.now() - 15 * 60e3,
+    color: '#8b5cf6', initials: 'DT', online: true, unread: 2, lastActive: Date.now() - 15 * 60e3,
     messages: [
-      { from: 'sarah',   senderName: 'Sarah Jenkins', senderColor: '#7c3aed', senderInitials: 'SJ', text: 'Hey team! Just uploaded the updated design system v2 🎨', time: '10:30 AM' },
-      { from: 'alex',    senderName: 'Alex Kim',       senderColor: '#059669', senderInitials: 'AK', text: 'Looks great! The new component library is exactly what we needed', time: '10:32 AM' },
+      { from: 'sarah',   senderName: 'Sarah Jenkins', senderColor: '#8b5cf6', senderInitials: 'SJ', text: 'Hey team! Just uploaded the updated design system v2 🎨', time: '10:30 AM' },
+      { from: 'alex',    senderName: 'Alex Kim',       senderColor: '#008a4a', senderInitials: 'AK', text: 'Looks great! The new component library is exactly what we needed', time: '10:32 AM' },
       { from: 'me',      text: 'Amazing work Sarah. Alex — can you review the button states before we ship?', time: '10:35 AM' },
-      { from: 'jessica', senderName: 'Jessica Park',   senderColor: '#d97706', senderInitials: 'JP', text: 'The color tokens are perfect for the campaign launch 🙌', time: '10:38 AM' },
-      { from: 'sarah',   senderName: 'Sarah Jenkins', senderColor: '#7c3aed', senderInitials: 'SJ', text: "Will schedule a walkthrough call for Thursday — I'll share the invite 📅", time: '10:45 AM' },
-      { from: 'alex',    senderName: 'Alex Kim',       senderColor: '#059669', senderInitials: 'AK', text: 'Thursday works! Button review done btw — looks solid ✅', time: '10:47 AM' },
+      { from: 'jessica', senderName: 'Jessica Park',   senderColor: '#f59e0b', senderInitials: 'JP', text: 'The color tokens are perfect for the campaign launch 🙌', time: '10:38 AM' },
+      { from: 'sarah',   senderName: 'Sarah Jenkins', senderColor: '#8b5cf6', senderInitials: 'SJ', text: "Will schedule a walkthrough call for Thursday — I'll share the invite 📅", time: '10:45 AM' },
+      { from: 'alex',    senderName: 'Alex Kim',       senderColor: '#008a4a', senderInitials: 'AK', text: 'Thursday works! Button review done btw — looks solid ✅', time: '10:47 AM' },
     ]
   },
   sarah: {
-    name: 'Sarah Jenkins', color: '#7c3aed', initials: 'SJ', online: true, unread: 2,
+    name: 'Sarah Jenkins', color: '#8b5cf6', initials: 'SJ', online: true, unread: 2,
     messages: [
       { from: 'them', text: 'Hey! Just shared the brand assets folder with you 📁', time: '11:32 AM' },
       { from: 'them', text: 'Let me know what you think of the new color palette', time: '11:33 AM' },
@@ -244,7 +244,7 @@ const dmData = {
     ]
   },
   david: {
-    name: 'David Chen', color: '#2563eb', initials: 'DC', online: false,
+    name: 'David Chen', color: '#1d4ed8', initials: 'DC', online: false,
     messages: [
       { from: 'them', text: 'Sent the Q3 report document over 📎', time: '2h ago' },
       { from: 'me',   text: 'Got it, will review by EOD', time: '2h ago' },
@@ -254,7 +254,7 @@ const dmData = {
     ]
   },
   alex: {
-    name: 'Alex Kim', color: '#059669', initials: 'AK', online: true,
+    name: 'Alex Kim', color: '#008a4a', initials: 'AK', online: true,
     messages: [
       { from: 'them', text: 'The new brand looks 🔥', time: 'Yesterday' },
       { from: 'me',   text: 'Thanks! Still a work in progress', time: 'Yesterday' },
@@ -264,7 +264,7 @@ const dmData = {
     ]
   },
   jessica: {
-    name: 'Jessica Park', color: '#d97706', initials: 'JP', online: false,
+    name: 'Jessica Park', color: '#f59e0b', initials: 'JP', online: false,
     messages: [
       { from: 'them', text: "I'll share the campaign slides tomorrow morning", time: 'Yesterday' },
       { from: 'me',   text: "Sounds good, looking forward to it 👍", time: 'Yesterday' },
@@ -274,13 +274,13 @@ const dmData = {
     name: 'Campaign Launch',
     isGroup: true,
     members: [
-      { key: 'sarah',   name: 'Sarah Jenkins', color: '#7c3aed', initials: 'SJ' },
-      { key: 'alex',    name: 'Alex Kim',       color: '#059669', initials: 'AK' },
-      { key: 'jessica', name: 'Jessica Park',   color: '#d97706', initials: 'JP' },
+      { key: 'sarah',   name: 'Sarah Jenkins', color: '#8b5cf6', initials: 'SJ' },
+      { key: 'alex',    name: 'Alex Kim',       color: '#008a4a', initials: 'AK' },
+      { key: 'jessica', name: 'Jessica Park',   color: '#f59e0b', initials: 'JP' },
     ],
-    color: '#d97706', initials: 'CL', online: true, unread: 0, lastActive: Date.now() - 26 * 3600e3,
+    color: '#f59e0b', initials: 'CL', online: true, unread: 0, lastActive: Date.now() - 26 * 3600e3,
     messages: [
-      { from: 'jessica', senderName: 'Jessica Park', senderColor: '#d97706', senderInitials: 'JP', text: 'Kicking off the Q3 campaign thread here 🚀', time: 'Yesterday' },
+      { from: 'jessica', senderName: 'Jessica Park', senderColor: '#f59e0b', senderInitials: 'JP', text: 'Kicking off the Q3 campaign thread here 🚀', time: 'Yesterday' },
       { from: 'me', text: 'Perfect, let’s keep launch comms in this group', time: 'Yesterday' },
     ]
   }
@@ -433,7 +433,6 @@ function makeVoiceBubble(msg, isMe) {
     </div>
     <div class="dmvn-footer">
       <span class="dmvn-time">${msg.time}${tickHTML}</span>
-      <button class="dmvn-translate-btn" data-trans="${encodeURIComponent(msg.translation || '')}">✦ Translate</button>
     </div>
     <div class="dmvn-translation hidden">
       <div class="dmvn-trans-label">✦ AI Translation</div>
@@ -462,7 +461,7 @@ function makeCallBubble(msg) {
       </svg>`;
 
   // Small directional arrow badge (12×12)
-  const arrowColor = isMissed ? '#ef4444' : '#b07d1a';
+  const arrowColor = isMissed ? '#ef4444' : '#a87820';
   const arrowIcon = isMe
     ? `<svg width="11" height="11" viewBox="0 0 11 11" fill="none">
         <path d="M2 9L9 2" stroke="${arrowColor}" stroke-width="1.8" stroke-linecap="round"/>
@@ -473,7 +472,7 @@ function makeCallBubble(msg) {
         <path d="M8 9H2V3" stroke="${arrowColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`;
 
-  const iconColor = isMissed ? '#ef4444' : '#b07d1a';
+  const iconColor = isMissed ? '#ef4444' : '#a87820';
   const cardClass = isMissed ? 'missed' : isMe ? 'outbound' : 'inbound';
 
   return `<div class="dm-call-event">
@@ -811,6 +810,8 @@ function renderMention() {
       <button type="button" class="dmn-go" id="dmnGo"${n ? '' : ' disabled'}>${goLabel}</button>
     </div>`;
   box.classList.remove('hidden');
+  // Phones dock the picker as a sheet just above the composer, so the keyboard and input stay usable.
+  if (matchMedia('(max-width: 520px)').matches) box.style.setProperty('--dmn-bottom', Math.max(0, innerHeight - document.getElementById('dmInputRow').getBoundingClientRect().top) + 'px');
   box.querySelector('.dmn-row.active')?.scrollIntoView({ block: 'nearest' });
 }
 function _stripMentionToken() {
@@ -1063,13 +1064,13 @@ function stopDmRecording(send) {
 
 // ── PEOPLE DATA ──
 const peopleData = [
-  { key: 'sarah',   name: 'Sarah Jenkins', role: 'Head of Design',    initials: 'SJ', color: '#7c3aed', online: true,  email: 'sarah.j@yuzu.team',   dept: 'Design', photo: 'assets/avatars/sarah.jpg' },
-  { key: 'alex',    name: 'Alex Kim',       role: 'Senior Designer',   initials: 'AK', color: '#059669', online: true,  email: 'alex.k@yuzu.team',    dept: 'Design', photo: 'assets/avatars/alex.jpg' },
-  { key: 'david',   name: 'David Chen',     role: 'Lead Engineer',     initials: 'DC', color: '#2563eb', online: false, email: 'david.c@yuzu.team',   dept: 'Engineering' },
-  { key: 'jessica', name: 'Jessica Park',   role: 'Marketing Manager', initials: 'JP', color: '#d97706', online: false, email: 'jessica.p@yuzu.team', dept: 'Marketing' },
-  { key: 'marcus',  name: 'Marcus Lee',     role: 'Product Manager',   initials: 'ML', color: '#0891b2', online: true,  email: 'marcus.l@yuzu.team',  dept: 'Product', photo: 'assets/avatars/marcus.jpg' },
+  { key: 'sarah',   name: 'Sarah Jenkins', role: 'Head of Design',    initials: 'SJ', color: '#8b5cf6', online: true,  email: 'sarah.j@yuzu.team',   dept: 'Design', photo: 'assets/avatars/sarah.jpg' },
+  { key: 'alex',    name: 'Alex Kim',       role: 'Senior Designer',   initials: 'AK', color: '#008a4a', online: true,  email: 'alex.k@yuzu.team',    dept: 'Design', photo: 'assets/avatars/alex.jpg' },
+  { key: 'david',   name: 'David Chen',     role: 'Lead Engineer',     initials: 'DC', color: '#1d4ed8', online: false, email: 'david.c@yuzu.team',   dept: 'Engineering' },
+  { key: 'jessica', name: 'Jessica Park',   role: 'Marketing Manager', initials: 'JP', color: '#f59e0b', online: false, email: 'jessica.p@yuzu.team', dept: 'Marketing' },
+  { key: 'marcus',  name: 'Marcus Lee',     role: 'Product Manager',   initials: 'ML', color: '#0f766e', online: true,  email: 'marcus.l@yuzu.team',  dept: 'Product', photo: 'assets/avatars/marcus.jpg' },
   { key: 'priya',   name: 'Priya Nair',     role: 'UX Researcher',     initials: 'PN', color: '#be185d', online: true,  email: 'priya.n@yuzu.team',   dept: 'Design', photo: 'assets/avatars/priya.jpg' },
-  { key: 'tom',     name: 'Tom Eriksson',   role: 'Backend Engineer',  initials: 'TE', color: '#64748b', online: false, email: 'tom.e@yuzu.team',     dept: 'Engineering' },
+  { key: 'tom',     name: 'Tom Eriksson',   role: 'Backend Engineer',  initials: 'TE', color: '#757575', online: false, email: 'tom.e@yuzu.team',     dept: 'Engineering' },
 ];
 
 // ── MEETINGS DATA ──
@@ -1877,7 +1878,7 @@ function showContactDetail(personKey) {
   avatarEl.style.background = p.color;
   document.getElementById('contactHeroName').textContent = p.name;
   document.getElementById('contactHeroRole').textContent = p.role;
-  document.getElementById('contactStatusDot').style.background = p.online ? '#00ad5e' : '#9ca3af';
+  document.getElementById('contactStatusDot').style.background = p.online ? '#00ad5e' : '#9e9e9e';
   document.getElementById('contactStatusText').textContent = p.online ? 'Online now' : 'Offline';
 
   document.getElementById('contactEmailRow').innerHTML = `
@@ -1944,7 +1945,7 @@ function personRow(p) {
   return `<div class="people-item" data-person-key="${p.key}" data-name="${p.name}" data-role="${p.role}" data-color="${p.color}" data-initials="${p.initials}">
     <div class="people-avatar" style="background:${p.color}">
       ${p.initials.charAt(0)}
-      ${p.online ? '<div class="online-dot" style="position:absolute;bottom:0;right:0;width:10px;height:10px;border:2px solid #fff;border-radius:50%;background:var(--online)"></div>' : ''}
+      ${p.online ? '<div class="online-dot" style="position:absolute;bottom:0;right:0;width:10px;height:10px;border:2px solid #ffffff;border-radius:50%;background:var(--online)"></div>' : ''}
     </div>
     <div class="people-info">
       <div class="people-name">${p.name}</div>
@@ -1981,29 +1982,29 @@ const channelData = {
   'product-launch-q3': {
     name: 'product-launch-q3', displayName: 'Product Launch Q3', members: 12,
     messages: [
-      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#059669', text: 'Just uploaded the new brand deck to the shared drive 🎉', time: '10:14 AM' },
-      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#7c3aed', text: '@Alex the new brand assets look incredible! The color palette is exactly what we needed', time: '10:22 AM' },
-      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#059669', text: 'Thanks! Took a few iterations to get the amber right 😄', time: '10:23 AM' },
+      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#008a4a', text: 'Just uploaded the new brand deck to the shared drive 🎉', time: '10:14 AM' },
+      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#8b5cf6', text: '@Alex the new brand assets look incredible! The color palette is exactly what we needed', time: '10:22 AM' },
+      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#008a4a', text: 'Thanks! Took a few iterations to get the amber right 😄', time: '10:23 AM' },
       { from: 'me',    name: 'Me',            initials: 'ME', color: '#4c1515', text: 'Agreed — really polished. Are we going live with this for Q3?', time: '10:31 AM' },
-      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#7c3aed', text: 'Yes! Launch is set for next Monday. I\'ll share the timeline doc today.', time: '10:35 AM' },
-      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#2563eb', text: 'I\'ll handle the technical rollout. Staging is ready to test 🚀', time: '10:40 AM' },
+      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#8b5cf6', text: 'Yes! Launch is set for next Monday. I\'ll share the timeline doc today.', time: '10:35 AM' },
+      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#1d4ed8', text: 'I\'ll handle the technical rollout. Staging is ready to test 🚀', time: '10:40 AM' },
     ]
   },
   'engineering-team': {
     name: 'engineering-team', displayName: 'Engineering Team', members: 8,
     messages: [
-      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#2563eb', text: 'Staging deployment was successful ✅ All smoke tests passing', time: '9:05 AM' },
-      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#059669', text: 'Nice work! I tested the new auth flow — looks solid', time: '9:18 AM' },
+      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#1d4ed8', text: 'Staging deployment was successful ✅ All smoke tests passing', time: '9:05 AM' },
+      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#008a4a', text: 'Nice work! I tested the new auth flow — looks solid', time: '9:18 AM' },
       { from: 'me',    name: 'Me',            initials: 'ME', color: '#4c1515', text: 'Good job everyone. Promoting to prod at 2pm today', time: '9:45 AM' },
-      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#2563eb', text: 'Roger that. I\'ll monitor the logs post-deploy', time: '9:47 AM' },
+      { from: 'david', name: 'David Chen',    initials: 'DC', color: '#1d4ed8', text: 'Roger that. I\'ll monitor the logs post-deploy', time: '9:47 AM' },
     ]
   },
   'design-system': {
     name: 'design-system', displayName: 'Design System', members: 5,
     messages: [
-      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#7c3aed', text: 'New component library v2 is ready for review 🎨', time: 'Yesterday' },
-      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#059669', text: 'The button variants look great. One question — should the ghost variant have a border?', time: 'Yesterday' },
-      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#7c3aed', text: 'Good catch! Yes, 1px border with opacity 40%. I\'ll update the spec.', time: 'Yesterday' },
+      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#8b5cf6', text: 'New component library v2 is ready for review 🎨', time: 'Yesterday' },
+      { from: 'alex',  name: 'Alex Kim',      initials: 'AK', color: '#008a4a', text: 'The button variants look great. One question — should the ghost variant have a border?', time: 'Yesterday' },
+      { from: 'sarah', name: 'Sarah Jenkins', initials: 'SJ', color: '#8b5cf6', text: 'Good catch! Yes, 1px border with opacity 40%. I\'ll update the spec.', time: 'Yesterday' },
       { from: 'me',    name: 'Me',            initials: 'ME', color: '#4c1515', text: 'Looks great! Approving for implementation 👍', time: 'Yesterday' },
     ]
   }
@@ -2070,7 +2071,7 @@ const taskData = [
     id: 'task1',
     title: 'Review brand assets from Sarah',
     due: 'Today', status: 'In Progress', priority: 'High',
-    assignee: { initials: 'ME', color: '#7c3aed', name: 'Me' },
+    assignee: { initials: 'ME', color: '#8b5cf6', name: 'Me' },
     description: 'Go through the new brand assets Sarah shared and leave detailed feedback on typography, color palette, and logo usage.',
     subtasks: [
       { done: false, text: 'Open Figma file' },
@@ -2078,7 +2079,7 @@ const taskData = [
       { done: true,  text: 'Share with the team' },
     ],
     activity: [
-      { initials: 'SJ', color: '#7c3aed', name: 'Sarah Jenkins', text: 'Sent the assets over 👍', time: '11:33 AM' },
+      { initials: 'SJ', color: '#8b5cf6', name: 'Sarah Jenkins', text: 'Sent the assets over 👍', time: '11:33 AM' },
       { initials: 'ME', color: '#4c1515', name: 'You', text: 'Added this task and assigned to self', time: '11:45 AM' },
     ]
   },
@@ -2094,7 +2095,7 @@ const taskData = [
       { done: false, text: 'Notify team in #engineering-team' },
     ],
     activity: [
-      { initials: 'DC', color: '#2563eb', name: 'David Chen', text: 'Added a note: use the new CI pipeline config', time: '1h ago' },
+      { initials: 'DC', color: '#1d4ed8', name: 'David Chen', text: 'Added a note: use the new CI pipeline config', time: '1h ago' },
     ]
   }
 ];
@@ -2166,7 +2167,7 @@ function loadTaskDetail(taskId) {
   showPanel('taskDetail');
 }
 
-const STATUS_DOTS = { 'To Do': '#9ca3af', 'In Progress': '#2563eb', 'Done': '#16a34a' };
+const STATUS_DOTS = { 'To Do': '#9e9e9e', 'In Progress': '#1d4ed8', 'Done': '#008a4a' };
 
 function showTaskStatusDd(chipEl, t) {
   const dd = document.getElementById('taskStatusDd');
@@ -2502,7 +2503,7 @@ document.getElementById('channelInput').addEventListener('keydown', e => {
 
 // ── PROFILE POPUP ──
 let currentStatus = 'active';
-const statusDotColors = { active: '#00ad5e', away: '#f59e0b', dnd: '#ef4444', meeting: '#8b5cf6', offline: '#9ca3af' };
+const statusDotColors = { active: '#00ad5e', away: '#f59e0b', dnd: '#ef4444', meeting: '#8b5cf6', offline: '#9e9e9e' };
 
 // ── NAV EXPAND / COLLAPSE ──
 let navExpanded = false;
@@ -2877,9 +2878,9 @@ document.addEventListener('keydown', e => {
 
   // ── recent items (shown when input is empty) ──
   const RECENTS = [
-    { type: 'dm',      key: 'sarah',              label: 'Sarah Jenkins',       meta: 'Direct message',        color: '#7c3aed', initials: 'SJ' },
+    { type: 'dm',      key: 'sarah',              label: 'Sarah Jenkins',       meta: 'Direct message',        color: '#8b5cf6', initials: 'SJ' },
     { type: 'channel', key: 'product-launch-q3',  label: '#product-launch-q3',  meta: '12 members',            color: '#0d8f82', initials: '#' },
-    { type: 'dm',      key: 'david',              label: 'David Chen',          meta: 'Direct message',        color: '#2563eb', initials: 'DC' },
+    { type: 'dm',      key: 'david',              label: 'David Chen',          meta: 'Direct message',        color: '#1d4ed8', initials: 'DC' },
     { type: 'channel', key: 'engineering-team',   label: '#engineering-team',   meta: '8 members',             color: '#0d8f82', initials: '#' },
   ];
 
@@ -3098,7 +3099,7 @@ function markOstepDone(id) {
   const step = document.getElementById(id);
   if (!step || step.classList.contains('done')) return;
   step.classList.add('done');
-  step.querySelector('.ost-check').innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" fill="#16a34a"/><path d="M5.5 9L7.5 11L12.5 6.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  step.querySelector('.ost-check').innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" fill="#008a4a"/><path d="M5.5 9L7.5 11L12.5 6.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const doneCount = document.querySelectorAll('#homeEmpty .onboarding-step.done').length;
   const label = document.getElementById('ostProgressLabel');
   if (label) label.textContent = `${doneCount} of 4 done`;
@@ -3483,9 +3484,9 @@ function showScheduleDetail(s) {
 
   const attendees = document.getElementById('scheduleAttendees');
   const withPerson = s.withName ? peopleData.find(p => p.name.toLowerCase().includes(s.withName.toLowerCase().split(' ')[0])) : null;
-  const meAvatar = `<div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:var(--maroon);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">M</div></div>`;
-  const meRow = `<div class="contact-info-item">${meAvatar}<span class="ci-value">You <span style="font-size:11px;color:#9096b0">(organiser)</span></span></div>`;
-  const guestRow = withPerson ? `<div class="contact-info-item"><div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:${withPerson.color};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${withPerson.initials.charAt(0)}</div></div><span class="ci-value">${withPerson.name}</span></div>` : '';
+  const meAvatar = `<div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:var(--maroon);color:#ffffff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">M</div></div>`;
+  const meRow = `<div class="contact-info-item">${meAvatar}<span class="ci-value">You <span style="font-size:11px;color:#9e9e9e">(organiser)</span></span></div>`;
+  const guestRow = withPerson ? `<div class="contact-info-item"><div class="ci-icon"><div style="width:28px;height:28px;border-radius:50%;background:${withPerson.color};color:#ffffff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">${withPerson.initials.charAt(0)}</div></div><span class="ci-value">${withPerson.name}</span></div>` : '';
   attendees.innerHTML = meRow + guestRow;
 
   const joinBtn = document.querySelector('#scheduleDetail .ca-action-btn:nth-child(1)');
@@ -3496,7 +3497,7 @@ function showScheduleDetail(s) {
     if (withPerson) {
       startGroupCall([withPerson], true);
     } else {
-      startCallWith(s.title, 'Meeting', '#3d5af1', '📅', true);
+      startCallWith(s.title, 'Meeting', '#3b82f6', '📅', true);
     }
   };
 
@@ -3532,7 +3533,7 @@ function showScheduleDetail(s) {
 function taskItemHTML(title, dueDate, status, taskId) {
   const statusCls = status.toLowerCase().replace(/\s+/g, '-');
   return `<div class="task-item task-new no-border" data-task-id="${taskId}">
-    <div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d1d5db" stroke-width="1.5"/></svg></div>
+    <div class="task-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#e0e0e0" stroke-width="1.5"/></svg></div>
     <div class="task-body">
       <span class="task-name">${title}</span>
       <div class="task-meta"><span class="task-due">⏱ ${dueDate}</span><span class="task-dot">•</span><span class="task-status ${statusCls}">${status}</span></div>
@@ -3773,7 +3774,7 @@ function startCall(personKey) {
   endCall();
   const p = peopleData.find(x => x.key === personKey) || dmData[personKey];
   if (!p) return;
-  startCallWith(p.name, '', p.color || '#7c3aed', p.initials || '??', false);
+  startCallWith(p.name, '', p.color || '#8b5cf6', p.initials || '??', false);
   _linkCall(_adHocConvo([personKey]));
   showCallWidget();
 }
@@ -6036,11 +6037,11 @@ document.getElementById('scSubmit').addEventListener('click', () => {
   if (!modal || !openBtn) return;
 
   const sharePeople = [
-    { key:'sarah', name:'Sarah Jenkins', role:'Head of Design', color:'#7c3aed', initials:'SJ' },
-    { key:'alex', name:'Alex Kim', role:'Senior Designer', color:'#059669', initials:'AK' },
-    { key:'david', name:'David Chen', role:'Lead Engineer', color:'#2563eb', initials:'DC' },
-    { key:'jessica', name:'Jessica Park', role:'Marketing Manager', color:'#d97706', initials:'JP' },
-    { key:'marcus', name:'Marcus Lee', role:'Product Manager', color:'#0891b2', initials:'ML' },
+    { key:'sarah', name:'Sarah Jenkins', role:'Head of Design', color:'#8b5cf6', initials:'SJ' },
+    { key:'alex', name:'Alex Kim', role:'Senior Designer', color:'#008a4a', initials:'AK' },
+    { key:'david', name:'David Chen', role:'Lead Engineer', color:'#1d4ed8', initials:'DC' },
+    { key:'jessica', name:'Jessica Park', role:'Marketing Manager', color:'#f59e0b', initials:'JP' },
+    { key:'marcus', name:'Marcus Lee', role:'Product Manager', color:'#0f766e', initials:'ML' },
   ];
 
   function renderPeople() {
@@ -6094,15 +6095,15 @@ document.getElementById('scSubmit').addEventListener('click', () => {
   if (!input || !sendBtn || !messagesEl) return;
 
   const roomColors = ['rgba(246,196,83,.12)','rgba(124,58,237,.1)','rgba(13,143,130,.1)','rgba(37,99,235,.1)','rgba(217,119,6,.1)','rgba(190,24,93,.1)'];
-  const roomIconColors = ['#b07d1a','#7c3aed','#0d8f82','#2563eb','#d97706','#be185d'];
+  const roomIconColors = ['#a87820','#8b5cf6','#0d8f82','#1d4ed8','#f59e0b','#be185d'];
   let roomCount = 3;
 
   const allPeople = [
-    { key:'sarah', name:'Sarah Jenkins', role:'Head of Design', color:'#7c3aed', initials:'SJ' },
-    { key:'alex', name:'Alex Kim', role:'Senior Designer', color:'#059669', initials:'AK' },
-    { key:'david', name:'David Chen', role:'Lead Engineer', color:'#2563eb', initials:'DC' },
-    { key:'jessica', name:'Jessica Park', role:'Marketing Manager', color:'#d97706', initials:'JP' },
-    { key:'marcus', name:'Marcus Lee', role:'Product Manager', color:'#0891b2', initials:'ML' },
+    { key:'sarah', name:'Sarah Jenkins', role:'Head of Design', color:'#8b5cf6', initials:'SJ' },
+    { key:'alex', name:'Alex Kim', role:'Senior Designer', color:'#008a4a', initials:'AK' },
+    { key:'david', name:'David Chen', role:'Lead Engineer', color:'#1d4ed8', initials:'DC' },
+    { key:'jessica', name:'Jessica Park', role:'Marketing Manager', color:'#f59e0b', initials:'JP' },
+    { key:'marcus', name:'Marcus Lee', role:'Product Manager', color:'#0f766e', initials:'ML' },
     { key:'noor', name:'Noor Al-Rashid', role:'QA Lead', color:'#be185d', initials:'NA' },
   ];
 
@@ -7208,7 +7209,7 @@ function _plant(c, x, y, s, potCol) {
 }
 const BG_SCENES = {
   beach(c, W, H) {
-    c.fillStyle = _grad(c, 0, 0, 0, H * 0.56, [[0, '#4aa6e0'], [0.7, '#9fd6f2'], [1, '#e3f4fb']]); c.fillRect(0, 0, W, H);
+    c.fillStyle = _grad(c, 0, 0, 0, H * 0.56, [[0, '#4aa6e0'], [0.7, '#9fd6f2'], [1, '#eff6ff']]); c.fillRect(0, 0, W, H);
     const sun = c.createRadialGradient(W * 0.8, H * 0.18, 0, W * 0.8, H * 0.18, H * 0.35);
     sun.addColorStop(0, 'rgba(255,250,220,1)'); sun.addColorStop(0.12, 'rgba(255,244,200,.9)'); sun.addColorStop(1, 'rgba(255,244,200,0)');
     c.fillStyle = sun; c.fillRect(0, 0, W, H);
@@ -7233,21 +7234,21 @@ const BG_SCENES = {
     });
   },
   office(c, W, H) {
-    c.fillStyle = _grad(c, 0, 0, 0, H, [[0, '#efebe5'], [1, '#e2dcd2']]); c.fillRect(0, 0, W, H);
+    c.fillStyle = _grad(c, 0, 0, 0, H, [[0, '#f5ede7'], [1, '#e0e0e0']]); c.fillRect(0, 0, W, H);
     const wx = W * 0.52, wy = H * 0.08, ww = W * 0.44, wh = H * 0.66;
-    c.fillStyle = _grad(c, 0, wy, 0, wy + wh, [[0, '#9cc9ea'], [1, '#dcecf5']]); c.fillRect(wx, wy, ww, wh);
+    c.fillStyle = _grad(c, 0, wy, 0, wy + wh, [[0, '#9cc9ea'], [1, '#e0e6f4']]); c.fillRect(wx, wy, ww, wh);
     const r = _rng(3);
     for (let i = 0; i < 12; i++) { const bw = 30 + r() * 60, bh = wh * (0.2 + r() * 0.55), bx = wx + i * ww / 11 - 10; c.fillStyle = `rgba(${90 + r() * 40},${110 + r() * 30},${140 + r() * 30},.75)`; c.fillRect(bx, wy + wh - bh, bw, bh); }
     c.fillStyle = '#5a5550'; [0, 1 / 3, 2 / 3, 1].forEach(t => c.fillRect(wx + ww * t - 4, wy, 8, wh)); c.fillRect(wx, wy - 4, ww, 8); c.fillRect(wx, wy + wh * 0.55, ww, 6); c.fillRect(wx - 4, wy + wh - 2, ww + 8, 10);
     c.fillStyle = '#c4b49c'; c.fillRect(0, H * 0.8, W, H * 0.2);
     // Shelf on the left
     c.fillStyle = '#8a6a4a'; c.fillRect(W * 0.03, H * 0.18, W * 0.24, H * 0.6);
-    c.fillStyle = '#efe9e1'; for (let i = 0; i < 3; i++) c.fillRect(W * 0.04, H * (0.2 + i * 0.19), W * 0.22, H * 0.165);
+    c.fillStyle = '#f4e9e1'; for (let i = 0; i < 3; i++) c.fillRect(W * 0.04, H * (0.2 + i * 0.19), W * 0.22, H * 0.165);
     const br = _rng(11);
-    for (let i = 0; i < 3; i++) _books(c, W * 0.045, H * (0.2 + i * 0.19), W * 0.15, H * 0.16, br, ['#4c1515', '#f6c453', '#2f4f6f', '#7a8c6e', '#c9a27e', '#3e3f40']);
-    _plant(c, W * 0.38, H * 0.72, 1.1, '#f2f0ec');
-    c.strokeStyle = '#3e3f40'; c.lineWidth = 2; c.beginPath(); c.moveTo(W * 0.4, 0); c.lineTo(W * 0.4, H * 0.12); c.stroke();
-    c.fillStyle = '#3e3f40'; c.beginPath(); c.moveTo(W * 0.37, H * 0.16); c.lineTo(W * 0.43, H * 0.16); c.lineTo(W * 0.415, H * 0.12); c.lineTo(W * 0.385, H * 0.12); c.closePath(); c.fill();
+    for (let i = 0; i < 3; i++) _books(c, W * 0.045, H * (0.2 + i * 0.19), W * 0.15, H * 0.16, br, ['#4c1515', '#f6c453', '#2f4f6f', '#7a8c6e', '#c9a27e', '#424242']);
+    _plant(c, W * 0.38, H * 0.72, 1.1, '#eeeeee');
+    c.strokeStyle = '#424242'; c.lineWidth = 2; c.beginPath(); c.moveTo(W * 0.4, 0); c.lineTo(W * 0.4, H * 0.12); c.stroke();
+    c.fillStyle = '#424242'; c.beginPath(); c.moveTo(W * 0.37, H * 0.16); c.lineTo(W * 0.43, H * 0.16); c.lineTo(W * 0.415, H * 0.12); c.lineTo(W * 0.385, H * 0.12); c.closePath(); c.fill();
     const glow = c.createRadialGradient(W * 0.4, H * 0.17, 0, W * 0.4, H * 0.17, 90); glow.addColorStop(0, 'rgba(255,230,170,.7)'); glow.addColorStop(1, 'rgba(255,230,170,0)'); c.fillStyle = glow; c.fillRect(W * 0.3, H * 0.1, 200, 160);
   },
   living(c, W, H) {
@@ -7255,7 +7256,7 @@ const BG_SCENES = {
     c.fillStyle = '#a07e5c'; c.fillRect(0, H * 0.82, W, H * 0.18);
     // Framed art
     c.fillStyle = '#3e2a1e'; c.fillRect(W * 0.62, H * 0.12, W * 0.26, H * 0.3);
-    c.fillStyle = '#f5efe6'; c.fillRect(W * 0.63, H * 0.14, W * 0.24, H * 0.26);
+    c.fillStyle = '#f5ede7'; c.fillRect(W * 0.63, H * 0.14, W * 0.24, H * 0.26);
     c.fillStyle = '#f6c453'; c.beginPath(); c.arc(W * 0.72, H * 0.26, H * 0.07, 0, 7); c.fill();
     c.fillStyle = '#4c1515'; c.fillRect(W * 0.77, H * 0.2, W * 0.06, H * 0.16);
     c.fillStyle = '#7fa8a0'; c.fillRect(W * 0.66, H * 0.33, W * 0.17, H * 0.04);
@@ -7265,10 +7266,10 @@ const BG_SCENES = {
     c.fillStyle = '#5f939a'; c.beginPath(); c.roundRect(W * 0.05, H * 0.62, W * 0.1, H * 0.2, 18); c.roundRect(W * 0.85, H * 0.62, W * 0.1, H * 0.2, 18); c.fill();
     c.fillStyle = '#6aa1a8'; c.beginPath(); c.roundRect(W * 0.13, H * 0.68, W * 0.74, H * 0.12, 16); c.fill();
     c.fillStyle = '#f6c453'; c.beginPath(); c.roundRect(W * 0.17, H * 0.6, W * 0.08, H * 0.1, 10); c.fill();
-    c.fillStyle = '#e8ded0'; c.beginPath(); c.roundRect(W * 0.75, H * 0.6, W * 0.08, H * 0.1, 10); c.fill();
+    c.fillStyle = '#f0e0d4'; c.beginPath(); c.roundRect(W * 0.75, H * 0.6, W * 0.08, H * 0.1, 10); c.fill();
     // Floor lamp
-    c.strokeStyle = '#2d2a26'; c.lineWidth = 5; c.beginPath(); c.moveTo(W * 0.04, H * 0.85); c.lineTo(W * 0.04, H * 0.2); c.stroke();
-    c.fillStyle = '#f3e7d0'; c.beginPath(); c.moveTo(W * 0.0, H * 0.24); c.lineTo(W * 0.08, H * 0.24); c.lineTo(W * 0.065, H * 0.13); c.lineTo(W * 0.015, H * 0.13); c.closePath(); c.fill();
+    c.strokeStyle = '#212121'; c.lineWidth = 5; c.beginPath(); c.moveTo(W * 0.04, H * 0.85); c.lineTo(W * 0.04, H * 0.2); c.stroke();
+    c.fillStyle = '#f0e0d4'; c.beginPath(); c.moveTo(W * 0.0, H * 0.24); c.lineTo(W * 0.08, H * 0.24); c.lineTo(W * 0.065, H * 0.13); c.lineTo(W * 0.015, H * 0.13); c.closePath(); c.fill();
     _plant(c, W * 0.96, H * 0.78, 1.2, '#c06a3c');
   },
   library(c, W, H) {
@@ -7276,7 +7277,7 @@ const BG_SCENES = {
     const rows = 5, rh = H / rows, r = _rng(21);
     const palette = ['#7a1f1f', '#2f4f6f', '#3c5a3a', '#8a6a2f', '#5a3a5f', '#c9a27e', '#1f2f3f', '#9a4a2a'];
     for (let i = 0; i < rows; i++) {
-      c.fillStyle = '#2a1a0f'; c.fillRect(0, i * rh + rh * 0.08, W, rh * 0.86);
+      c.fillStyle = '#261f00'; c.fillRect(0, i * rh + rh * 0.08, W, rh * 0.86);
       _books(c, 6, i * rh + rh * 0.1, W - 12, rh * 0.82, r, palette);
       c.fillStyle = '#5a3a22'; c.fillRect(0, i * rh + rh * 0.92, W, rh * 0.1);
     }
@@ -7291,14 +7292,14 @@ const BG_SCENES = {
       while (x < W) {
         const bw = 40 + r() * 90, bh = H * (0.25 + r() * (layer ? 0.45 : 0.35));
         c.fillStyle = col; c.fillRect(x, H - bh, bw, bh);
-        if (layer) for (let wy = H - bh + 10; wy < H - 10; wy += 16) for (let wx = x + 8; wx < x + bw - 8; wx += 14) if (r() < 0.35) { c.fillStyle = r() < 0.5 ? '#ffd27a' : '#fff0c0'; c.fillRect(wx, wy, 6, 8); }
+        if (layer) for (let wy = H - bh + 10; wy < H - 10; wy += 16) for (let wx = x + 8; wx < x + bw - 8; wx += 14) if (r() < 0.35) { c.fillStyle = r() < 0.5 ? '#fbd86f' : '#fff3c4'; c.fillRect(wx, wy, 6, 8); }
         x += bw + 2;
       }
     });
-    c.fillStyle = '#1a1814'; c.fillRect(0, 0, W, 14); c.fillRect(0, H - 14, W, 14); c.fillRect(0, 0, 14, H); c.fillRect(W - 14, 0, 14, H); c.fillRect(W / 2 - 6, 0, 12, H);
+    c.fillStyle = '#212121'; c.fillRect(0, 0, W, 14); c.fillRect(0, H - 14, W, 14); c.fillRect(0, 0, 14, H); c.fillRect(W - 14, 0, 14, H); c.fillRect(W / 2 - 6, 0, 12, H);
   },
   mountains(c, W, H) {
-    c.fillStyle = _grad(c, 0, 0, 0, H * 0.6, [[0, '#6fa9d8'], [1, '#e9f1f4']]); c.fillRect(0, 0, W, H);
+    c.fillStyle = _grad(c, 0, 0, 0, H * 0.6, [[0, '#6fa9d8'], [1, '#eeeeee']]); c.fillRect(0, 0, W, H);
     const r = _rng(13);
     [['#9fb4c7', 0.42, 0.25], ['#6f8aa3', 0.5, 0.22], ['#45627a', 0.6, 0.18]].forEach(([col, base, amp]) => {
       c.fillStyle = col; c.beginPath(); c.moveTo(0, H);
@@ -7340,7 +7341,7 @@ const BG_PRESETS = {
   mountains: { label: 'Mountains', scene: true },
   yuzu:   { label: 'Yuzu', stops: ['#f6c453', '#e08a3c', '#4c1515'] },
   dusk:   { label: 'Dusk', stops: ['#2b2d5c', '#7a4a8c', '#e7a07a'] },
-  mint:   { label: 'Mint', stops: ['#d9f2e6', '#8fd1b5', '#2f6f5e'] },
+  mint:   { label: 'Mint', stops: ['#dcfce7', '#8fd1b5', '#2f6f5e'] },
 };
 let bgEffect = 'none';
 let _bgUploadImg = null;
